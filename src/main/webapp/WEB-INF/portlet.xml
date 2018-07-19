@@ -11,7 +11,7 @@
 		<portlet-name>${project.artifactId}</portlet-name>
 		<display-name>ProjectBrowser Portlet</display-name>
 
-		<portlet-class>com.vaadin.server.VaadinPortlet</portlet-class>
+		<portlet-class>life.qbic.projectbrowser.helpers.CustomVaadinPortlet</portlet-class>
 
 		<init-param>
 			<name>UI</name>

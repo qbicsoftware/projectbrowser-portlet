@@ -45,4 +45,112 @@
     text-align: right;
     padding-top: 50px;
   }
+  /*Font size changed so that the fonts in the TreeView and ComponentViews, e.g. SpaceView and Tables are bigger.*/
+   .v-widget {
+    	font-size: 13px;
+    }
+    .qlabel-huge{
+      font-size:30px;
+    }
+    .qlabel-large{
+      font-size:20px;
+    }
+
+    .v-caption {
+    	font-size: 16px;
+    }
+    .v-table-caption-container {
+    	font-size: 15px;
+    }
+    .v-panel-caption{
+    	font-size: 16px;
+    }
+   .no-user-login .v-link .v-icon{
+        height: 100px;
+        width: 100px;
+   }
+
+  .patientprogress .v-progressbar-wrapper {
+  	height: 35px;
+  }
+
+  .patientprogress .v-progressbar-indicator {
+  	background-color: #00890a;
+    	background-image: -webkit-linear-gradient(top, #00920a 2%, #007908 98%);
+    	background-image: unquote("linear-gradient(to bottom,#00920a 2%, #007908 98%)");
+    	//background-image: linear-gradient(to bottom,#00920a 2%, #007908 98%);
+  }
+
+   .v-button-addpatient {
+  	height: 44px;
+  	padding: 0 26px;
+  	color: #eaf4e9;
+  	font-weight: 400;
+  	font-size: 13px;
+
+  	border-radius: 4px;
+  	border: 1px solid #227719;
+  	border-top-color: #257d1a;
+  	border-bottom-color: #1e6b15;
+  	background-color: #2c9720;
+  	background-image: -webkit-linear-gradient(top, #2f9f22 2%, #26881b 98%);
+  	background-image: unquote("linear-gradient(to bottom,#2f9f22 2%, #26881b 98%)");
+  	//background-image: linear-gradient(to bottom,#2f9f22 2%, #26881b 98%);
+  	-webkit-box-shadow: inset 0 1px 0 #46b33a, inset 0 -1px 0 #26811b, 0 2px 3px rgba(0, 0, 0, 0.05);
+  	box-shadow: inset 0 1px 0 #46b33a, inset 0 -1px 0 #26811b, 0 2px 3px rgba(0, 0, 0, 0.05);
+  	text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.05);
+  }
+
+   .v-button-addpatient:after {
+  	border: inherit;
+  	top: -1px;
+  	right: -1px;
+  	bottom: -1px;
+  	left: -1px;
+  }
+
+   .v-button-addpatient:hover:after {
+  	background-color: rgba(65, 211, 48, 0.1);
+  }
+
+   .v-button-addpatient:focus:after {
+  	border: inherit;
+  	-webkit-box-shadow: 0 0 0 2px rgba(25, 125, 225, 0.5);
+  	box-shadow: 0 0 0 2px rgba(25, 125, 225, 0.5);
+  }
+
+   .v-button-addpatient:active:after {
+  	background-color: rgba(14, 86, 6, 0.2);
+  }
+
+  .redicon .v-icon {
+      color: red;
+  }
+  .greenicon .v-icon {
+  	color: green;
+  }
+
+  .v-label-info {
+   border-color: #0069aa;
+   border-style: solid;
+   border-width: 1px;
+   box-shadow: 2px  2px 0 rgba(0,105,170, 0.5),      	-2px -2px 0 rgba(0,105,170, 0.5),      	-2px  2px 0 rgba(0,105,170, 0.5),      	2px -2px 0 rgba(0,105,170, 0.5);
+   border-radius: 8px;
+   padding: 8px;  }
+
+
+  .v-label-patientview {
+  	font-size: 24px;
+  	line-height: normal;
+  }
+
+  .v-textfield-barcode-preview {
+      font-family: monospace;
+      font-size: 75% !important;
+      background-color: transparent !important;
+      border-top-style: none !important;
+      border-right-style: none !important;
+      border-bottom-style: none !important;
+      border-left-style: none !important;
+  }
 }
