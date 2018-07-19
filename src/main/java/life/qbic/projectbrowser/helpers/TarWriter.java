@@ -29,7 +29,6 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.catalina.connector.ClientAbortException;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarOutputStream;
 
@@ -172,15 +171,15 @@ public class TarWriter {
       }
     } catch (IOException e1) {
       // e1.printStackTrace();
+      /*
       if (e1 instanceof ClientAbortException) {
         LOG.info("client aborted download.");
         return;
       } else {
+      */
         e1.printStackTrace();
         LOG.error("writing entry to client failed", e1.getCause());
       }
-
-    }
     //LOG.debug("Total Written: " + totalWritten);
   }
 
