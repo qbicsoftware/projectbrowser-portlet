@@ -104,8 +104,7 @@ public class ProjectBrowserPortlet extends QBiCPortletUI {
         } else {
             manager = ConfigurationManagerFactory.getInstance();
             // log who is connecting, when.
-            LOG.info(String.format("ProjectBrowser (%s.%s) used by: %s", version, revision,
-                    PortalUtils.getUser().getScreenName()));
+            LOG.info(String.format("ProjectBrowser used by: %s", PortalUtils.getUser().getScreenName()));
 
             // try to init connection to openbis and write some session attributes, that can be accessed
             // globally
@@ -123,7 +122,7 @@ public class ProjectBrowserPortlet extends QBiCPortletUI {
             mainLayout = initProgressBarAndThreading(request);
         }
 
-        //setContent(mainLayout);
+        setContent(mainLayout);
         return mainLayout;
     }
 
@@ -171,7 +170,7 @@ public class ProjectBrowserPortlet extends QBiCPortletUI {
         vl.addComponent(new Label(
                 "An error occured while trying to load projects. Please contact your project manager to make sure your account is added to your projects."));
         LOG.error(
-                "Couldn't initialize view. User is probably not added to openBIS and has been informed to contact prject manager.");
+                "Couldn't initialize view. User is probably not added to openBIS and has been informed to contact project manager.");
 
         return vl;
     }
@@ -231,27 +230,27 @@ public class ProjectBrowserPortlet extends QBiCPortletUI {
      * @param request
      */
     protected Layout initProgressBarAndThreading(VaadinRequest request) {
-        final VerticalLayout layout = new VerticalLayout();
-        setContent(layout);
+        GridLayout layout = new GridLayout();
+        //setContent(layout);
 
         // TODO so this function uses the same error as above, but doesn't call
         // OpenbisConnectionErrorLayout...we might want to change that
-        final Label status = new Label("Connecting to database.");
-        status.addStyleName(ValoTheme.LABEL_HUGE);
-        status.addStyleName(ValoTheme.LABEL_LIGHT);
-        layout.addComponent(status);
-        layout.setComponentAlignment(status, Alignment.MIDDLE_RIGHT);
+        // final Label status = new Label("Connecting to database.");
+        // status.addStyleName(ValoTheme.LABEL_HUGE);
+        // status.addStyleName(ValoTheme.LABEL_LIGHT);
+        // layout.addComponent(status);
+        // layout.setComponentAlignment(status, Alignment.MIDDLE_RIGHT);
 
         try {
-            buildMainLayout(datahandler, request, PortalUtils.getUser().getScreenName());
+            layout = buildMainLayout(datahandler, request, PortalUtils.getUser().getScreenName());
         } catch (Exception e) {
             if (datahandler.getOpenBisClient().loggedin()) {
                 LOG.error("User not known?", e);
                 buildUserUnknownError(request);
             } else {
                 LOG.error("exception thrown during initialization.", e);
-                status.setValue(
-                        "An error occured, while trying to connect to the database. Please try again later, or contact your project manager.");
+                //status.setValue(
+                //        "An error occured, while trying to connect to the database. Please try again later, or contact your project manager.");
             }
         }
 
@@ -272,7 +271,7 @@ public class ProjectBrowserPortlet extends QBiCPortletUI {
      * @param request
      * @param user
      */
-    public void buildMainLayout(DataHandler datahandler, VaadinRequest request, String user) {
+    public GridLayout buildMainLayout(DataHandler datahandler, VaadinRequest request, String user) {
         State state = (State) UI.getCurrent().getSession().getAttribute("state");
         MultiscaleController multiscaleController =
                 new MultiscaleController(datahandler.getOpenBisClient(), user);
@@ -289,7 +288,7 @@ public class ProjectBrowserPortlet extends QBiCPortletUI {
 
         Submitter submitter = null;
         try {
-            submitter = WorkflowSubmitterFactory.getSubmitter(Type.guseSubmitter, (life.qbic.portal.liferayandvaadinhelpers.main.ConfigurationManager) manager);
+            submitter = WorkflowSubmitterFactory.getSubmitter(Type.guseSubmitter, manager);
         } catch (Exception e1) {
             e1.printStackTrace();
         }
@@ -393,7 +392,7 @@ public class ProjectBrowserPortlet extends QBiCPortletUI {
         mainLayout.addComponent(header, 1, 0);
         mainLayout.addComponent(searchBarView, 2, 0);
 
-        // Production
+        /*
         VerticalLayout versionLayout = new VerticalLayout();
         versionLayout.setWidth(100, Unit.PERCENTAGE);
         Label versionLabel = new Label(String.format("version: %s", version));
@@ -404,17 +403,17 @@ public class ProjectBrowserPortlet extends QBiCPortletUI {
         versionLayout.addComponent(versionLabel);
         if (!isInProductionMode()) {
             versionLayout.addComponent(revisionLabel);
+            versionLayout.setComponentAlignment(revisionLabel, Alignment.BOTTOM_RIGHT);
         }
 
         mainLayout.addComponent(versionLayout, 0, 2, 2, 2);
         mainLayout.setRowExpandRatio(2, 1.0f);
 
         versionLayout.setComponentAlignment(versionLabel, Alignment.MIDDLE_RIGHT);
-        versionLayout.setComponentAlignment(revisionLabel, Alignment.BOTTOM_RIGHT);
-
+        */
         mainLayout.setComponentAlignment(searchBarView, Alignment.BOTTOM_RIGHT);
 
-        setContent(mainLayout);
+        return mainLayout;
     }
 
     /**

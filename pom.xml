@@ -64,13 +64,6 @@
 			<version>1.1.4</version>
 		</dependency>
 
-		<!-- openBIS API (version defined in parent POM) -->
-		<dependency>
-        	<groupId>life.qbic.openbis</groupId>
-            <artifactId>openbis_api</artifactId>
-			<version>3-S253.0</version>
-        </dependency>
-
 		<!-- Access to our custom databases (portlets use direct JDBC to access data for now),
 			 but we will create a client library that portlets will use 
 			 (version  is defined in the parent POM hierarchy (/portal/pom.xml)) -->
@@ -132,7 +125,7 @@
 		<dependency>
 			<groupId>life.qbic.guse</groupId>
 			<artifactId>guse-workflow-api</artifactId>
-			<version>8311939</version>
+			<version>20180720-1</version>
 		</dependency>
 
         <!-- json read and write be aware that vaadin uses element.json -->
@@ -164,9 +157,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>life.qbic.openbis</groupId>
-			<artifactId>liferayandvaadinhelpers</artifactId>
-			<version>1.1.3-SNAPSHOT</version>
+			<groupId>life.qbic.knime</groupId>
+			<artifactId>knime-config-lib</artifactId>
+			<version>20180720-1</version>
 		</dependency>
 
 	</dependencies>

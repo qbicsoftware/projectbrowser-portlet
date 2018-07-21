@@ -1,4 +1,4 @@
-window.samplegraph_ProjectGraph = function() {
+window.life_qbic_projectbrowser_samplegraph_ProjectGraph = function() {
 	var diagramElement = this.getElement();
 	// d3.select(diagramElement).append("svg");
 	var rpcProxy = this.getRpcProxy();
