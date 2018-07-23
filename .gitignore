@@ -22,3 +22,6 @@ logs/
 
 # Other
 **/.factorypath
+
+# Compiled widgetset
+src/main/webapp/VAADIN/widgetsets
