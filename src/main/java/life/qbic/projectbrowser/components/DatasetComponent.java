@@ -28,12 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.CompletableFuture;
 import javax.portlet.PortletSession;
 
 import life.qbic.portal.portlet.ProjectBrowserPortlet;
-import org.apache.commons.lang3.Validate;
 import org.tepi.filtertable.FilterTreeTable;
 
 import com.vaadin.data.Property.ValueChangeEvent;
@@ -81,39 +79,33 @@ import life.qbic.projectbrowser.helpers.DatasetViewFilterGenerator;
 
 import life.qbic.portal.utils.PortalUtils;
 
+/**
+ * Displays the datasets.
+ */
 public class DatasetComponent extends CustomComponent {
 
-    private final static long serialVersionUID = 8672873911284888801L;
-
     public final static String navigateToLabel = "datasetview";
-    private final static Logger LOG = LogManager.getLogger(DatasetComponent.class);
 
+    private final static long serialVersionUID = 8672873911284888801L;
+    private final static Logger LOG = LogManager.getLogger(DatasetComponent.class);
     private final static String DOWNLOAD_BUTTON_CAPTION = "Download";
     private final static String[] FILTER_TABLE_COLUMNS = new String[]{"Select", "File Name", "Description", "Dataset Type", "Registration Date", "File Size"};
 
-
     private final VerticalLayout mainLayout;
     private final FilterTreeTable table;
-    private HierarchicalContainer datasets;
     private final VerticalLayout verticalLayout;
     private final DataHandler datahandler;
-    private State state;
-    private String resourceUrl;
     private final ButtonLink download;
     private final Button tsvExportButton;
-    private FileDownloader fileDownloader;
-    private int numberOfDatasets;
     private final UglyToPrettyNameMapper prettyNameMapper;
-
     private final Label headerLabel;
 
-    private final AtomicReference<TSVExportBackgroundHelper> currentBackgroundHelper;
-
+    private HierarchicalContainer datasets;
+    private int numberOfDatasets;
+    private volatile FileDownloader fileDownloader;
 
     public DatasetComponent(DataHandler dh, State state, String resourceurl) {
         this.datahandler = dh;
-        this.resourceUrl = resourceurl;
-        this.state = state;
 
         this.setCaption("Datasets");
 
@@ -125,15 +117,11 @@ public class DatasetComponent extends CustomComponent {
         mainLayout = new VerticalLayout(verticalLayout);
         table = buildFilterTable();
 
-        currentBackgroundHelper = new AtomicReference<>();
-
         this.initUI();
     }
 
     private void initUI() {
         mainLayout.setResponsive(true);
-
-        // this.setWidth(Page.getCurrent().getBrowserWindowWidth() * 0.8f, Unit.PIXELS);
         this.setCompositionRoot(mainLayout);
     }
 
@@ -148,7 +136,6 @@ public class DatasetComponent extends CustomComponent {
             datasetContainer.addContainerProperty("Project", String.class, null);
             datasetContainer.addContainerProperty("Sample", String.class, null);
             datasetContainer.addContainerProperty("Description", String.class, null);
-            // datasetContainer.addContainerProperty("Sample Type", String.class, null);
             datasetContainer.addContainerProperty("File Name", String.class, null);
             datasetContainer.addContainerProperty("File Type", String.class, null);
             datasetContainer.addContainerProperty("Dataset Type", String.class, null);
@@ -303,35 +290,33 @@ public class DatasetComponent extends CustomComponent {
             }
 
             this.setContainerDataSource(datasetContainer);
-
-            // disable tsv export button (it will be enabled by the background thread preparing the export)
-            tsvExportButton.setEnabled(false);
-            tsvExportButton.setDescription("Please wait a moment, your TSV export data is being prepared in the background.");
-            // remove the button from the downloader
-            if (fileDownloader != null) {
-                tsvExportButton.removeExtension(fileDownloader);
-            }
-            prepareTSVDownload(forExport, id);
+            prepareTSVExportFile(forExport, id);
         } catch (Exception e) {
             LOG.error(String.format("getting dataset failed for dataset %s %s", type, id), e);
         }
     }
 
-    private synchronized void prepareTSVDownload(final BeanItemContainer<DatasetBean> itemContainer, final String id) {
-        final TSVExportBackgroundHelper newBackgroundHelper = new TSVExportBackgroundHelper(itemContainer, id);
-        final TSVExportBackgroundHelper previousBackgroundHelper = currentBackgroundHelper.getAndSet(newBackgroundHelper);
-        if (previousBackgroundHelper != null) {
-            // stop processing items and wait for the background thread to finish
-            previousBackgroundHelper.stopProcessing.set(true);
-            try {
-                previousBackgroundHelper.backgroundThread.join();
-            } catch (InterruptedException e) {
-                // there's not much we can do, no need to clutter our log
-            }
+    private synchronized void prepareTSVExportFile(final BeanItemContainer<DatasetBean> itemContainer, final String id) {
+        // disable tsv export button (it will be enabled by the background thread preparing the export)
+        tsvExportButton.setEnabled(false);
+        tsvExportButton.setDescription("Please wait a moment, your TSV export data is being prepared in the background.");
+        // remove the button from the downloader
+        if (fileDownloader != null) {
+            tsvExportButton.removeExtension(fileDownloader);
         }
-
-        newBackgroundHelper.backgroundThread.start();
-        UI.getCurrent().setPollInterval(100);
+        UI.getCurrent().setPollInterval(150);
+        CompletableFuture.supplyAsync(() -> Utils.containerToString(itemContainer))
+            .thenApplyAsync(tsvContent -> Utils.getTSVStream(tsvContent, String.format("%s_%s_", id.substring(1).replace("/", "_"), "registered_datasets")))
+            .thenAccept((streamResource) -> {
+                // update UI
+                UI.getCurrent().access(() -> {
+                    fileDownloader = new FileDownloader(streamResource);
+                    fileDownloader.extend(tsvExportButton);
+                    tsvExportButton.setEnabled(true);
+                    tsvExportButton.setDescription("Click to download");
+                });
+                UI.getCurrent().setPollInterval(-1);
+            });
     }
 
     public void setContainerDataSource(HierarchicalContainer newDataSource) {
@@ -346,10 +331,6 @@ public class DatasetComponent extends CustomComponent {
         boolean[] order = {false};
         table.sort(sorting, order);
         this.buildLayout();
-    }
-
-    public HierarchicalContainer getContainerDataSource() {
-        return this.datasets;
     }
 
     /**
@@ -840,50 +821,5 @@ public class DatasetComponent extends CustomComponent {
             getAllChildren(found, current.get(i));
         }
         return found;
-    }
-
-    // struct-like class to keep two references together
-    private class TSVExportBackgroundHelper {
-
-        private final Thread backgroundThread;
-        private final AtomicBoolean stopProcessing;
-
-        TSVExportBackgroundHelper(final BeanItemContainer<DatasetBean> itemContainer, final String id) {
-            Validate.notNull(itemContainer, "itemContainer is required and cannot be null");
-            Validate.notBlank(id, "id is required and cannot be null or empty");
-
-            LOG.info("Creating a new TSVExportBakgroundHelper instance");
-            stopProcessing = new AtomicBoolean(false);
-            backgroundThread = new Thread(prepareBakgroundTask(itemContainer, id));
-        }
-
-        private Runnable prepareBakgroundTask(final BeanItemContainer<DatasetBean> itemContainer, final String id) {
-            return () -> {
-                try {
-                    LOG.info("Invoking Utils.containerToString");
-                    // do the heavy work
-                    final String tsvFileContent = Utils.containerToString(itemContainer, stopProcessing);
-
-                    if (!stopProcessing.get()) {
-                        final StreamResource streamResource =
-                            Utils.getTSVStream(tsvFileContent,
-                                String.format("%s_%s_", id.substring(1).replace("/", "_"), "registered_datasets"));
-
-                        // update UI
-                        UI.getCurrent().access(() -> {
-                            fileDownloader = new FileDownloader(streamResource);
-                            fileDownloader.extend(tsvExportButton);
-                            tsvExportButton.setEnabled(true);
-                            tsvExportButton.setDescription("Click to download");
-                        });
-
-                    }
-                } finally {
-                    LOG.info("Background thread completed, stopProcessing={}", stopProcessing.get());
-                    // turn off polling
-                    UI.getCurrent().setPollInterval(-1);
-                }
-            };
-        }
     }
 }

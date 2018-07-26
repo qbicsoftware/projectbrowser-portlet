@@ -26,6 +26,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -60,6 +61,8 @@ import com.vaadin.ui.themes.ValoTheme;
 
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import life.qbic.projectbrowser.components.CustomVisibilityComponent;
 import life.qbic.projectbrowser.helpers.VisibilityChangeListener;
 import org.apache.logging.log4j.LogManager;
@@ -69,26 +72,6 @@ import life.qbic.projectbrowser.model.ProjectBean;
 public class Utils {
 
     private static final Logger LOG = LogManager.getLogger(Utils.class);
-
-    private static final Set<String> EXCLUSION_LIST;
-
-    static {
-        EXCLUSION_LIST = new HashSet<>();
-        EXCLUSION_LIST.add("samples");
-        EXCLUSION_LIST.add("properties");
-        EXCLUSION_LIST.add("controlledVocabularies");
-        EXCLUSION_LIST.add("typeLabels");
-        EXCLUSION_LIST.add("containsData");
-        EXCLUSION_LIST.add("parents");
-        EXCLUSION_LIST.add("datasets");
-        EXCLUSION_LIST.add("isSelected");
-        EXCLUSION_LIST.add("parent");
-        EXCLUSION_LIST.add("root");
-        EXCLUSION_LIST.add("children");
-        EXCLUSION_LIST.add("dssPath");
-        EXCLUSION_LIST.add("experiments");
-    }
-
 
     /**
      * Checks if a String can be parsed to an Integer
@@ -205,53 +188,50 @@ public class Utils {
     }
 
     /**
-     * Converts an item container into an exportable string (tab-separated format). It is possible to stop the execution of this method by changing the
-     * value of the {@code stopProcessing} parameter to {@code true}. This can be done from another thread, for instance.
+     * Converts an item container into an exportable string (tab-separated format). It is possible to stop the execution of this method by changing the value of
+     * the {@code stopProcessing} parameter to {@code true}. This can be done from another thread, for instance.
      *
      * @param container the container to export.
-     * @param stopProcessing boolean that indicates whether this method should stop processing elements. If this method stops processing elements, the
-     * return value should be discarded, since it will not be complete and/or will be improperly formatted.
+     * @param stopProcessing boolean that indicates whether this method should stop processing elements. If this method stops processing elements, the return
+     * value should be discarded, since it will not be complete and/or will be improperly formatted.
      * @return the exportable string.
      */
     public static String containerToString(final BeanItemContainer container, final AtomicBoolean stopProcessing) {
         final StringBuilder stringValue = new StringBuilder();
+        final Set<String> exclusionList = new HashSet<>(Arrays
+            .asList("experiments", "dssPath", "children", "samples", "properties", "controlledVocabularies", "typeLabels", "containsData", "parent", "parents",
+                "isSelected", "root"));
 
-        final Collection<?> propertyIDs = container.getContainerPropertyIds();
+        final Collection<String> filteredPropertyIDs = ((Collection<String>) container.getContainerPropertyIds()).parallelStream()
+            .filter(p -> !exclusionList.contains(p)).collect(Collectors.toList());
 
-        for (final Object o : propertyIDs) {
+        for (final Object o : filteredPropertyIDs) {
             if (stopProcessing.get()) {
-
+                return "";
             }
             final String propertyAsString = o.toString();
-            if (!EXCLUSION_LIST.contains(propertyAsString)) {
-                stringValue.append(propertyAsString.replaceAll("project", "sub-project").replace("space", "project")).append('\t');
-            }
+            stringValue.append(propertyAsString.replaceAll("project", "sub-project").replace("space", "project")).append('\t');
         }
         stringValue.append('\n');
 
         for (final Object id : container.getItemIds()) {
+            if (stopProcessing.get()) {
+                return "";
+            }
             final Item item = container.getItem(id);
 
-            for (final Object propertyId : propertyIDs) {
+            for (final Object propertyId : filteredPropertyIDs) {
                 // Could be extended to an exclusion list if we don't want to show further columns
-                if (!EXCLUSION_LIST.contains(propertyId.toString())) {
-                    final Property prop = item.getItemProperty(propertyId);
-                    if (prop.getValue() == null) {
-                        stringValue.append("-\t");
-                    } else {
-                        stringValue.append(prop.toString()).append('\t');
-                    }
+                final Property prop = item.getItemProperty(propertyId);
+                if (prop.getValue() == null) {
+                    stringValue.append("-\t");
+                } else {
+                    stringValue.append(prop.toString()).append('\t');
                 }
             }
             stringValue.append('\n');
         }
         return stringValue.toString();
-    }
-
-    public static void printMapContent(Map<String, Object> map) {
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            System.out.println(entry.getKey() + ": " + entry.getValue());
-        }
     }
 
     public static String getTime() {
