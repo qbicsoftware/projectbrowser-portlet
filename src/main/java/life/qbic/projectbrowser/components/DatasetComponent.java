@@ -84,8 +84,6 @@ import life.qbic.portal.utils.PortalUtils;
  */
 public class DatasetComponent extends CustomComponent {
 
-    public final static String navigateToLabel = "datasetview";
-
     private final static long serialVersionUID = 8672873911284888801L;
     private final static Logger LOG = LogManager.getLogger(DatasetComponent.class);
     private final static String DOWNLOAD_BUTTON_CAPTION = "Download";

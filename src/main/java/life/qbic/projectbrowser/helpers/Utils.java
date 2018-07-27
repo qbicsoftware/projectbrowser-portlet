@@ -60,15 +60,15 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import life.qbic.projectbrowser.components.CustomVisibilityComponent;
-import life.qbic.projectbrowser.helpers.VisibilityChangeListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import life.qbic.projectbrowser.model.ProjectBean;
 
+/**
+ * Utility functions.
+ */
 public class Utils {
 
     private static final Logger LOG = LogManager.getLogger(Utils.class);
@@ -182,21 +182,14 @@ public class Utils {
         return resource;
     }
 
-    // TODO fix and test
-    public static String containerToString(final BeanItemContainer container) {
-        return containerToString(container, new AtomicBoolean(false));
-    }
-
     /**
-     * Converts an item container into an exportable string (tab-separated format). It is possible to stop the execution of this method by changing the value of
-     * the {@code stopProcessing} parameter to {@code true}. This can be done from another thread, for instance.
+     * Converts an item container into an exportable string (tab-separated format).
      *
      * @param container the container to export.
-     * @param stopProcessing boolean that indicates whether this method should stop processing elements. If this method stops processing elements, the return
-     * value should be discarded, since it will not be complete and/or will be improperly formatted.
      * @return the exportable string.
      */
-    public static String containerToString(final BeanItemContainer container, final AtomicBoolean stopProcessing) {
+    // TODO fix and test
+    public static String containerToString(final BeanItemContainer container) {
         final StringBuilder stringValue = new StringBuilder();
         final Set<String> exclusionList = new HashSet<>(Arrays
             .asList("experiments", "dssPath", "children", "samples", "properties", "controlledVocabularies", "typeLabels", "containsData", "parent", "parents",
@@ -206,18 +199,12 @@ public class Utils {
             .filter(p -> !exclusionList.contains(p)).collect(Collectors.toList());
 
         for (final Object o : filteredPropertyIDs) {
-            if (stopProcessing.get()) {
-                return "";
-            }
             final String propertyAsString = o.toString();
             stringValue.append(propertyAsString.replaceAll("project", "sub-project").replace("space", "project")).append('\t');
         }
         stringValue.append('\n');
 
         for (final Object id : container.getItemIds()) {
-            if (stopProcessing.get()) {
-                return "";
-            }
             final Item item = container.getItem(id);
 
             for (final Object propertyId : filteredPropertyIDs) {

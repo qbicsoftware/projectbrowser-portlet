@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.util.concurrent.CompletableFuture;
 import javax.portlet.PortletSession;
 
 import life.qbic.portal.portlet.ProjectBrowserPortlet;
@@ -82,12 +83,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Displays raw data.
+ * Displays raw data / results.
  */
 public class LevelComponent extends CustomComponent {
-
-    //public final static String navigateToLabel = "datasetview";
-
     private static final long serialVersionUID = 8672873911284888801L;
     private static final Logger LOG = LogManager.getLogger(LevelComponent.class);
     private static final String[] FILTER_TABLE_COLUMNS = new String[]{"Select", "Sample", "File Name", "Description", "Dataset Type", "Registration Date", "File Size"};
@@ -201,20 +199,12 @@ public class LevelComponent extends CustomComponent {
                         BeanItemContainer<TestSampleBean> samplesContainer =
                             new BeanItemContainer<TestSampleBean>(TestSampleBean.class);
 
-                        // List<Sample> allSamples =
-                        // datahandler.getOpenBisClient()
-                        // .getSamplesOfProjectBySearchService(projectIdentifier);
-
                         List<Sample> allSamples = datahandler.getOpenBisClient()
                             .getSamplesWithParentsAndChildrenOfProjectBySearchService(id);
 
                         for (Sample sample : allSamples) {
                             checkedTestSamples.put(sample.getCode(), sample);
                             if (sample.getSampleTypeCode().equals("Q_TEST_SAMPLE")) {
-                                // samplesContainer.addBean(new SampleBean(sample.getIdentifier(), sample.getCode(),
-                                // sample.getSampleTypeCode(), null, null, null, sample.getProperties(), null,
-                                // null));
-
                                 Map<String, String> sampleProperties = sample.getProperties();
                                 TestSampleBean newBean = new TestSampleBean();
                                 newBean.setCode(sample.getCode());
@@ -242,9 +232,6 @@ public class LevelComponent extends CustomComponent {
                                     }
                                 }
                             } else if (sample.getSampleTypeCode().equals("Q_MHC_LIGAND_EXTRACT")) {
-                                // samplesContainer.addBean(new SampleBean(sample.getIdentifier(), sample.getCode(),
-                                // sample.getSampleTypeCode(), null, null, null, sample.getProperties(), null,
-                                // null));
 
                                 Map<String, String> sampleProperties = sample.getProperties();
                                 TestSampleBean newBean = new TestSampleBean();
@@ -334,9 +321,6 @@ public class LevelComponent extends CustomComponent {
                                     subWindow.setResizable(false);
 
                                     subWindow.addCloseListener(new CloseListener() {
-                                        /**
-                                         *
-                                         */
                                         private static final long serialVersionUID = -1329152609834711109L;
 
                                         @Override
@@ -406,11 +390,9 @@ public class LevelComponent extends CustomComponent {
                                             retrievedDatasets.add(ds);
                                         }
                                     }
-                                    // retrievedDatasets.addAll(foundDataset);
                                 }
                             }
                         }
-                        // numberOfSamples = samplesContainer.size();
                         samples = samplesContainer;
                         final GeneratedPropertyContainer gpc = new GeneratedPropertyContainer(samples);
                         gpc.removeContainerProperty("id");
@@ -419,8 +401,6 @@ public class LevelComponent extends CustomComponent {
                         sampleGrid.setColumnReorderingAllowed(true);
                         sampleGrid.setColumnOrder("secondaryName", "type", "code", "properties");
                         numberOfSamples = samplesContainer.size();
-                        // sampleGrid.setHeightMode(HeightMode.ROW);
-                        // sampleGrid.setHeightByRows(numberOfSamples);
 
                         sampleGrid.setCaption("Workflow Runs");
                         GridFunctions.addColumnFilters(sampleGrid, gpc);
@@ -528,24 +508,7 @@ public class LevelComponent extends CustomComponent {
             }
 
             this.setContainerDataSource(datasetContainer);
-
-            if (fileDownloaderData != null) {
-                this.exportData.removeExtension(fileDownloaderData);
-            }
-            StreamResource srData =
-                Utils.getTSVStream(Utils.containerToString(forExport), String.format("%s_%s_",
-                    id.substring(1).replace("/", "_"), datasetTable.getCaption().replace(" ", "_")));
-            fileDownloaderData = new FileDownloader(srData);
-            fileDownloaderData.extend(exportData);
-
-            if (fileDownloaderSamples != null) {
-                this.exportSamples.removeExtension(fileDownloaderSamples);
-            }
-            StreamResource srSamples =
-                Utils.getTSVStream(Utils.containerToString(samples), String.format("%s_%s_",
-                    id.substring(1).replace("/", "_"), sampleGrid.getCaption().replaceAll(" ", "_")));
-            fileDownloaderSamples = new FileDownloader(srSamples);
-            fileDownloaderSamples.extend(exportSamples);
+            prepareDownloads(forExport, id);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -554,8 +517,40 @@ public class LevelComponent extends CustomComponent {
         }
     }
 
+    private void prepareDownloads(final BeanItemContainer<DatasetBean> forExport, final String id) {
+        UI.getCurrent().setPollInterval(150);
+
+        if (fileDownloaderData != null) {
+            this.exportData.removeExtension(fileDownloaderData);
+        }
+        final CompletableFuture<String> rawDataFuture = CompletableFuture.supplyAsync(() -> Utils.containerToString(forExport));
+        final CompletableFuture<StreamResource> rawResourceFuture = rawDataFuture.thenApplyAsync(rawData -> Utils.getTSVStream(rawData, String.format("%s_%s_",
+            id.substring(1).replace("/", "_"), datasetTable.getCaption().replace(" ", "_"))));
+        final CompletableFuture<Void> rawUIControlsFuture = rawResourceFuture.thenAcceptAsync((stream) -> {
+            UI.getCurrent().access(() -> {
+            fileDownloaderData = new FileDownloader(stream);
+            fileDownloaderData.extend(exportData);
+            });
+        });
+
+        if (fileDownloaderSamples != null) {
+            this.exportSamples.removeExtension(fileDownloaderSamples);
+        }
+        final CompletableFuture<String> samplesDataFuture = CompletableFuture.supplyAsync(() -> Utils.containerToString(samples));
+        final CompletableFuture<StreamResource> samplesResourceFuture = samplesDataFuture.thenApplyAsync(samplesData -> Utils.getTSVStream(samplesData, String.format("%s_%s_",
+            id.substring(1).replace("/", "_"), sampleGrid.getCaption().replaceAll(" ", "_"))));
+        final CompletableFuture<Void> samplesUIControlsFuture = samplesResourceFuture.thenAcceptAsync((stream) -> {
+            UI.getCurrent().access(() -> {
+                fileDownloaderSamples = new FileDownloader(stream);
+                fileDownloaderSamples.extend(exportSamples);
+            });
+        });
+
+        CompletableFuture.allOf(samplesUIControlsFuture, rawUIControlsFuture).thenRun(() -> UI.getCurrent().access(() -> UI.getCurrent().setPollInterval(-1)));
+    }
+
     public void setContainerDataSource(HierarchicalContainer newDataSource) {
-        datasets = (HierarchicalContainer) newDataSource;
+        datasets = newDataSource;
         datasetTable.setContainerDataSource(this.datasets);
 
         datasetTable.setVisibleColumns((Object[]) FILTER_TABLE_COLUMNS);
@@ -567,10 +562,6 @@ public class LevelComponent extends CustomComponent {
         datasetTable.sort(sorting, order);
 
         this.buildLayout();
-    }
-
-    public HierarchicalContainer getContainerDataSource() {
-        return this.datasets;
     }
 
     /**
