@@ -56,7 +56,7 @@
 			<artifactId>core-utils-lib</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-				
+
 		<!-- openBIS client (version defined in parent POM) -->
 		<dependency>
 			<groupId>life.qbic</groupId>
