@@ -34,194 +34,191 @@ import org.apache.logging.log4j.Logger;
 
 public class GraphPage extends VerticalLayout {
 
-    private static final Logger LOG = LogManager.getLogger(GraphPage.class);
+  private static final Logger LOG = LogManager.getLogger(GraphPage.class);
 
-    private List<Sample> currentSamples;
-    private ProjectParser parser;
-    private StructuredExperiment structure;
-    private ComboBox factorBox;
+  private List<Sample> currentSamples;
+  private ProjectParser parser;
+  private StructuredExperiment structure;
+  private ComboBox factorBox;
 
-    private ProjectGraph sampleGraph;
+  private ProjectGraph sampleGraph;
 
-    public GraphPage(Map<String, String> taxMap, Map<String, String> tissueMap) {
-        Map<String, String> reverseTaxMap = taxMap.entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
-        Map<String, String> reverseTissueMap = tissueMap.entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+  public GraphPage(Map<String, String> taxMap, Map<String, String> tissueMap) {
+    Map<String, String> reverseTaxMap = taxMap.entrySet().stream()
+        .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+    Map<String, String> reverseTissueMap = tissueMap.entrySet().stream()
+        .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
 
-        parser = new ProjectParser(reverseTaxMap, reverseTissueMap);
-    }
+    parser = new ProjectParser(reverseTaxMap, reverseTissueMap);
+  }
 
-    private String buildImagePath() {
-      StringBuilder pathBuilder = new StringBuilder();
+  private String buildImagePath() {
+    StringBuilder pathBuilder = new StringBuilder();
 
-      if (PortalUtils.isLiferayPortlet()) {
-        Properties prop = new Properties();
-        InputStream in = this.getClass().getClassLoader()
-            .getResourceAsStream("WEB-INF/liferay-plugin-package.properties");
-        try {
-          prop.load(in);
-          in.close();
-        } catch (IOException e1) {
-          // TODO Auto-generated catch block
-          e1.printStackTrace();
-        }
-        String portletName = prop.getProperty("name");
-
-        URI location = UI.getCurrent().getPage().getLocation();
-        // http
-        pathBuilder.append(location.getScheme());
-        pathBuilder.append("://");
-        // host+port
-        pathBuilder.append(location.getAuthority());
-
-        String port = (Integer.toString(location.getPort()));
-        if (location.toString().contains(port)) {
-          pathBuilder.append(":");
-          pathBuilder.append(port);
-        }
-        pathBuilder.append("/");
-        pathBuilder.append(portletName);
+    if (PortalUtils.isLiferayPortlet()) {
+      Properties prop = new Properties();
+      InputStream in = this.getClass().getClassLoader()
+          .getResourceAsStream("WEB-INF/liferay-plugin-package.properties");
+      try {
+        prop.load(in);
+        in.close();
+      } catch (IOException e1) {
+        // TODO Auto-generated catch block
+        e1.printStackTrace();
       }
-      pathBuilder.append("/VAADIN/img/");
-      return pathBuilder.toString();
+      String portletName = prop.getProperty("name");
+
+      URI location = UI.getCurrent().getPage().getLocation();
+      // http
+      pathBuilder.append(location.getScheme());
+      pathBuilder.append("://");
+      // host+port
+      pathBuilder.append(location.getAuthority());
+
+      String port = (Integer.toString(location.getPort()));
+      if (location.toString().contains(port)) {
+        pathBuilder.append(":");
+        pathBuilder.append(port);
+      }
+      pathBuilder.append("/");
+      pathBuilder.append(portletName);
+    }
+    pathBuilder.append("/VAADIN/img/");
+    return pathBuilder.toString();
+  }
+
+  public void loadProjectGraph(String projectIdentifier, List<Sample> samples,
+      List<DataSet> datasets) {
+    this.factorBox = new ComboBox("Experimental Factor");
+    factorBox.setVisible(false);
+    addComponent(factorBox);
+
+    currentSamples = samples;
+    if (currentSamples.isEmpty()) {
+      LOG.info("No samples to show found in this project.");
+    } else {
+      try {
+        // load here
+        structure = parser.parseSamplesBreadthFirst(currentSamples, datasets);
+        if (!structure.getFactorsToSamples().isEmpty()) {
+          factorBox.addItems(structure.getFactorsToSamples().keySet());
+          factorBox.setVisible(true);
+        }
+      } catch (JAXBException e) {
+        e.printStackTrace();
+        LOG.error("JAXB Parsing error!");
+      }
     }
 
-    public void loadProjectGraph(String projectIdentifier, List<Sample> samples,
-        List<DataSet> datasets) {
-        this.factorBox = new ComboBox("Experimental Factor");
-        factorBox.setVisible(false);
-        addComponent(factorBox);
+    factorBox.setImmediate(true);
+    factorBox.setNullSelectionAllowed(false);
+    final GraphPage parent = this;
+    factorBox.addValueChangeListener(new ValueChangeListener() {
 
-        currentSamples = samples;
-        if (currentSamples.isEmpty()) {
-            LOG.info("No samples to show found in this project.");
-        } else {
-            try {
-                // load here
-                structure = parser.parseSamplesBreadthFirst(currentSamples, datasets);
-                if (!structure.getFactorsToSamples().isEmpty()) {
-                    factorBox.addItems(structure.getFactorsToSamples().keySet());
-                    factorBox.setVisible(true);
-                }
-            } catch (JAXBException e) {
-                e.printStackTrace();
-                LOG.error("JAXB Parsing error!");
-            }
+      @Override
+      public void valueChange(ValueChangeEvent event) {
+        Object factor = factorBox.getValue();
+        if (sampleGraph != null) {
+          parent.removeComponent(sampleGraph);
         }
+        sampleGraph = new ProjectGraph(parent, buildImagePath());
+        sampleGraph.setSizeFull();
+        parent.addComponent(sampleGraph);
+        if (factor != null) {
+          sampleGraph.setProject(structure.getFactorsToSamples().get(factor));
+        }
+      }
+    });
+  }
 
-        factorBox.setImmediate(true);
-        factorBox.setNullSelectionAllowed(false);
-        final GraphPage parent = this;
-        factorBox.addValueChangeListener(new ValueChangeListener() {
+  public void showDatasetsForSamples(String label, List<String> sampleCodes) {
+    Window subWindow = new Window(" " + label + " Dataset information");
+    subWindow.setWidth("680px");
 
-            @Override
-            public void valueChange(ValueChangeEvent event) {
-                Object factor = factorBox.getValue();
-                if (sampleGraph != null) {
-                    parent.removeComponent(sampleGraph);
-                }
-                sampleGraph = new ProjectGraph(parent, buildImagePath());
-                sampleGraph.setSizeFull();
-                parent.addComponent(sampleGraph);
-                if (factor != null) {
-                    sampleGraph.setProject(structure.getFactorsToSamples().get(factor));
-                }
-            }
-        });
+    VerticalLayout layout = new VerticalLayout();
+    layout.setSpacing(true);
+    layout.setMargin(true);
+    List<Sample> samplesWithData = new ArrayList<Sample>();
+    List<Sample> samplesWithoutData = new ArrayList<Sample>();
+    for (String code : sampleCodes) {
+      Sample s = parser.getSampleFromCode(code);
+      if (parser.codeHasDatasets(code)) {
+        samplesWithData.add(s);
+      } else {
+        samplesWithoutData.add(s);
+      }
     }
 
-    public void showDatasetsForSamples(String label, List<String> sampleCodes) {
-        Window subWindow = new Window(" " + label + " Dataset information");
-        subWindow.setWidth("680px");
+    Table haveData = new Table("Samples/Entities with Data");
+    haveData.setStyleName(ValoTheme.TABLE_SMALL);
+    haveData.addContainerProperty("Sample", String.class, null);
+    haveData.addContainerProperty("Secondary Name", String.class, null);
+    haveData.addContainerProperty("Lab ID", String.class, null);
+    for (Sample s : samplesWithData) {
+      List<Object> row = new ArrayList<Object>();
+      row.add(s.getCode());
+      Map<String, String> props = s.getProperties();
+      String secName = "";
+      if (props.get("Q_SECONDARY_NAME") != null) {
+        secName = props.get("Q_SECONDARY_NAME");
+      }
+      row.add(secName);
 
-        VerticalLayout layout = new VerticalLayout();
-        layout.setSpacing(true);
-        layout.setMargin(true);
-        List<Sample> samplesWithData = new ArrayList<Sample>();
-        List<Sample> samplesWithoutData = new ArrayList<Sample>();
-        for (String code : sampleCodes) {
-            Sample s = parser.getSampleFromCode(code);
-            if (parser.codeHasDatasets(code)) {
-                samplesWithData.add(s);
-            } else {
-                samplesWithoutData.add(s);
-            }
-        }
+      String extID = "";
+      if (props.get("Q_EXTERNALDB_ID") != null) {
+        extID = props.get("Q_EXTERNALDB_ID");
+      }
+      row.add(extID);
 
-        Table haveData = new Table("Samples/Entities with Data");
-        haveData.setStyleName(ValoTheme.TABLE_SMALL);
-        haveData.addContainerProperty("Sample", String.class, null);
-        haveData.addContainerProperty("Secondary Name", String.class, null);
-        haveData.addContainerProperty("Lab ID", String.class, null);
-        int i = 0;
-        for (Sample s : samplesWithData) {
-            i++;
-            List<Object> row = new ArrayList<Object>();
-            row.add(s.getCode());
-            Map<String, String> props = s.getProperties();
-            String secName = "";
-            if (props.get("Q_SECONDARY_NAME") != null) {
-                secName = props.get("Q_SECONDARY_NAME");
-            }
-            row.add(secName);
-
-            String extID = "";
-            if (props.get("Q_EXTERNALDB_ID") != null) {
-                extID = props.get("Q_EXTERNALDB_ID");
-            }
-            row.add(extID);
-
-            haveData.addItem(row.toArray(new Object[row.size()]), s);
-        }
-
-        Table noData = new Table("Samples/Entities without Data");
-        noData.setStyleName(ValoTheme.TABLE_SMALL);
-        noData.addContainerProperty("Sample", String.class, null);
-        noData.addContainerProperty("Secondary Name", String.class, null);
-        noData.addContainerProperty("Lab ID", String.class, null);
-        for (Sample s : samplesWithoutData) {
-            i++;
-            List<Object> row = new ArrayList<Object>();
-            row.add(s.getCode());
-            Map<String, String> props = s.getProperties();
-            String secName = "";
-            if (props.get("Q_SECONDARY_NAME") != null) {
-                secName = props.get("Q_SECONDARY_NAME");
-            }
-            row.add(secName);
-
-            String extID = "";
-            if (props.get("Q_EXTERNALDB_ID") != null) {
-                extID = props.get("Q_EXTERNALDB_ID");
-            }
-            row.add(extID);
-
-            noData.addItem(row.toArray(new Object[row.size()]), s);
-        }
-        haveData.setPageLength(samplesWithData.size());
-        noData.setPageLength(samplesWithoutData.size());
-
-        layout.addComponent(haveData);
-        layout.addComponent(noData);
-        Button ok = new Button("Close");
-        ok.addClickListener(new ClickListener() {
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                subWindow.close();
-            }
-        });
-
-        layout.addComponent(ok);
-
-        subWindow.setContent(layout);
-        // Center it in the browser window
-        subWindow.center();
-        subWindow.setModal(true);
-        subWindow.setIcon(FontAwesome.FILE);
-        subWindow.setResizable(false);
-        ProjectBrowserPortlet ui = (ProjectBrowserPortlet) UI.getCurrent();
-        ui.addWindow(subWindow);
+      haveData.addItem(row.toArray(new Object[row.size()]), s);
     }
+
+    Table noData = new Table("Samples/Entities without Data");
+    noData.setStyleName(ValoTheme.TABLE_SMALL);
+    noData.addContainerProperty("Sample", String.class, null);
+    noData.addContainerProperty("Secondary Name", String.class, null);
+    noData.addContainerProperty("Lab ID", String.class, null);
+    for (Sample s : samplesWithoutData) {
+      List<Object> row = new ArrayList<Object>();
+      row.add(s.getCode());
+      Map<String, String> props = s.getProperties();
+      String secName = "";
+      if (props.get("Q_SECONDARY_NAME") != null) {
+        secName = props.get("Q_SECONDARY_NAME");
+      }
+      row.add(secName);
+
+      String extID = "";
+      if (props.get("Q_EXTERNALDB_ID") != null) {
+        extID = props.get("Q_EXTERNALDB_ID");
+      }
+      row.add(extID);
+
+      noData.addItem(row.toArray(new Object[row.size()]), s);
+    }
+    haveData.setPageLength(samplesWithData.size());
+    noData.setPageLength(samplesWithoutData.size());
+
+    layout.addComponent(haveData);
+    layout.addComponent(noData);
+    Button ok = new Button("Close");
+    ok.addClickListener(new ClickListener() {
+
+      @Override
+      public void buttonClick(ClickEvent event) {
+        subWindow.close();
+      }
+    });
+
+    layout.addComponent(ok);
+
+    subWindow.setContent(layout);
+    // Center it in the browser window
+    subWindow.center();
+    subWindow.setModal(true);
+    subWindow.setIcon(FontAwesome.FILE);
+    subWindow.setResizable(false);
+    ProjectBrowserPortlet ui = (ProjectBrowserPortlet) UI.getCurrent();
+    ui.addWindow(subWindow);
+  }
 }
