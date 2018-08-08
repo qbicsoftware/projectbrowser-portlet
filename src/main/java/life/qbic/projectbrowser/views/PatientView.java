@@ -96,7 +96,6 @@ import life.qbic.projectbrowser.samplegraph.GraphPage;
 import life.qbic.projectbrowser.helpers.ViewTablesClickListener;
 import life.qbic.projectbrowser.helpers.DatasetViewFilterGenerator;
 import life.qbic.projectbrowser.helpers.DatasetViewFilterDecorator;
-import life.qbic.projectbrowser.views.WorkflowView;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -986,11 +985,9 @@ public class PatientView extends VerticalLayout implements View {
     return projectStatus;
   }
 
-  void resetGraph() {
+  void resetGraphs() {
     graphSectionContent.removeAllComponents();
-    // VerticalLayout graphSection = (VerticalLayout) graphSectionContent.getParent();
-    // graphSection.getComponent(1).setVisible(true);
-    // graphSection.getComponent(1).setEnabled(true);
+    newGraphContent.removeAllComponents();
   }
 
   /**
@@ -1197,7 +1194,7 @@ public class PatientView extends VerticalLayout implements View {
       ProjectBean pbean = datahandler.getProject2(currentValue);
       // if the new project bean is different than reset the graph.
       if (currentBean != null && !pbean.getId().equals(currentBean.getId())) {
-        resetGraph();
+        resetGraphs();
         patientViewTab.setSelectedTab(0);
       }
       this.currentBean = pbean;

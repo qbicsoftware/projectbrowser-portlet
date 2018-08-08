@@ -34,7 +34,6 @@ import org.apache.logging.log4j.Logger;
 
 public class GraphPage extends VerticalLayout {
 
-    // private OpenBisClient openbis;
     private static final Logger LOG = LogManager.getLogger(GraphPage.class);
 
     private List<Sample> currentSamples;
@@ -51,11 +50,6 @@ public class GraphPage extends VerticalLayout {
             .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
 
         parser = new ProjectParser(reverseTaxMap, reverseTissueMap);
-
-        this.factorBox = new ComboBox("Experimental Factor");
-        factorBox.setVisible(false);
-
-        addComponent(factorBox);
     }
 
     private String buildImagePath() {
@@ -95,16 +89,16 @@ public class GraphPage extends VerticalLayout {
 
     public void loadProjectGraph(String projectIdentifier, List<Sample> samples,
         List<DataSet> datasets) {
-        factorBox.removeAllItems();
+        this.factorBox = new ComboBox("Experimental Factor");
         factorBox.setVisible(false);
+        addComponent(factorBox);
 
         currentSamples = samples;
-        // openbis
         if (currentSamples.isEmpty()) {
             LOG.info("No samples to show found in this project.");
         } else {
-            // structure = parser.parseAll(currentSamples, datasets);
             try {
+                // load here
                 structure = parser.parseSamplesBreadthFirst(currentSamples, datasets);
                 if (!structure.getFactorsToSamples().isEmpty()) {
                     factorBox.addItems(structure.getFactorsToSamples().keySet());
@@ -155,7 +149,7 @@ public class GraphPage extends VerticalLayout {
             }
         }
 
-        Table haveData = new Table("Samples with Data");
+        Table haveData = new Table("Samples/Entities with Data");
         haveData.setStyleName(ValoTheme.TABLE_SMALL);
         haveData.addContainerProperty("Sample", String.class, null);
         haveData.addContainerProperty("Secondary Name", String.class, null);
@@ -181,7 +175,7 @@ public class GraphPage extends VerticalLayout {
             haveData.addItem(row.toArray(new Object[row.size()]), s);
         }
 
-        Table noData = new Table("Samples without Data");
+        Table noData = new Table("Samples/Entities without Data");
         noData.setStyleName(ValoTheme.TABLE_SMALL);
         noData.addContainerProperty("Sample", String.class, null);
         noData.addContainerProperty("Secondary Name", String.class, null);

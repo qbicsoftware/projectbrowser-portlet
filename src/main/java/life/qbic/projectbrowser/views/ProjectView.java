@@ -514,11 +514,9 @@ public class ProjectView extends VerticalLayout implements View {
   /**
    * 
    */
-  void resetGraph() {
+  void resetGraphs() {
     graphSectionContent.removeAllComponents();
-    // VerticalLayout graphSection = (VerticalLayout) graphSectionContent.getParent();
-    // graphSection.getComponent(1).setVisible(true);
-    // graphSection.getComponent(1).setEnabled(true);
+    newGraphContent.removeAllComponents();
   }
 
   /**
@@ -914,7 +912,7 @@ public class ProjectView extends VerticalLayout implements View {
       ProjectBean pbean = datahandler.getProject2(currentValue);
       // if the new project bean is different than reset the graph.
       if (currentBean != null && !pbean.getId().equals(currentBean.getId())) {
-        resetGraph();
+        resetGraphs();
         projectview_tab.setSelectedTab(0);
       }
       this.currentBean = pbean;

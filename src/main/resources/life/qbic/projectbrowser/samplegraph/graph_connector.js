@@ -1,6 +1,5 @@
 window.life_qbic_projectbrowser_samplegraph_ProjectGraph = function() {
 	var diagramElement = this.getElement();
-	// d3.select(diagramElement).append("svg");
 	var rpcProxy = this.getRpcProxy();
 
 	this.onStateChange = function() {
@@ -29,11 +28,6 @@ window.life_qbic_projectbrowser_samplegraph_ProjectGraph = function() {
 		return getTextWidth(label, "12px arial") + 5;
 	}
 
-	/*
-	 * var tooltip = d3.select("body") .append("div") .style("position",
-	 * "absolute") .style("z-index", "10") .style("visibility", "hidden")
-	 * .text("a simple tooltip");
-	 */
 	var icons = {
 		"dna" : "dna.svg",
 		"rna" : "rna.svg",
@@ -56,13 +50,14 @@ window.life_qbic_projectbrowser_samplegraph_ProjectGraph = function() {
 	}
 
 	function init_graph_circles(samples) {
-		var circ_rad = 20;
-		var margin = 15;
+		var factor = 1;
+		var circ_rad = 20 * factor;
+		var margin = 15 * factor; // distance from top and left
 		var max_Y = 0, max_X = 0;// maximal node positions
 
 		var g = new dagre.graphlib.Graph()
 		// Set an object for the graph label
-		g.setGraph({});
+		g.setGraph({marginx:margin,marginy:margin});
 
 		// Default to assigning a new object as a label for each new edge.
 		g.setDefaultEdgeLabel(function() {
@@ -121,8 +116,6 @@ window.life_qbic_projectbrowser_samplegraph_ProjectGraph = function() {
 			if (typeof n != 'undefined') {
 				if (n.label != "") {
 					label = n.label.toLowerCase().replace(" ", "");
-					n["y"] = n["y"] + margin; // spacing from top
-					n["x"] = n["x"] + margin; // spacing from left
 					var x = n["x"];
 					var y = n["y"];
 					max_X = Math.max(max_X, x);
@@ -130,9 +123,6 @@ window.life_qbic_projectbrowser_samplegraph_ProjectGraph = function() {
 				}
 			}
 		});
-		factor = 1;
-		circ_rad = circ_rad * factor;
-		margin = 15 * factor; // distance from top and left
 		var legend_entry_height = circ_rad + 5;
 		// guess needed width of graph using 4-digit sample label
 		var box_width = factor * max_X + circ_rad + getTextWidth("9999") + 20;
@@ -158,53 +148,33 @@ window.life_qbic_projectbrowser_samplegraph_ProjectGraph = function() {
 
 		addBGImages(svg, Object.keys(icons), "", circ_rad * 2);
 		addBGImages(svg, Object.keys(icons), "legend_", circ_rad);
-//		console.log(samples);
-//		g.edges().forEach(
-//				function(e) {
-//					console.log(e)
-//					var from = e.v;
-//					if (samples[from] == "undefined") { // case: empty node (added
-//													// to make graph look
-//													// better)
-//						line = g.edge(e)["points"][0] // first line, coming
-//														// out of the bottom of
-//														// the node
-//						target_x = line["x"];
-//						target_y = line["y"];
-//						d3.select("svg").append("line").attr("x1",
-//								target_x * factor + margin).attr("y1",
-//								target_y * factor + margin).attr("x2",
-//								target_x * factor + margin).attr("y2",
-//								target_y * factor + margin - circ_rad * 2) // invisible
-//																			// node
-//																			// is
-//																			// spanned
-//																			// by
-//																			// this
-//																			// line
-//						.attr("stroke-width", 2).attr("stroke", "black");
-//					}
-//				});
 
 		g.edges().forEach(
 				function(e) {
 					var points = g.edge(e)["points"];
-					for (var i = 1; i < points.length; i++) {
-						var one = points[i - 1];
-						var two = points[i];
-						d3.select("svg").append("line").attr("x1",
-								one["x"] * factor + margin).attr("y1",
-								one["y"] * factor + margin).attr("x2",
-								two["x"] * factor + margin).attr("y2",
-								two["y"] * factor + margin).attr(
-								"stroke-width", 2).attr("stroke", "black");
-					}
+					var start = g.node(e.v);
+					var end = g.node(e.w);
+					var mid = points[1];
+					var top_x = start["x"] * factor;
+					var top_y = start["y"] * factor;
+					var mid_x = mid["x"] * factor;
+					var mid_y = mid["y"] * factor;
+					var bot_x = end["x"] * factor;
+					var bot_y = end["y"] * factor;
+					d3.select("svg").append("line").attr("x1",
+							top_x).attr("y1",
+							top_y).attr("x2",
+							mid_x).attr("y2",
+							mid_y).attr("stroke-width", 2).attr("stroke", "black");
+					d3.select("svg").append("line").attr("x1",
+							mid_x).attr("y1",
+							mid_y).attr("x2",
+							bot_x).attr("y2",
+							bot_y).attr("stroke-width", 2).attr("stroke", "black");
 				});
 
 		g.nodes().forEach(
 				function(v) {
-					// if (typeof n != 'undefined') {
-					// alert(v);
 					var n = g.node(v);
 					var data = idToSample[v];
 					var label = n.label;
@@ -214,11 +184,10 @@ window.life_qbic_projectbrowser_samplegraph_ProjectGraph = function() {
 						var y = n["y"] * factor;
 						var rad = circ_rad;
 
-						// var w_label = width_label(label);
-						// var x_label = x + rad*2 - w_label;
 						// main circles
 						d3.select("svg").append("circle").attr("cx", x).attr(
-								"cy", y).attr("r", rad).style("fill",
+								"cy", y).attr("r", rad).attr(
+										"stroke", "black").style("fill",
 								function() {
 									if (usedSymbols.has(label)) {
 										return "#3494F8";
@@ -226,56 +195,81 @@ window.life_qbic_projectbrowser_samplegraph_ProjectGraph = function() {
 										return color(label);
 									}
 								})
-						// .on("mouseover", function(){
-						// d3.select(this).style("fill","blue");
-						// return tooltip.style("visibility",
-						// "visible").text(n["label"]+": ...samples");})
-						// .on("mouseout", function(){
-						// d3.select(this).style("fill",color(n.label));
-						// return tooltip.style("visibility", "hidden");})
-						;
+							 .on('click', function() {
+							     rpcProxy.onCircleClick(label, data.codes);
+							 })
+							 .on("mouseover", function(){
+							 d3.select(this).attr("opacity",0.9);
+							 })
+							 .on("mouseout", function(){
+							 d3.select(this).attr("opacity",1);
+							 });
 						// circles containing symbols
 						if (usedSymbols.has(label)) {
 							d3.select("svg").append("circle").attr("cx", x)
 									.attr("cy", y).attr("r", rad).attr(
 											"stroke", "black").attr("fill",
 											"url(#" + lowerLabel + ")")
-							// .on("mouseover", function(){
-							// d3.select(this).attr("opacity",0.3);
-							// return tooltip.style("visibility",
-							// "visible").text(n["label"]+": ...samples");})
-							// .on("mouseout", function(){
-							// d3.select(this).attr("opacity",1);
-							// return tooltip.style("visibility", "hidden");})
+							 .on('click', function() {
+							     rpcProxy.onCircleClick(label, data.codes);
+							 })
+							 .on("mouseover", function(){
+							 d3.select(this).attr("opacity",0.3);
+							 })
+							 .on("mouseout", function(){
+							 d3.select(this).attr("opacity",1);
+							 })
 							;
 						}
+						if(data.leaf) {
 						// done and missing datasets (angles)
 						var angle_done = 360 * data.measuredPercent / 100
+						if(angle_done != 0) {
 						var arc_done = d3.arc().innerRadius(rad).outerRadius(
 								rad + rad / 4).startAngle(0).endAngle(
 								angle_done * (pi / 180)) // converting from
 															// degrees to
 															// radians
-						var arc_missing = d3.arc().innerRadius(rad)
-								.outerRadius(rad + rad / 4).startAngle(
-										angle_done * (pi / 180)).endAngle(
-										360 * (pi / 180))
 						d3.select("svg").append("path").attr("d", arc_done)
 								.attr("fill", "green")
 								.attr("stroke","black")
 								.attr("transform",
-										"translate(" + x + "," + y + ")")
+									"translate(" + x + "," + y + ")")
 								.on('click', function() {
 									rpcProxy.onCircleClick(label, data.codes);
+								})
+								.on("mouseover", function(){
+									d3.select(this).attr("opacity",0.6);
+										return tooltip.style("visibility", "visible").text("Click for more information");
+								})
+								.on("mouseout", function(){
+									d3.select(this).attr("opacity",1);
+										return tooltip.style("visibility", "hidden");
 								});
+						}
+						if(angle_done != 360) {
+						var arc_missing = d3.arc().innerRadius(rad)
+								.outerRadius(rad + rad / 4).startAngle(
+										angle_done * (pi / 180)).endAngle(
+										360 * (pi / 180))
 						d3.select("svg").append("path").attr("d", arc_missing)
-								.attr("fill", "transparent")
-								 .attr("stroke","black")
+								.attr("fill", "grey")
+							    .attr("stroke","black")
 								.attr("transform",
-										"translate(" + x + "," + y + ")")
+									"translate(" + x + "," + y + ")")
 								.on('click', function() {
-								      rpcProxy.onCircleClick(label, data.codes);
+									rpcProxy.onCircleClick(label, data.codes);
+										})
+								.on("mouseover", function(){
+									d3.select(this).attr("opacity",0.6);
+										return tooltip.style("visibility", "visible").text("Click for more information");
+								})
+								.on("mouseout", function(){
+									d3.select(this).attr("opacity",1);
+										return tooltip.style("visibility", "hidden");
 								});
+						}
+						}
 						// amount
 						d3.select("svg").append("text").text(data.amount).attr(
 								"font-family", "sans-serif").attr("font-size",

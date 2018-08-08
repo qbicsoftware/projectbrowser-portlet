@@ -137,7 +137,7 @@ public class ProjectParser {
                 }
             }
         }
-        // TODO maybe fill stack (then copy stack) and map to parents outside this loop
+        // TODO maybe fill queue (then copy queue) and map to parents outside this loop
         Map<String, Integer> idCounterPerLabel = new HashMap<String, Integer>();
         Map<String, Map<Sample, Set<SampleSummary>>> sampleToParentNodesPerLabel =
             new HashMap<String, Map<Sample, Set<SampleSummary>>>();
@@ -149,10 +149,9 @@ public class ProjectParser {
             nodesForFactorPerLabel.put(label, new LinkedHashSet<SampleSummary>());
         }
 
-        // breadth first stack loop
+        // breadth first queue loop
         while (!samplesBreadthFirst.isEmpty()) {
             Sample s = samplesBreadthFirst.poll();
-            // System.out.println(nodesForFactor);
             String type = s.getSampleTypeCode();
             if (validSamples.contains(type) && !visited.contains(s)) {
                 visited.add(s);
@@ -180,18 +179,14 @@ public class ProjectParser {
                     if (!exists) {
                         idCounterPerLabel.put(label, idCounterPerLabel.get(label) + 1);
                     }
-                    // idCounter++;
                     // adds node if not already contained in set
                     Set<SampleSummary> theseNodes = nodesForFactorPerLabel.get(label);
                     theseNodes.add(node);
                     nodesForFactorPerLabel.put(label, theseNodes);
                     // add this id to parents' child ids
                     for (SampleSummary parentSummary : parentSummaries) {
-                        // System.out.println("adding " + node.getId() + " as child of " + parentSummary);
                         parentSummary.addChildID(node.getId());
-                        // System.out.println(parentSummary);
                     }
-                    // System.out.println(node);
                     for (Sample c : children) {
                         samplesBreadthFirst.add(c);
                         if (!sampleToParentNodes.containsKey(c)) {
@@ -200,10 +195,8 @@ public class ProjectParser {
                         sampleToParentNodes.get(c).add(node);
                         sampleToParentNodesPerLabel.put(label, sampleToParentNodes);
                     }
-                    // }
                 }
             }
-            // factorsToSamples.put(label, new ArrayList<SampleSummary>(nodesForFactor));
         }
         for (String label : nodesForFactorPerLabel.keySet()) {
             Set<SampleSummary> nodes = nodesForFactorPerLabel.get(label);
@@ -242,7 +235,6 @@ public class ProjectParser {
         }
         if (factor == null) {
             factor = new Property("parents", StringUtils.join(parentSources, "+"), PropertyType.Factor);
-            // TODO: makes sense?
             newFactor = false;
         }
         String value = newFactor ? factor.getValue() :  "";
@@ -273,7 +265,6 @@ public class ProjectParser {
                 value = source;
                 break;
         }
-        // TODO connect to datasets
         return new SampleSummary(currentID, parentIDs, new ArrayList<Sample>(Arrays.asList(s)), factor.getValue(),
             tryShortenName(value, s), type, s.getChildren().isEmpty());
     }

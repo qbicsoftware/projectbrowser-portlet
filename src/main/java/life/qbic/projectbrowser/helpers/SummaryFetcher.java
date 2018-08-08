@@ -16,21 +16,16 @@ import javax.xml.bind.JAXBException;
 
 import life.qbic.projectbrowser.model.notes.Note;
 import life.qbic.projectbrowser.model.notes.Notes;
-import life.qbic.projectbrowser.helpers.ExperimentTypeComparator;
-import life.qbic.xml.properties.Property;
 
-import org.docx4j.jaxb.Context;
-import org.docx4j.model.datastorage.XPathEnhancerParser.main_return;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.Br;
-import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.P;
-import org.docx4j.wml.R;
 
 import life.qbic.xml.manager.XMLParser;
+import life.qbic.xml.properties.Property;
 import life.qbic.projectbrowser.helpers.Docx4jHelper;
 
 import ch.systemsx.cisd.openbis.dss.client.api.v1.DataSet;
@@ -96,7 +91,6 @@ public class SummaryFetcher {
       put("Q_MHC_LIGAND_EXTRACTION", "MHC Ligand Extraction");
     };
   };
-  private ObjectFactory factory;
   private WordprocessingMLPackage wordMLPackage;
   private Docx4jHelper docxHelper;
   private Component summaryComponent;
@@ -152,12 +146,7 @@ public class SummaryFetcher {
 
   private VerticalLayout computePopupComponent() {
     initDocx4J();
-    // P spc = factory.createP();
-    // R rspc = factory.createR();
-    // List<Object> list = rspc.getContent();
     P p = docxHelper.createParagraph("Summary for project " + projectCode, true, false, "40");
-    // list.add(p);
-    // spc.getContent().add(rspc);
     wordMLPackage.getMainDocumentPart().addObject(p);
 
     VerticalLayout res = new VerticalLayout();
@@ -263,7 +252,6 @@ public class SummaryFetcher {
   }
 
   private void initDocx4J() {
-    factory = Context.getWmlObjectFactory();
     docxHelper = new Docx4jHelper();
     try {
       wordMLPackage = WordprocessingMLPackage.createPackage();
