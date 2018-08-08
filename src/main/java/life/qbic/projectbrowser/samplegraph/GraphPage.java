@@ -1,9 +1,12 @@
 package life.qbic.projectbrowser.samplegraph;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import javax.xml.bind.JAXBException;
@@ -24,6 +27,8 @@ import com.vaadin.ui.Button.ClickListener;
 import ch.systemsx.cisd.openbis.dss.client.api.v1.DataSet;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
 import life.qbic.portal.portlet.ProjectBrowserPortlet;
+import life.qbic.portal.utils.PortalUtils;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -54,16 +59,38 @@ public class GraphPage extends VerticalLayout {
     }
 
     private String buildImagePath() {
+      StringBuilder pathBuilder = new StringBuilder();
+
+      if (PortalUtils.isLiferayPortlet()) {
+        Properties prop = new Properties();
+        InputStream in = this.getClass().getClassLoader()
+            .getResourceAsStream("WEB-INF/liferay-plugin-package.properties");
+        try {
+          prop.load(in);
+          in.close();
+        } catch (IOException e1) {
+          // TODO Auto-generated catch block
+          e1.printStackTrace();
+        }
+        String portletName = prop.getProperty("name");
+
         URI location = UI.getCurrent().getPage().getLocation();
-        StringBuilder pathBuilder = new StringBuilder();
         // http
-        pathBuilder.append(location.getScheme()).append("://");
+        pathBuilder.append(location.getScheme());
+        pathBuilder.append("://");
         // host+port
         pathBuilder.append(location.getAuthority());
 
-        // can we get this dynamically?
-        pathBuilder.append("/qnavigator/VAADIN/themes/").append(UI.getCurrent().getTheme()).append("/img/");
-        return pathBuilder.toString();
+        String port = (Integer.toString(location.getPort()));
+        if (location.toString().contains(port)) {
+          pathBuilder.append(":");
+          pathBuilder.append(port);
+        }
+        pathBuilder.append("/");
+        pathBuilder.append(portletName);
+      }
+      pathBuilder.append("/VAADIN/img/");
+      return pathBuilder.toString();
     }
 
     public void loadProjectGraph(String projectIdentifier, List<Sample> samples,

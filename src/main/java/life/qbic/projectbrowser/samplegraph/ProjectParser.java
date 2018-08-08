@@ -53,7 +53,6 @@ public class ProjectParser {
                 String code = s.getCode();
                 if (sampCodeToDS.containsKey(code)) {
                     hasDatasets = true;
-                    // TODO: codes needed?
                 }
                 hasDatasets |=
                     collectCodesOfDatasetsAttachedToSamples(s.getChildren(), nodeCodes, maxDepth - 1);
