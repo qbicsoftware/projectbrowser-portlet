@@ -168,6 +168,7 @@ public class SampleSummary {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((factorValue == null) ? 0 : factorValue.hashCode());
+    result = prime * result + (leaf ? 1231 : 1237);
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((parentIDs == null) ? 0 : parentIDs.hashCode());
     result = prime * result + ((source == null) ? 0 : source.hashCode());
@@ -187,6 +188,8 @@ public class SampleSummary {
       if (other.factorValue != null)
         return false;
     } else if (!factorValue.equals(other.factorValue))
+      return false;
+    if (leaf != other.leaf)
       return false;
     if (name == null) {
       if (other.name != null)
