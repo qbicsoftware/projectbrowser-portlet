@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.sound.sampled.Port;
 import javax.xml.bind.JAXBException;
@@ -2507,9 +2508,10 @@ public class DataHandler implements Serializable {
   public String getSecondaryName(Sample samp, String datsetSecName) {
     List<Sample> firstParents = samp.getParents();
     String secondaryName = "";
-    Set<String> secNamesTest = new HashSet<String>();
-    Set<String> secNamesBiological = new HashSet<String>();
-    Set<String> secNamesEntities = new HashSet<String>();
+    Set<String> secNamesTest = new LinkedHashSet<String>();
+    Set<String> secNamesBiological = new LinkedHashSet<String>();
+    Set<String> secNamesEntities = new LinkedHashSet<String>();
+    Set<String> allDescriptions = new LinkedHashSet<String>();
     List<Sample> allParents = new ArrayList<Sample>();
 
     for (Sample p : firstParents) {
@@ -2545,13 +2547,15 @@ public class DataHandler implements Serializable {
       }
     }
 
+    allDescriptions.addAll(secNamesEntities);
+    allDescriptions.addAll(secNamesBiological);
+    allDescriptions.addAll(secNamesTest);
+
     if (datsetSecName != null) {
-      secondaryName = String.format("%s_%s_%s_%s", String.join("_", secNamesEntities),
-          String.join("_", secNamesBiological), String.join("_", secNamesTest), datsetSecName);
-    } else {
-      secondaryName = String.format("%s_%s_%s", String.join("_", secNamesEntities),
-          String.join("_", secNamesBiological), String.join("_", secNamesTest), datsetSecName);
+      allDescriptions.add(datsetSecName);
     }
+
+    secondaryName = String.join("_", allDescriptions);
 
     return secondaryName.replace("__", "_").replaceAll("^_+", "").replaceAll("_+$", "");
   }
