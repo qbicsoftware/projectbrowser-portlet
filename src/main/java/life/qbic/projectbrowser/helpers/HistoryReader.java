@@ -31,7 +31,9 @@ import javax.xml.bind.JAXBException;
 import javax.xml.transform.stream.StreamSource;
 
 public class HistoryReader {
-  
+
+  private static final String MODEL_NOTES_CONTEXT_PATH = "life.qbic.projectbrowser.model.notes";
+
   /**
    * returns a {@link historybeans.Notes} instance. 
    * 
@@ -42,7 +44,7 @@ public class HistoryReader {
   public static JAXBElement<Notes> parseNotes(File notes)
       throws JAXBException {
     JAXBContext jaxbContext;
-    jaxbContext = JAXBContext.newInstance("model.notes");
+    jaxbContext = JAXBContext.newInstance(MODEL_NOTES_CONTEXT_PATH);
     javax.xml.bind.Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
     StreamSource source = new StreamSource(notes);
     JAXBElement<Notes> customerElement =
@@ -60,7 +62,7 @@ public class HistoryReader {
   public static JAXBElement<Notes> parseNotes(String notes)
       throws JAXBException {
     JAXBContext jaxbContext;
-    jaxbContext = JAXBContext.newInstance("model.notes");
+    jaxbContext = JAXBContext.newInstance(MODEL_NOTES_CONTEXT_PATH);
     javax.xml.bind.Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
     
     StreamSource source = new StreamSource(new StringReader(notes));
@@ -77,7 +79,7 @@ public class HistoryReader {
    */
   public static void writeNotes(JAXBElement<Notes> jaxbelem, OutputStream os) throws JAXBException{
     JAXBContext jaxbContext;
-    jaxbContext = JAXBContext.newInstance("model.notes");
+    jaxbContext = JAXBContext.newInstance(MODEL_NOTES_CONTEXT_PATH);
     javax.xml.bind.Marshaller marshaller = jaxbContext.createMarshaller();
     marshaller.marshal(jaxbelem, os);
   }
@@ -90,7 +92,7 @@ public class HistoryReader {
    */
   public static void writeNotes(JAXBElement<Notes> jaxbelem, StringWriter sw) throws JAXBException{
     JAXBContext jaxbContext;
-    jaxbContext = JAXBContext.newInstance("model.notes");
+    jaxbContext = JAXBContext.newInstance(MODEL_NOTES_CONTEXT_PATH);
     javax.xml.bind.Marshaller marshaller = jaxbContext.createMarshaller();
     marshaller.marshal(jaxbelem, sw);
   }
