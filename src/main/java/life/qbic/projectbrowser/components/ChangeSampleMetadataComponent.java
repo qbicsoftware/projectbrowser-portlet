@@ -16,12 +16,19 @@
 package life.qbic.projectbrowser.components;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.server.Page;
@@ -40,21 +47,26 @@ import com.vaadin.ui.themes.ValoTheme;
 
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.ControlledVocabularyPropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.PropertyType;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.VocabularyTerm;
-
+import life.qbic.datamodel.identifiers.ExperimentCodeFunctions;
 import life.qbic.portal.utils.PortalUtils;
 import life.qbic.projectbrowser.helpers.Utils;
 import life.qbic.projectbrowser.model.PropertyBean;
 import life.qbic.projectbrowser.controllers.*;
 
-import life.qbic.xml.manager.XMLParser;
+// import life.qbic.xml.manager.XMLParser;
+import life.qbic.xml.manager.StudyXMLParser;
 import life.qbic.xml.properties.*;
+import life.qbic.xml.study.Qexperiment;
+import life.qbic.xml.study.Qproperty;
 
 public class ChangeSampleMetadataComponent extends CustomComponent {
   /**
    * TODO generic component for experiments and samples
    */
   private static final long serialVersionUID = -5318223225284123020L;
+  private final Logger logger = LogManager.getLogger(ChangeSampleMetadataComponent.class);
 
   private DataHandler datahandler;
   private String resourceUrl;
@@ -63,10 +75,13 @@ public class ChangeSampleMetadataComponent extends CustomComponent {
 
   private FormLayout form;
   private FieldGroup fieldGroup;
-  VerticalLayout vert;
-  String id;
+  private VerticalLayout vert;
+  private String id;
   private List<PropertyType> completeProperties;
   private Map<String, String> assignedProperties;
+  private StudyXMLParser parser = new StudyXMLParser();
+
+  private Sample sample;
 
   public ChangeSampleMetadataComponent(DataHandler dh, State state, String resourceurl) {
     this.datahandler = dh;
@@ -96,14 +111,15 @@ public class ChangeSampleMetadataComponent extends CustomComponent {
     completeProperties = datahandler.getOpenBisClient()
         .listPropertiesForType(datahandler.getOpenBisClient().getSampleTypeByString(type));
 
-    assignedProperties = datahandler.getOpenBisClient().getSampleByIdentifier(id).getProperties();
+    sample = datahandler.getOpenBisClient().getSampleByIdentifier(id);
+    assignedProperties = sample.getProperties();
 
     saveButton.addClickListener(new ClickListener() {
       @Override
       public void buttonClick(final ClickEvent event) {
         HashMap<String, Object> props = new HashMap<String, Object>();
         Collection<Field<?>> registeredFields = fieldGroup.getFields();
-        XMLParser xmlParser = new XMLParser();
+        // XMLParser xmlParser = new XMLParser();
 
         List<Property> factors = new ArrayList<Property>();
 
@@ -117,7 +133,8 @@ public class ChangeSampleMetadataComponent extends CustomComponent {
             String val = (String) tf.getValue();
             String[] splt = label.split(" in ");
             Property f = null;
-            life.qbic.xml.properties.PropertyType type = (life.qbic.xml.properties.PropertyType) tf.getData();
+            life.qbic.xml.properties.PropertyType type =
+                (life.qbic.xml.properties.PropertyType) tf.getData();
             if (splt.length > 1) {
               label = splt[0];
               life.qbic.xml.properties.Unit unit = life.qbic.xml.properties.Unit.valueOf(splt[1]);
@@ -133,20 +150,86 @@ public class ChangeSampleMetadataComponent extends CustomComponent {
           }
         }
 
+        String user = PortalUtils.getUser().getScreenName();
+
         if (qpropertiesDefined) {
           String qProperties = "";
 
+
+          JAXBElement<Qexperiment> setup = datahandler.getExperimentalSetup();
+          Map<String, Map<Pair<String, String>, List<String>>> factorStructure = new HashMap<>();
+          Map<String, List<Qproperty>> otherProps = new HashMap<>();
+          String code = sample.getCode();
+          for (Property p : factors) {
+            String lab = p.getLabel();
+            String val = p.getValue();
+            String unit = null;
+            if (p.hasUnit())
+              unit = p.getUnit().getValue();
+            if (p.getType().equals(life.qbic.xml.properties.PropertyType.Factor)) {
+
+              Pair<String, String> valunit = new ImmutablePair<String, String>(val, unit);
+              if (factorStructure.containsKey(lab)) {
+                Map<Pair<String, String>, List<String>> levels = factorStructure.get(lab);
+                if (levels.containsKey(valunit)) {
+                  levels.get(valunit).add(code);
+                } else {
+                  levels.put(valunit, new ArrayList<String>(Arrays.asList(code)));
+                }
+              } else {
+                Map<Pair<String, String>, List<String>> newLevel =
+                    new HashMap<Pair<String, String>, List<String>>();
+                newLevel.put(valunit, new ArrayList<String>(Arrays.asList(code)));
+                factorStructure.put(lab, newLevel);
+              }
+
+            } else {
+              Qproperty newProp = null;
+              if (p.hasUnit()) {
+                newProp = new Qproperty(code, p.getLabel(), p.getValue(), p.getUnit());
+              } else {
+                newProp = new Qproperty(code, p.getLabel(), p.getValue());
+              }
+              if (otherProps.containsKey(code)) {
+                otherProps.get(code).add(newProp);
+              } else {
+                otherProps.put(code, new ArrayList<Qproperty>(Arrays.asList(newProp)));
+              }
+            }
+          }
+          JAXBElement<Qexperiment> newDesign =
+              parser.mergeDesigns(setup, new ArrayList<>(), factorStructure, otherProps);
           try {
-            qProperties = xmlParser.toString(xmlParser.createXMLFromProperties(factors));
-            props.put("Q_PROPERTIES", qProperties);
+            String newXML = parser.toString(newDesign);
+            HashMap<String, Object> params = new HashMap<>();
+            String expID = sample.getExperimentIdentifierOrNull();
+            String[] split = expID.split("E");
+            String numSuffixOfExperiment = split[split.length - 1];
+            String infoExpID = expID.replace("E" + numSuffixOfExperiment, "_INFO");
+
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("Q_EXPERIMENTAL_SETUP", newXML);
+            params.put("user", user);
+            params.put("identifier", infoExpID);
+            params.put("properties", properties);
+            datahandler.getOpenBisClient().triggerIngestionService("update-experiment-metadata",
+                params);
+
           } catch (JAXBException e) {
-            // TODO Auto-generated catch block
+            logger.error("could not update experimental design due to parser error!");
             e.printStackTrace();
           }
+          // try {
+          // qProperties = xmlParser.toString(xmlParser.createXMLFromProperties(factors));
+          // props.put("Q_PROPERTIES", qProperties);
+          // } catch (JAXBException e) {
+          // // TODO Auto-generated catch block
+          // e.printStackTrace();
+          // }
         }
 
         HashMap<String, Object> parameters = new HashMap<String, Object>();
-        parameters.put("user", PortalUtils.getUser().getScreenName());
+        parameters.put("user", user);
         parameters.put("identifier", id);
         parameters.put("properties", props);
 
@@ -210,18 +293,22 @@ public class ChangeSampleMetadataComponent extends CustomComponent {
   }
 
   private List<Property> getXMLProperties() {
-    XMLParser xmlParser = new XMLParser();
-    List<Property> factors = new ArrayList<Property>();
-
-    if (assignedProperties.containsKey("Q_PROPERTIES")) {
-      try {
-        factors = xmlParser.getAllPropertiesFromXML(assignedProperties.get("Q_PROPERTIES"));
-      } catch (JAXBException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      }
-    }
-    return factors;
+    JAXBElement<Qexperiment> setup = datahandler.getExperimentalSetup();
+    List<Property> properties =
+        parser.getFactorsAndPropertiesForSampleCode(setup, sample.getCode());
+    return properties;
+    // XMLParser xmlParser = new XMLParser();
+    // List<Property> factors = new ArrayList<Property>();
+    //
+    // if (assignedProperties.containsKey("Q_PROPERTIES")) {
+    // try {
+    // factors = xmlParser.getAllPropertiesFromXML(assignedProperties.get("Q_PROPERTIES"));
+    // } catch (JAXBException e) {
+    // // TODO Auto-generated catch block
+    // e.printStackTrace();
+    // }
+    // }
+    // return factors;
   }
 
   private void buildFormLayout() {
