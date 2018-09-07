@@ -231,7 +231,7 @@ public class HomeView extends VerticalLayout implements View {
         // fetch summary and create docx in tmp folder
 
         ProjectBean proj = (ProjectBean) event.getItemId();
-        summaryFetcher.fetchSummaryComponent(proj.getCode(), proj.getSecondaryName(),
+        summaryFetcher.fetchSummaryComponent(proj.getSpace(), proj.getCode(), proj.getSecondaryName(),
             proj.getDescription(),
             new ProjectSummaryReadyRunnable(summaryFetcher, loadingWindow, proj.getCode()));
       }
