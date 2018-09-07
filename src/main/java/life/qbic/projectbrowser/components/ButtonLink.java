@@ -18,13 +18,8 @@
 package life.qbic.projectbrowser.components;
 
 import com.vaadin.server.ExternalResource;
-import com.vaadin.server.Page;
-import com.vaadin.shared.Position;
 import com.vaadin.shared.ui.label.ContentMode;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Notification;
 
 
 /*
