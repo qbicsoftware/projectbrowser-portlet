@@ -284,7 +284,9 @@ window.life_qbic_projectbrowser_samplegraph_ProjectGraph = function() {
 		// legend
 		var legend_x = margin;
 		var legend_y = max_Y * factor + circ_rad + 20;
-		d3.select("svg").selectAll("legends").data(Array.from(noSymbols))
+    var used = [...usedSymbols];
+    var nosym = [...noSymbols];
+		d3.select("svg").selectAll("legends").data(nosym)
 				.enter().append("circle").attr("cx", legend_x).attr("cy",
 						function(d, i) {
 							return legend_y + legend_entry_height * i + 10;
@@ -293,7 +295,7 @@ window.life_qbic_projectbrowser_samplegraph_ProjectGraph = function() {
 				.attr("fill", function(d) {
 					return color(d);
 				});
-		d3.select("svg").selectAll("legends").data(Array.from(usedSymbols))
+		d3.select("svg").selectAll("legends").data(used)
 				.enter().append("circle").attr("cx", legend_x).attr(
 						"cy",
 						function(d, i) {
@@ -302,7 +304,7 @@ window.life_qbic_projectbrowser_samplegraph_ProjectGraph = function() {
 						}).attr("r", circ_rad / 2)
 				// .attr("stroke", "black")
 				.attr("fill", "#3494F8");
-		d3.select("svg").selectAll("legends").data(Array.from(usedSymbols))
+		d3.select("svg").selectAll("legends").data(used)
 				.enter().append("circle").attr("cx", legend_x).attr(
 						"cy",
 						function(d, i) {
@@ -315,7 +317,7 @@ window.life_qbic_projectbrowser_samplegraph_ProjectGraph = function() {
 					return "url(#legend_" + type + ")";
 				});
 		// text
-		d3.select("svg").selectAll("legends").data(Array.from(usedSymbols))
+		d3.select("svg").selectAll("legends").data(used)
 				.enter().append("text").text(function(d) {
 					return d;
 				}).attr("font-family", "sans-serif").attr("font-size", "14px")
@@ -326,7 +328,7 @@ window.life_qbic_projectbrowser_samplegraph_ProjectGraph = function() {
 							return legend_y + legend_entry_height
 									* (noSymbols.size + i) + 15;
 						});
-		d3.select("svg").selectAll("legends").data(Array.from(noSymbols))
+		d3.select("svg").selectAll("legends").data(nosym)
 				.enter().append("text").text(function(d) {
 					return d;
 				}).attr("font-family", "sans-serif").attr("font-size", "14px")
