@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -17,6 +18,8 @@ import javax.xml.bind.JAXBException;
 import life.qbic.projectbrowser.model.notes.Note;
 import life.qbic.projectbrowser.model.notes.Notes;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -24,14 +27,17 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.Br;
 import org.docx4j.wml.P;
 
+import life.qbic.xml.manager.StudyXMLParser;
 import life.qbic.xml.manager.XMLParser;
 import life.qbic.xml.properties.Property;
+import life.qbic.xml.study.Qexperiment;
 import life.qbic.projectbrowser.helpers.Docx4jHelper;
 
 import ch.systemsx.cisd.openbis.dss.client.api.v1.DataSet;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
+import life.qbic.datamodel.identifiers.ExperimentCodeFunctions;
 import life.qbic.openbis.openbisclient.OpenBisClient;
 
 import com.vaadin.server.FileDownloader;
@@ -49,6 +55,7 @@ public class SummaryFetcher {
 
   private OpenBisClient openbis;
   private Map<String, String> allMap;
+  private String space;
   private String projectCode;
   private UglyToPrettyNameMapper prettyNameMapper = new UglyToPrettyNameMapper();
   private String projectName;
@@ -96,6 +103,8 @@ public class SummaryFetcher {
   private Component summaryComponent;
   private String tmpFolder;
   private boolean success = false;
+  private Set<String> factorLabels;
+  private Map<Pair<String, String>, Property> factorsForLabelsAndSamples;
 
   public SummaryFetcher(OpenBisClient openbis, String tmpFolder) {
     this.tmpFolder = tmpFolder;
@@ -126,8 +135,9 @@ public class SummaryFetcher {
     return reverse;
   }
 
-  public void fetchSummaryComponent(String code, String name, String description,
+  public void fetchSummaryComponent(String space, String code, String name, String description,
       final ProjectSummaryReadyRunnable ready) {
+    this.space = space;
     this.projectCode = code;
     this.projectName = name;
     this.projectDescription = description;
@@ -135,6 +145,7 @@ public class SummaryFetcher {
 
       @Override
       public void run() {
+        parseExperimentalDesign();
         summaryComponent = computePopupComponent();
         UI.getCurrent().access(ready);
         UI.getCurrent().setPollInterval(-1);
@@ -142,6 +153,23 @@ public class SummaryFetcher {
     });
     t.start();
     UI.getCurrent().setPollInterval(200);
+  }
+
+  protected void parseExperimentalDesign() {
+    String id = ExperimentCodeFunctions.getInfoExperimentID(space, projectCode);
+    List<Experiment> exps = openbis.getExperimentById2(id);
+    if (!exps.isEmpty()) {
+      StudyXMLParser parser = new StudyXMLParser();
+      try {
+        JAXBElement<Qexperiment> design =
+            parser.parseXMLString(exps.get(0).getProperties().get("Q_EXPERIMENTAL_SETUP"));
+        factorLabels = parser.getFactorLabels(design);
+        factorsForLabelsAndSamples = parser.getFactorsForLabelsAndSamples(design);
+      } catch (JAXBException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
   }
 
   private VerticalLayout computePopupComponent() {
@@ -338,6 +366,7 @@ public class SummaryFetcher {
     Table table = new Table(tableHeadline);
     table.setStyleName(ValoTheme.TABLE_SMALL);
 
+    List<String> factorsInTable = new ArrayList<>();
     List<String> header = new ArrayList<String>();
     List<List<String>> data = new ArrayList<List<String>>();
     int numDS = 0;
@@ -363,50 +392,71 @@ public class SummaryFetcher {
       table.addContainerProperty("Name", String.class, null);
       table.addContainerProperty("External ID", String.class, null);
       table.setImmediate(true);
-      List<String> factorLabels = new ArrayList<String>();
-      List<Property> factors = new ArrayList<Property>();
-      int maxCols = 0;
-      Map<Sample, List<Property>> samplesToFactors = new HashMap<Sample, List<Property>>();
-      Sample mostInformative = samples.get(0);
+      // List<String> factorLabels = new ArrayList<String>();
+      // List<Property> factors = new ArrayList<Property>();
+      // int maxCols = 0;
+      // Map<Sample, List<Property>> samplesToFactors = new HashMap<Sample, List<Property>>();
+      Sample first = samples.get(0);
       boolean specialSet = false;
-      String sType = mostInformative.getSampleTypeCode();
-      if (mostInformative.getProperties().containsKey("Q_PROPERTIES")) {
-        XMLParser xmlParser = new XMLParser();
+      String sType = first.getSampleTypeCode();
+      // if (mostInformative.getProperties().containsKey("Q_PROPERTIES")) {
+      // XMLParser xmlParser = new XMLParser();
+      //
+      // for (Sample s : samples) {
+      // String xml = s.getProperties().get("Q_PROPERTIES");
+      // List<Property> curr = new ArrayList<Property>();
+      // try {
+      // curr = xmlParser.getAllPropertiesFromXML(xml);
+      // samplesToFactors.put(s, curr);
+      // } catch (JAXBException e) {
+      // // TODO Auto-generated catch block
+      // e.printStackTrace();
+      // }
+      // int size = curr.size();
+      // if (size > maxCols) {
+      // maxCols = size;
+      // mostInformative = s;
+      // }
+      // }
+      // factors = samplesToFactors.get(mostInformative);
+      // }
 
+
+      for (String label : factorLabels) {
+        boolean used = false;
         for (Sample s : samples) {
-          String xml = s.getProperties().get("Q_PROPERTIES");
-          List<Property> curr = new ArrayList<Property>();
-          try {
-            curr = xmlParser.getAllPropertiesFromXML(xml);
-            samplesToFactors.put(s, curr);
-          } catch (JAXBException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-          }
-          int size = curr.size();
-          if (size > maxCols) {
-            maxCols = size;
-            mostInformative = s;
+          if (factorsForLabelsAndSamples.get(new ImmutablePair<>(label, s.getCode())) != null) {
+            used = true;
+            factorsInTable.add(label);
+            break;
           }
         }
-        factors = samplesToFactors.get(mostInformative);
+        if (used) {
+          if (label.equals("species") && sType.equals("Q_BIOLOGICAL_ENTITY"))
+            specialSet = true;
+          else if (label.equals("tissues") && sType.equals("Q_BIOLOGICAL_SAMPLE"))
+            specialSet = true;
+          header.add(label);
+          table.addContainerProperty(label, String.class, null);
+        }
       }
-      for (int i = 0; i < factors.size(); i++) {
-        String l = factors.get(i).getLabel();
-        if (l.equals("species") && sType.equals("Q_BIOLOGICAL_ENTITY"))
-          specialSet = true;
-        else if (l.equals("tissues") && sType.equals("Q_BIOLOGICAL_SAMPLE"))
-          specialSet = true;
 
-        int j = 2;
-        while (factorLabels.contains(l)) {
-          l = factors.get(i).getLabel() + " (" + Integer.toString(j) + ")";
-          j++;
-        }
-        factorLabels.add(l);
-        header.add(l);
-        table.addContainerProperty(l, String.class, null);
-      }
+      // for (int i = 0; i < factors.size(); i++) {
+      // String l = factors.get(i).getLabel();
+      // if (l.equals("species") && sType.equals("Q_BIOLOGICAL_ENTITY"))
+      // specialSet = true;
+      // else if (l.equals("tissues") && sType.equals("Q_BIOLOGICAL_SAMPLE"))
+      // specialSet = true;
+      //
+      // int j = 2;
+      // while (factorLabels.contains(l)) {
+      // l = factors.get(i).getLabel() + " (" + Integer.toString(j) + ")";
+      // j++;
+      // }
+      // factorLabels.add(l);
+      // header.add(l);
+      // table.addContainerProperty(l, String.class, null);
+      // }
       List<String> typesToAdd = new ArrayList<String>();
       switch (sType) {
         case "Q_BIOLOGICAL_ENTITY":
@@ -438,18 +488,34 @@ public class SummaryFetcher {
         row.add(props.get("Q_SECONDARY_NAME"));
         row.add(props.get("Q_EXTERNALDB_ID"));
 
-        List<Property> currFactors = new ArrayList<Property>();
-        if (samplesToFactors.containsKey(s))
-          currFactors = samplesToFactors.get(s);
-        int missing = maxCols - currFactors.size();
-        for (Property f : currFactors) {
-          String v = f.getValue();
-          if (f.hasUnit())
-            v += " " + f.getUnit();
-          row.add(v);
+        // List<Property> currFactors = new ArrayList<Property>();
+        // int missing = 0;
+        for (String label : factorsInTable) {
+          Property f = factorsForLabelsAndSamples.get(new ImmutablePair<>(label, s.getCode()));
+          if (f == null) {
+            row.add("");
+          } else {
+            String v = f.getValue();
+            if (f.hasUnit())
+              v += " " + f.getUnit();
+            row.add(v);
+          }
         }
-        for (int j = 0; j < missing; j++)
-          row.add("");
+
+        // if (samplesToFactors.containsKey(s))
+        // currFactors = samplesToFactors.get(s);
+        // int missing = maxCols - currFactors.size();
+        // for (Property f : currFactors) {
+        // String v = f.getValue();
+        // if (f.hasUnit())
+        // v += " " + f.getUnit();
+        // row.add(v);
+        // }
+        // for (int j = 0; j < missing; j++) {
+        // row.add("");
+        // }
+
+
         int dataCount = 0;
         if (sampIDToDS.containsKey(s.getIdentifier()))
           dataCount = sampIDToDS.get(s.getIdentifier()).size();
