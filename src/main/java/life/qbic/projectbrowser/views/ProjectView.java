@@ -72,6 +72,7 @@ import life.qbic.portal.utils.ConfigurationManager;
 import life.qbic.projectbrowser.model.ProjectBean;
 import life.qbic.projectbrowser.model.ExperimentBean;
 import life.qbic.projectbrowser.samplegraph.*;
+import life.qbic.xml.properties.Property;
 import life.qbic.projectbrowser.components.*;
 import life.qbic.projectbrowser.controllers.*;
 import life.qbic.projectbrowser.helpers.GraphGenerator;
@@ -81,6 +82,7 @@ import life.qbic.projectbrowser.helpers.DatasetViewFilterDecorator;
 import life.qbic.projectbrowser.helpers.DatasetViewFilterGenerator;
 import life.qbic.projectbrowser.helpers.ViewTablesClickListener;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -558,6 +560,7 @@ public class ProjectView extends VerticalLayout implements View {
     OpenBisClient openbis = datahandler.getOpenBisClient();
     Map<String, String> taxMap = openbis.getVocabCodesAndLabelsForVocab("Q_NCBI_TAXONOMY");
     Map<String, String> tissueMap = openbis.getVocabCodesAndLabelsForVocab("Q_PRIMARY_TISSUES");
+
     newGraphContent = new GraphPage(taxMap, tissueMap);
 
     graphSection.addComponent(graphSectionContent);
@@ -713,7 +716,11 @@ public class ProjectView extends VerticalLayout implements View {
               datahandler.getOpenBisClient(), projectID);
       resource = graphFrame.getRes();
 
-      newGraphContent.loadProjectGraph(projectID, samples, datasets);
+      Set<String> factorLabels = datahandler.getFactorLabels();
+      Map<Pair<String, String>, Property> factorsForLabelsAndSamples =
+          datahandler.getFactorsForLabelsAndSamples();
+      newGraphContent.loadProjectGraph(projectID, samples, datasets, factorLabels,
+          factorsForLabelsAndSamples);
     } catch (IOException e) {
       LOG.error("graph creation failed", e.getStackTrace());
     }
@@ -774,10 +781,8 @@ public class ProjectView extends VerticalLayout implements View {
         // LOG.debug(String.format("Using webId %s and companyId %d to get Portal User", webId,
         // companyId));
       } catch (PortalException | SystemException e) {
-        LOG.error(
-            "liferay error, could not retrieve companyId. Trying default companyId, which is "
-                + companyId,
-            e.getStackTrace());
+        LOG.error("liferay error, could not retrieve companyId. Trying default companyId, which is "
+            + companyId, e.getStackTrace());
       }
       Set<String> list = datahandler.removeQBiCStaffFromMemberSet(
           datahandler.getOpenBisClient().getSpaceMembers(currentBean.getId().split("/")[1]));
@@ -940,7 +945,7 @@ public class ProjectView extends VerticalLayout implements View {
     this.table.setEnabled(enabled);
     // this.createBarcodesMenuItem.getParent().setEnabled(false);
     // this.downloadCompleteProjectMenuItem.getParent().setEnabled(false);
-    //this.toolbar.setEnabled(enabled);
+    // this.toolbar.setEnabled(enabled);
   }
 
   /**

@@ -80,7 +80,7 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria.MatchClause;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria.MatchClauseAttribute;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchSubCriteria;
-
+import life.qbic.datamodel.experiments.ExperimentType;
 import life.qbic.openbis.openbisclient.OpenBisClient;
 
 import life.qbic.portal.utils.ConfigurationManager;
@@ -91,12 +91,13 @@ import life.qbic.projectbrowser.helpers.Utils;
 import life.qbic.projectbrowser.helpers.GraphGenerator;
 import life.qbic.projectbrowser.model.ExperimentStatusBean;
 import life.qbic.projectbrowser.model.ProjectBean;
-import life.qbic.projectbrowser.model.ExperimentType;
 import life.qbic.projectbrowser.samplegraph.GraphPage;
+import life.qbic.xml.properties.Property;
 import life.qbic.projectbrowser.helpers.ViewTablesClickListener;
 import life.qbic.projectbrowser.helpers.DatasetViewFilterGenerator;
 import life.qbic.projectbrowser.helpers.DatasetViewFilterDecorator;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -407,8 +408,7 @@ public class PatientView extends VerticalLayout implements View {
     experimentSc.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.TYPE,
         ExperimentType.Q_EXPERIMENTAL_DESIGN.name()));
     sampleSc.addSubCriteria(SearchSubCriteria.createExperimentCriteria(experimentSc));
-    List<Sample> samples =
-        datahandler.getOpenBisClient().getFacade().searchForSamples(sampleSc);
+    List<Sample> samples = datahandler.getOpenBisClient().getFacade().searchForSamples(sampleSc);
     for (Sample sample : samples) {
       if (sample.getProperties().get("Q_ADDITIONAL_INFO") != null) {
         available = true;
@@ -536,8 +536,7 @@ public class PatientView extends VerticalLayout implements View {
     sc.addSubCriteria(SearchSubCriteria.createExperimentCriteria(experimentSc));
 
 
-    List<Sample> samples =
-        datahandler.getOpenBisClient().getFacade().searchForSamples(sc);
+    List<Sample> samples = datahandler.getOpenBisClient().getFacade().searchForSamples(sc);
 
     SearchCriteria sc2 = new SearchCriteria();
     sc2.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.TYPE,
@@ -555,8 +554,7 @@ public class PatientView extends VerticalLayout implements View {
     List<Experiment> wfExperiments =
         datahandler.getOpenBisClient().getFacade().searchForExperiments(sc2);
 
-    List<Sample> wfSamples =
-        new ArrayList<Sample>();
+    List<Sample> wfSamples = new ArrayList<Sample>();
 
     for (Experiment exp : wfExperiments) {
       if (exp.getCode().contains(currentBean.getCode())) {
@@ -645,10 +643,8 @@ public class PatientView extends VerticalLayout implements View {
         LOG.debug(
             String.format("Using webId %s and companyId %d to get Portal User", webId, companyId));
       } catch (PortalException | SystemException e) {
-        LOG.error(
-            "liferay error, could not retrieve companyId. Trying default companyId, which is "
-                + companyId,
-            e.getStackTrace());
+        LOG.error("liferay error, could not retrieve companyId. Trying default companyId, which is "
+            + companyId, e.getStackTrace());
       }
       Set<String> list = datahandler.removeQBiCStaffFromMemberSet(
           datahandler.getOpenBisClient().getSpaceMembers(currentBean.getId().split("/")[1]));
@@ -1033,6 +1029,7 @@ public class PatientView extends VerticalLayout implements View {
     OpenBisClient openbis = datahandler.getOpenBisClient();
     Map<String, String> taxMap = openbis.getVocabCodesAndLabelsForVocab("Q_NCBI_TAXONOMY");
     Map<String, String> tissueMap = openbis.getVocabCodesAndLabelsForVocab("Q_PRIMARY_TISSUES");
+
     newGraphContent = new GraphPage(taxMap, tissueMap);
 
     graphSection.addComponent(graphSectionContent);
@@ -1168,7 +1165,11 @@ public class PatientView extends VerticalLayout implements View {
               datahandler.getOpenBisClient(), projectID);
       resource = graphFrame.getRes();
 
-      newGraphContent.loadProjectGraph(projectID, samples, datasets);
+      Set<String> factorLabels = datahandler.getFactorLabels();
+      Map<Pair<String, String>, Property> factorsForLabelsAndSamples =
+          datahandler.getFactorsForLabelsAndSamples();
+      newGraphContent.loadProjectGraph(projectID, samples, datasets, factorLabels,
+          factorsForLabelsAndSamples);
     } catch (IOException e) {
       LOG.error("graph creation failed", e.getStackTrace());
     }
