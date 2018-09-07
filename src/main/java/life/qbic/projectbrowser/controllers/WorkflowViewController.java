@@ -29,6 +29,7 @@ import java.util.Set;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import com.vaadin.data.Container;
 import com.vaadin.data.util.BeanItemContainer;
@@ -53,7 +54,6 @@ import org.apache.logging.log4j.Logger;
 import life.qbic.xml.manager.XMLParser;
 import life.qbic.xml.properties.Property;
 import life.qbic.xml.properties.PropertyType;
-
 
 // from workflow API
 import submitter.SubmitFailedException;
@@ -112,7 +112,8 @@ public class WorkflowViewController {
       dataMap.put(ds.getCode(), ds);
     }
 
-    List<life.qbic.projectbrowser.model.DatasetBean> datasetBeans = new ArrayList<life.qbic.projectbrowser.model.DatasetBean>();
+    List<life.qbic.projectbrowser.model.DatasetBean> datasetBeans =
+        new ArrayList<life.qbic.projectbrowser.model.DatasetBean>();
     datasetBeans = datahandler.queryDatasetsForFiles(datasets);
 
     List<String> fileNames = new ArrayList<String>();
@@ -360,15 +361,25 @@ public class WorkflowViewController {
     Map<String, String> fileProps = new HashMap<String, String>();
 
     // XML Parser
-    XMLParser p = new XMLParser();
+//    XMLParser p = new XMLParser();
 
     Set<String> secondaryNames = new HashSet<String>();
+    Set<String> factorLabels = datahandler.getFactorLabels();
 
     for (Serializable[] ss : res.getRows()) {
 
       String xml = (String) ss[3];
-      String code = (String) ss[0];
-      List<String> matches = getMatchingStrings(fileNames, code);
+      String sampleCode = (String) ss[0];
+      List<Property> properties = new ArrayList<Property>();
+      for (String label : factorLabels) {
+        Property f =
+            datahandler.getFactorsForLabelsAndSamples().get(new ImmutablePair<>(label, sampleCode));
+        if (f != null) {
+          properties.add(f);
+        }
+      }
+
+      List<String> matches = getMatchingStrings(fileNames, sampleCode);
       if (!xml.isEmpty() && !matches.isEmpty()) {
         for (String match : matches) {
           StringBuilder row = new StringBuilder();
@@ -378,12 +389,11 @@ public class WorkflowViewController {
             secondaryName += "1";
           secondaryNames.add(secondaryName);
           row.append(secondaryName);
-          List<Property> properties = new ArrayList<Property>();
-          try {
-            properties = p.getAllPropertiesFromXML(xml);
-          } catch (JAXBException e) {
-            e.printStackTrace();
-          }
+//          try {
+//            properties = p.getAllPropertiesFromXML(xml);
+//          } catch (JAXBException e) {
+//            e.printStackTrace();
+//          }
           for (Property f : properties) {
             factorNames.add(f.getLabel());
             String val = f.getValue();
@@ -400,7 +410,7 @@ public class WorkflowViewController {
   }
 
   /**
-   * Finds the the matching strings in the list
+   * Finds the the matching strings in the list, e.g. sample codes in file names
    * 
    * @param list The list of strings to check
    * @param substring The regular expression to use
