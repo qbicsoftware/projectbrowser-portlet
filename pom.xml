@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project 
-	xmlns="http://maven.apache.org/POM/4.0.0" 
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>life.qbic</groupId>
@@ -15,7 +14,8 @@
 	<url>http://github.com/qbicsoftware/projectbrowser-portlet</url>
 	<description>Browse and manage biomedical projects</description>
 	<packaging>war</packaging>
-	<!-- we only need to tell maven where to find our parent pom and other QBiC dependencies -->
+	<!-- we only need to tell maven where to find our parent pom and other QBiC 
+		dependencies -->
 	<repositories>
 		<repository>
 			<releases>
@@ -49,7 +49,7 @@
 		<dependency>
 			<groupId>life.qbic</groupId>
 			<artifactId>portal-utils-lib</artifactId>
-			<version>1.1.0-SNAPSHOT</version>
+			<version>1.2.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>life.qbic</groupId>
@@ -64,9 +64,9 @@
 			<version>1.1.4</version>
 		</dependency>
 
-		<!-- Access to our custom databases (portlets use direct JDBC to access data for now),
-			 but we will create a client library that portlets will use 
-			 (version  is defined in the parent POM hierarchy (/portal/pom.xml)) -->
+		<!-- Access to our custom databases (portlets use direct JDBC to access 
+			data for now), but we will create a client library that portlets will use 
+			(version is defined in the parent POM hierarchy (/portal/pom.xml)) -->
 		<dependency>
 			<groupId>org.mariadb.jdbc</groupId>
 			<artifactId>mariadb-java-client</artifactId>
@@ -118,7 +118,13 @@
 		<dependency>
 			<groupId>life.qbic</groupId>
 			<artifactId>xml-manager-lib</artifactId>
-			<version>1.0.0</version>
+			<version>1.2.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>life.qbic</groupId>
+			<artifactId>data-model-lib</artifactId>
+			<version>0.3.0-SNAPSHOT</version>
 		</dependency>
 
 		<!-- workflow API based on guse -->
@@ -128,14 +134,14 @@
 			<version>20180720-1</version>
 		</dependency>
 
-        <!-- json read and write be aware that vaadin uses element.json -->
+		<!-- json read and write be aware that vaadin uses element.json -->
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
 			<version>20090211</version>
 		</dependency>
 
-        <!-- https://oss.sonatype.org/content/repositories/releases/com/github/vlsi/mxgraph/jgraphx/ -->
+		<!-- https://oss.sonatype.org/content/repositories/releases/com/github/vlsi/mxgraph/jgraphx/ -->
 		<dependency>
 			<groupId>com.github.vlsi.mxgraph</groupId>
 			<artifactId>jgraphx</artifactId>
