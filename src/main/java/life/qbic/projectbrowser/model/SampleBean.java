@@ -1,19 +1,17 @@
 /*******************************************************************************
- * QBiC Project qNavigator enables users to manage their projects.
- * Copyright (C) "2016”  Christopher Mohr, David Wojnar, Andreas Friedrich
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) "2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
 package life.qbic.projectbrowser.model;
 
@@ -29,7 +27,8 @@ import java.util.Map.Entry;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 
-import life.qbic.xml.manager.XMLParser;
+import life.qbic.xml.properties.Property;
+// import life.qbic.xml.manager.XMLParser;
 import life.qbic.xml.properties.Qproperties;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
 
@@ -55,6 +54,7 @@ public class SampleBean implements Comparable<Object>, Serializable {
   private Map<String, String> typeLabels;
 
   private UglyToPrettyNameMapper prettyNameMapper = new UglyToPrettyNameMapper();
+  private List<Property> xmlProperties;
 
 
   public SampleBean(String id, String code, String type, List<Sample> parents,
@@ -199,9 +199,8 @@ public class SampleBean implements Comparable<Object>, Serializable {
       return parentsHeader += "None";
     } else {
       for (Sample sample : this.getParents()) {
-        parentsBottom +=
-            "<li><b>" + sample.getCode() + "</b> ("
-                + prettyNameMapper.getPrettyName(sample.getSampleTypeCode()) + ") </li>";
+        parentsBottom += "<li><b>" + sample.getCode() + "</b> ("
+            + prettyNameMapper.getPrettyName(sample.getSampleTypeCode()) + ") </li>";
       }
       parentsBottom += "</ul>";
 
@@ -229,28 +228,40 @@ public class SampleBean implements Comparable<Object>, Serializable {
 
   public String generateXMLPropertiesFormattedString() throws JAXBException {
 
-    String xmlPropertiesBottom = "<ul> ";
 
-    Iterator<Entry<String, String>> it = this.getProperties().entrySet().iterator();
-    while (it.hasNext()) {
-      Entry pairs = it.next();
-      if (pairs.getKey().equals("Q_PROPERTIES")) {
-        XMLParser xmlParser = new XMLParser();
-        JAXBElement<Qproperties> xmlProperties =
-            xmlParser.parseXMLString(pairs.getValue().toString());
-        Map<String, String> xmlPropertiesMap = xmlParser.getMapOfProperties(xmlProperties);
+    String xmlPropertiesString = "<ul> ";
 
-        for (Object o : xmlPropertiesMap.entrySet()) {
-          Entry pairsProperties = (Entry) o;
-
-          xmlPropertiesBottom += "<li><b>"
-                  // + (typeLabels.get(pairsProperties.getKey()) + ":</b> "
-                  + (pairsProperties.getKey() + ":</b> " + pairsProperties.getValue() + "</li>");
-        }
-        break;
+    for (Property p : xmlProperties) {
+      xmlPropertiesString += "<li><b>" + p.getLabel() + ":</b> " + p.getValue();
+      if (p.hasUnit()) {
+        xmlPropertiesString += " " + p.getUnit();
       }
+      xmlPropertiesString += "</li>";
     }
-    return xmlPropertiesBottom;
+    return xmlPropertiesString;
+
+    // String xmlPropertiesBottom = "<ul> ";
+    //
+    // Iterator<Entry<String, String>> it = this.getProperties().entrySet().iterator();
+    // while (it.hasNext()) {
+    // Entry pairs = it.next();
+    // if (pairs.getKey().equals("Q_PROPERTIES")) {
+    // XMLParser xmlParser = new XMLParser();
+    // JAXBElement<Qproperties> xmlProperties =
+    // xmlParser.parseXMLString(pairs.getValue().toString());
+    // Map<String, String> xmlPropertiesMap = xmlParser.getMapOfProperties(xmlProperties);
+    //
+    // for (Object o : xmlPropertiesMap.entrySet()) {
+    // Entry pairsProperties = (Entry) o;
+    //
+    // xmlPropertiesBottom += "<li><b>"
+    // // + (typeLabels.get(pairsProperties.getKey()) + ":</b> "
+    // + (pairsProperties.getKey() + ":</b> " + pairsProperties.getValue() + "</li>");
+    // }
+    // break;
+    // }
+    // }
+    // return xmlPropertiesBottom;
   }
 
   public List<Sample> getChildren() {
@@ -267,6 +278,10 @@ public class SampleBean implements Comparable<Object>, Serializable {
 
   public void setPrettyType(String prettyType) {
     this.prettyType = prettyType;
+  }
+
+  public void setComplexProperties(List<Property> complexProps) {
+    xmlProperties = complexProps;
   }
 
 

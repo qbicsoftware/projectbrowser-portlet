@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.vaadin.data.Item;
 import com.vaadin.data.util.BeanItem;
@@ -51,6 +52,9 @@ import com.vaadin.ui.renderers.ClickableRenderer.RendererClickListener;
 import com.vaadin.ui.renderers.HtmlRenderer;
 
 import life.qbic.portal.portlet.ProjectBrowserPortlet;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -62,6 +66,8 @@ import life.qbic.projectbrowser.helpers.*;
 import life.qbic.projectbrowser.controllers.*;
 import life.qbic.projectbrowser.model.BiologicalEntitySampleBean;
 import life.qbic.projectbrowser.model.BiologicalSampleBean;
+import life.qbic.xml.manager.StudyXMLParser;
+import life.qbic.xml.properties.Property;
 
 
 public class BiologicalSamplesComponent extends CustomComponent {
@@ -204,6 +210,8 @@ public class BiologicalSamplesComponent extends CustomComponent {
 
     List<VocabularyTerm> terms = null;
     Map<String, String> termsMap = new HashMap<String, String>();
+    
+    StudyXMLParser xmlParser = new StudyXMLParser();
 
     for (Sample sample : allSamples) {
 
@@ -249,7 +257,15 @@ public class BiologicalSamplesComponent extends CustomComponent {
           }
         }
 
-        newEntityBean.setProperties(sampleProperties);
+        // data for complex xml properties
+        Map<String, List<Property>> propertiesForSamples = datahandler.getPropertiesForSamples();
+        Set<String> factorLabels = datahandler.getFactorLabels();
+        Map<Pair<String, String>, Property> factorsForSamples =
+            datahandler.getFactorsForLabelsAndSamples();
+
+        List<Property> complexProps = xmlParser.getFactorsAndPropertiesForSampleCode(datahandler.getExperimentalSetup(), sample.getCode());
+        newEntityBean.setProperties(sampleProperties, complexProps);
+
         newEntityBean.setGender(sampleProperties.get("Q_GENDER"));
         samplesEntityContainer.addBean(newEntityBean);
 
@@ -272,7 +288,10 @@ public class BiologicalSamplesComponent extends CustomComponent {
             newBean.setAdditionalInfo(sampleBioProperties.get("Q_ADDITIONAL_INFO"));
             newBean.setExternalDB(sampleBioProperties.get("Q_EXTERNALDB_ID"));
             newBean.setSecondaryName(sampleBioProperties.get("Q_SECONDARY_NAME"));
-            newBean.setProperties(sampleBioProperties);
+
+            complexProps = xmlParser.getFactorsAndPropertiesForSampleCode(datahandler.getExperimentalSetup(), realChild.getCode());
+
+            newBean.setProperties(sampleBioProperties, complexProps);
 
             samplesBioContainer.addBean(newBean);
           }

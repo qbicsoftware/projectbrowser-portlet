@@ -19,15 +19,11 @@ package life.qbic.projectbrowser.model;
 
 import life.qbic.projectbrowser.helpers.UglyToPrettyNameMapper;
 
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 
-import life.qbic.xml.manager.XMLParser;
-import life.qbic.xml.properties.Qproperties;
+import life.qbic.xml.properties.Property;
 
 public class BiologicalEntitySampleBean {
   private static final long serialVersionUID = -61486023394904818L;
@@ -157,40 +153,54 @@ public class BiologicalEntitySampleBean {
     return properties;
   }
 
-  public void setProperties(Map<String, String> properties) {
+  public void setProperties(Map<String, String> properties, List<Property> complexProps) {
     try {
-      this.properties = generateXMLPropertiesFormattedString(properties);
+      this.properties = generateXMLPropertiesFormattedString(complexProps);
     } catch (JAXBException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
 
-
-  public String generateXMLPropertiesFormattedString(Map<String, String> properties)
+  public String generateXMLPropertiesFormattedString(List<Property> properties)
       throws JAXBException {
 
     String xmlPropertiesString = "";
-    Iterator<Entry<String, String>> it = properties.entrySet().iterator();
-    while (it.hasNext()) {
-      Entry pairs = (Entry) it.next();
-      if (pairs.getKey().equals("Q_PROPERTIES")) {
-        XMLParser xmlParser = new XMLParser();
-        JAXBElement<Qproperties> xmlProperties =
-            xmlParser.parseXMLString(pairs.getValue().toString());
-        Map<String, String> xmlPropertiesMap = xmlParser.getMapOfProperties(xmlProperties);
 
-        Iterator itProperties = xmlPropertiesMap.entrySet().iterator();
-        while (itProperties.hasNext()) {
-          Entry pairsProperties = (Entry) itProperties.next();
-
-          xmlPropertiesString += pairsProperties.getKey() + ": " + pairsProperties.getValue() + " ";
-        }
-        break;
+    for (Property p : properties) {
+      xmlPropertiesString += p.getLabel() + ": " + p.getValue();
+      if (p.hasUnit()) {
+        xmlPropertiesString += " " + p.getUnit();
       }
+      xmlPropertiesString += " ";
     }
     return xmlPropertiesString;
   }
+
+//  public String generateXMLPropertiesFormattedString(Map<String, String> properties)
+//      throws JAXBException {
+//
+//    String xmlPropertiesString = "";
+//    Iterator<Entry<String, String>> it = properties.entrySet().iterator();
+//    while (it.hasNext()) {
+//      Entry pairs = (Entry) it.next();
+//      if (pairs.getKey().equals("Q_PROPERTIES")) {
+//        XMLParser xmlParser = new XMLParser();
+//        JAXBElement<Qproperties> xmlProperties =
+//            xmlParser.parseXMLString(pairs.getValue().toString());
+//        Map<String, String> xmlPropertiesMap = xmlParser.getMapOfProperties(xmlProperties);
+//
+//        Iterator itProperties = xmlPropertiesMap.entrySet().iterator();
+//        while (itProperties.hasNext()) {
+//          Entry pairsProperties = (Entry) itProperties.next();
+//
+//          xmlPropertiesString += pairsProperties.getKey() + ": " + pairsProperties.getValue() + " ";
+//        }
+//        break;
+//      }
+//    }
+//    return xmlPropertiesString;
+//  }
 
   public String getOrganism() {
     return organism;
