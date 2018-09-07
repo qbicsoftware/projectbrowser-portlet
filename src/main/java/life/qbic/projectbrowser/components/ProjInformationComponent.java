@@ -19,7 +19,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +31,7 @@ import java.util.Set;
 
 import javax.portlet.PortletSession;
 
+import life.qbic.datamodel.experiments.ExperimentType;
 import life.qbic.portal.portlet.ProjectBrowserPortlet;
 import life.qbic.portal.utils.PortalUtils;
 import org.tepi.filtertable.FilterTreeTable;
@@ -82,7 +82,6 @@ import org.apache.logging.log4j.Logger;
 import life.qbic.projectbrowser.controllers.*;
 import life.qbic.projectbrowser.model.DatasetBean;
 import life.qbic.projectbrowser.model.ProjectBean;
-import life.qbic.projectbrowser.model.ExperimentType;
 import life.qbic.projectbrowser.model.TestSampleBean;
 import life.qbic.projectbrowser.helpers.DatasetViewFilterGenerator;
 import life.qbic.projectbrowser.helpers.DatasetViewFilterDecorator;
@@ -96,7 +95,6 @@ public class ProjInformationComponent extends CustomComponent {
    */
   private static final long serialVersionUID = 8672873911284888801L;
 
-  private VerticalLayout mainLayout;
   private static final Logger LOG = LogManager.getLogger(ProjInformationComponent.class);
   private FilterTreeTable datasetTable;
   private HierarchicalContainer datasets;
@@ -277,7 +275,8 @@ public class ProjInformationComponent extends CustomComponent {
     if (tsvable) {
       // need to be disabled first so old project tsvs are not downloadable
       tsvDownloadContent.disableSpreadSheets();
-      tsvDownloadContent.prepareSpreadsheets(types, space, project, datahandler.getOpenBisClient());
+      tsvDownloadContent.prepareSpreadsheets(types, space, project, datahandler.getOpenBisClient(),
+          datahandler.getFactorLabels(), datahandler.getFactorsForLabelsAndSamples());
       tsvDownloadContent.setVisible(true);
     } else {
       // nothing to create a tsv from
@@ -421,8 +420,8 @@ public class ProjInformationComponent extends CustomComponent {
        * descContent.getTextField().addValueChangeListener(new ValueChangeListener() {
        * 
        * @Override public void valueChange(ValueChangeEvent event) { LOG.debug("Event fired");
-       * LOG.debug(descContent.getTextField().getValue().toString()); String newDescriptionValue
-       * = descContent.getTextField().getValue().toString();
+       * LOG.debug(descContent.getTextField().getValue().toString()); String newDescriptionValue =
+       * descContent.getTextField().getValue().toString();
        * 
        * // Utils.Notification("Project Description Update", // String.format(
        * "Project description has been changed to '%s'.", newDescriptionValue), // "success");
@@ -550,8 +549,7 @@ public class ProjInformationComponent extends CustomComponent {
       experimentSc.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.TYPE,
           ExperimentType.Q_EXPERIMENTAL_DESIGN.name()));
       sampleSc.addSubCriteria(SearchSubCriteria.createExperimentCriteria(experimentSc));
-      List<Sample> samples =
-          datahandler.getOpenBisClient().getFacade().searchForSamples(sampleSc);
+      List<Sample> samples = datahandler.getOpenBisClient().getFacade().searchForSamples(sampleSc);
       for (Sample sample : samples) {
         if (sample.getProperties().get("Q_ADDITIONAL_INFO") != null) {
           available = true;
@@ -778,8 +776,8 @@ public class ProjInformationComponent extends CustomComponent {
             }
 
           } catch (MalformedURLException e) {
-            LOG.error(String.format(
-                "Visualization failed because of malformedURL for dataset: %s", datasetCode));
+            LOG.error(String.format("Visualization failed because of malformedURL for dataset: %s",
+                datasetCode));
             Notification.show(
                 "Given dataset has no file attached to it!! Please Contact your project manager. Or check whether it already has some data",
                 Notification.Type.ERROR_MESSAGE);
@@ -934,8 +932,8 @@ public class ProjInformationComponent extends CustomComponent {
 
       PortletSession portletSession = ((ProjectBrowserPortlet) UI.getCurrent()).getPortletSession();
       Map<String, SimpleEntry<String, Long>> entries =
-          (Map<String, SimpleEntry<String, Long>>) portletSession
-              .getAttribute("qbic_download", PortletSession.APPLICATION_SCOPE);
+          (Map<String, SimpleEntry<String, Long>>) portletSession.getAttribute("qbic_download",
+              PortletSession.APPLICATION_SCOPE);
 
       boolean itemSelected = (Boolean) event.getProperty().getValue();
       /*
@@ -990,8 +988,7 @@ public class ProjInformationComponent extends CustomComponent {
             (String) datasetTable.getItem(itemId).getItemProperty("CODE").getValue();
         Long datasetFileSize =
             (Long) datasetTable.getItem(itemId).getItemProperty("file_size_bytes").getValue();
-        entries.put(fileName,
-            new SimpleEntry<String, Long>(datasetCode, datasetFileSize));
+        entries.put(fileName, new SimpleEntry<String, Long>(datasetCode, datasetFileSize));
       } else {
         entries.remove(fileName);
       }
@@ -1046,8 +1043,7 @@ public class ProjInformationComponent extends CustomComponent {
     sc.addSubCriteria(SearchSubCriteria.createExperimentCriteria(experimentSc));
 
 
-    List<Sample> samples =
-        datahandler.getOpenBisClient().getFacade().searchForSamples(sc);
+    List<Sample> samples = datahandler.getOpenBisClient().getFacade().searchForSamples(sc);
 
     SearchCriteria sc2 = new SearchCriteria();
     sc2.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.TYPE,
@@ -1065,8 +1061,7 @@ public class ProjInformationComponent extends CustomComponent {
     List<Experiment> wfExperiments =
         datahandler.getOpenBisClient().getFacade().searchForExperiments(sc2);
 
-    List<Sample> wfSamples =
-        new ArrayList<Sample>();
+    List<Sample> wfSamples = new ArrayList<Sample>();
 
     for (Experiment exp : wfExperiments) {
       if (exp.getCode().contains(projectBean.getCode())) {
