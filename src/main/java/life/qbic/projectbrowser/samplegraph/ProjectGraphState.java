@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.vaadin.shared.ui.JavaScriptComponentState;
 
+import life.qbic.datamodel.samples.SampleSummary;
+
 public class ProjectGraphState extends JavaScriptComponentState {
 
   private List<SampleSummary> project;

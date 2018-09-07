@@ -5,6 +5,8 @@ import java.util.List;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.ui.AbstractJavaScriptComponent;
 
+import life.qbic.datamodel.samples.SampleSummary;
+
 @JavaScript({"vaadin://js/d3.v4.min.js", "graph_connector.js", "vaadin://js/dagre.min.js", "vaadin://js/d3-scale-chromatic.v1.min.js"})
 public class ProjectGraph extends AbstractJavaScriptComponent {
 

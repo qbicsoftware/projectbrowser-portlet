@@ -3,6 +3,8 @@ package life.qbic.projectbrowser.samplegraph;
 import java.util.List;
 import java.util.Map;
 
+import life.qbic.datamodel.samples.SampleSummary;
+
 public class StructuredExperiment {
 
   private Map<String, List<SampleSummary>> factorsToSamples;

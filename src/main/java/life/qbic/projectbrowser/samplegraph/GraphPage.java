@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.xml.bind.JAXBException;
@@ -28,7 +29,9 @@ import ch.systemsx.cisd.openbis.dss.client.api.v1.DataSet;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
 import life.qbic.portal.portlet.ProjectBrowserPortlet;
 import life.qbic.portal.utils.PortalUtils;
+import life.qbic.xml.properties.Property;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -88,7 +91,8 @@ public class GraphPage extends VerticalLayout {
   }
 
   public void loadProjectGraph(String projectIdentifier, List<Sample> samples,
-      List<DataSet> datasets) {
+      List<DataSet> datasets, Set<String> factorLabels,
+      Map<Pair<String, String>, Property> factorsForLabelsAndSamples) {
     this.factorBox = new ComboBox("Experimental Factor");
     factorBox.setVisible(false);
     addComponent(factorBox);
@@ -99,7 +103,7 @@ public class GraphPage extends VerticalLayout {
     } else {
       try {
         // load here
-        structure = parser.parseSamplesBreadthFirst(currentSamples, datasets);
+        structure = parser.parseSamplesBreadthFirst(currentSamples, datasets, factorLabels, factorsForLabelsAndSamples);
         if (!structure.getFactorsToSamples().isEmpty()) {
           factorBox.addItems(structure.getFactorsToSamples().keySet());
           factorBox.setVisible(true);

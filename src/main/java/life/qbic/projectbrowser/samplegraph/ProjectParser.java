@@ -3,7 +3,6 @@ package life.qbic.projectbrowser.samplegraph;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -17,18 +16,19 @@ import javax.xml.bind.JAXBException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import ch.systemsx.cisd.openbis.dss.client.api.v1.DataSet;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
-
-import life.qbic.xml.manager.XMLParser;
+import life.qbic.datamodel.samples.ISampleBean;
+import life.qbic.datamodel.samples.SampleSummary;
 import life.qbic.xml.properties.Property;
 import life.qbic.xml.properties.PropertyType;
 
 
 public class ProjectParser {
 
-  private XMLParser xmlParser;
   private Map<String, String> taxMap;
   private Map<String, String> tissueMap;
   private Set<String> validLeafs =
@@ -38,25 +38,35 @@ public class ProjectParser {
   private Map<String, List<DataSet>> sampCodeToDS;
   private Set<String> codesWithDatasets;
   private Map<String, Sample> sampCodeToSamp;
+  private Set<String> factorLabels;
+  private Map<Pair<String, String>, Property> factorsForLabelsAndSamples;
 
   public ProjectParser(Map<String, String> taxMap, Map<String, String> tissueMap) {
     this.taxMap = taxMap;
     this.tissueMap = tissueMap;
+    this.factorLabels = factorLabels;
+    this.factorsForLabelsAndSamples = factorsForLabelsAndSamples;
   }
 
-  private boolean collectCodesOfDatasetsAttachedToSamples(List<Sample> samples,
+  private boolean collectCodesOfDatasetsAttachedToSamples(List<ISampleBean> samples,
       Set<String> nodeCodes, int maxDepth) {
     boolean hasDatasets = false;
     if (maxDepth >= 0) {
-      for (Sample s : samples) {
+      for (ISampleBean s : samples) {
+        OpenbisSampleAdapter sample;
+        try {
+          sample = (OpenbisSampleAdapter) s;
+        } catch (Exception e) {
+          return false;
+        }
         hasDatasets = false;
         String code = s.getCode();
         if (sampCodeToDS.containsKey(code)) {
           hasDatasets = true;
         }
         hasDatasets |=
-            collectCodesOfDatasetsAttachedToSamples(s.getChildren(), nodeCodes, maxDepth - 1);
-        if (hasDatasets && validSamples.contains(s.getSampleTypeCode())) {
+            collectCodesOfDatasetsAttachedToSamples(sample.getChildren(), nodeCodes, maxDepth - 1);
+        if (hasDatasets && validSamples.contains(s.getType())) {
           nodeCodes.add(code);
         }
       }
@@ -85,21 +95,26 @@ public class ProjectParser {
 
   private Property getFactorOfSampleOrNull(final Sample s, final String factorLabel)
       throws JAXBException {
-    final Map<String, String> props = s.getProperties();
-    final String xmlProperties = props.get("Q_PROPERTIES");
-    final List<Property> factors = (xmlProperties == null ? Collections.EMPTY_LIST
-        : xmlParser.getAllProperties(xmlParser.parseXMLString(xmlProperties)));
-
-    for (final Property f : factors) {
-      if (f.getLabel().equals(factorLabel)) {
-        return f;
-      }
-    }
-    return null;
+    Pair<String, String> key = new ImmutablePair<>(factorLabel, s.getCode());
+    return factorsForLabelsAndSamples.get(key);
+    // final Map<String, String> props = s.getProperties();
+    // final String xmlProperties = props.get("Q_PROPERTIES");
+    // final List<Property> factors = (xmlProperties == null ? Collections.EMPTY_LIST
+    // : xmlParser.getAllProperties(xmlParser.parseXMLString(xmlProperties)));
+    //
+    // for (final Property f : factors) {
+    // if (f.getLabel().equals(factorLabel)) {
+    // return f;
+    // }
+    // }
+    // return null;
   }
 
-  public StructuredExperiment parseSamplesBreadthFirst(List<Sample> samples, List<DataSet> datasets)
+  public StructuredExperiment parseSamplesBreadthFirst(List<Sample> samples, List<DataSet> datasets,
+      Set<String> factorLabels, Map<Pair<String, String>, Property> factorsForLabelsAndSamples)
       throws JAXBException {
+    this.factorLabels = factorLabels;
+    this.factorsForLabelsAndSamples = factorsForLabelsAndSamples;
     sampCodeToDS = new HashMap<String, List<DataSet>>();
     codesWithDatasets = new HashSet<String>();
     for (DataSet d : datasets) {
@@ -111,9 +126,11 @@ public class ProjectParser {
       }
     }
 
-    this.xmlParser = new XMLParser();
+    // this.xmlParser = new XMLParser();
     Map<String, List<SampleSummary>> factorsToSamples = new HashMap<String, List<SampleSummary>>();
+
     Set<String> knownFactors = new HashSet<String>();
+    knownFactors = factorLabels;
     sampCodeToSamp = new HashMap<String, Sample>();
     knownFactors.add("None");
 
@@ -124,16 +141,16 @@ public class ProjectParser {
       sampCodeToSamp.put(sample.getCode(), sample);
       String type = sample.getSampleTypeCode();
       if (validSamples.contains(type)) {
-        Map<String, String> propertiesMap = sample.getProperties();
-        List<Property> factors = new ArrayList<Property>();
-        if (propertiesMap.containsKey("Q_PROPERTIES")) {
-          // TODO: all props?
-          factors = xmlParser
-              .getAllProperties(xmlParser.parseXMLString(propertiesMap.get("Q_PROPERTIES")));
-        }
-        for (Property f : factors) {
-          knownFactors.add(f.getLabel());
-        }
+        // Map<String, String> propertiesMap = sample.getProperties();
+        // List<Property> factors = new ArrayList<Property>();
+        // if (propertiesMap.containsKey("Q_PROPERTIES")) {
+        // // TODO: all props?
+        // factors = xmlParser
+        // .getAllProperties(xmlParser.parseXMLString(propertiesMap.get("Q_PROPERTIES")));
+        // }
+        // for (Property f : factors) {
+        // knownFactors.add(f.getLabel());
+        // }
         // collect roots
         if (sample.getParents().isEmpty()) {
           samplesBreadthFirst.add(sample);
@@ -174,7 +191,7 @@ public class ProjectParser {
           boolean exists = false;
           for (SampleSummary oldNode : nodesForFactorPerLabel.get(label)) {
             if (oldNode.equals(node)) {
-              oldNode.addSample(s);
+              oldNode.addSample(new OpenbisSampleAdapter(s));
               exists = true;
               node = oldNode;
             }
@@ -275,8 +292,9 @@ public class ProjectParser {
         break;
       }
     }
-    return new SampleSummary(currentID, parentIDs, new ArrayList<Sample>(Arrays.asList(s)),
-        factor.getValue(), tryShortenName(value, s), type, leaf);
+    return new SampleSummary(currentID, parentIDs,
+        new ArrayList<ISampleBean>(Arrays.asList(new OpenbisSampleAdapter(s))), factor.getValue(),
+        tryShortenName(value, s), type, leaf);
   }
 
   private String tryShortenName(String key, Sample s) {
