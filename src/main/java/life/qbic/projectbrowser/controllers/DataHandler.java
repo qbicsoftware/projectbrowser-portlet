@@ -32,12 +32,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import javax.sound.sampled.Port;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 
 import life.qbic.portal.utils.PortalUtils;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -65,7 +66,8 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SpaceWithProjectsAndRoleAssignments;
 import ch.systemsx.cisd.openbis.plugin.query.shared.api.v1.dto.QueryTableModel;
-
+import life.qbic.datamodel.experiments.ExperimentType;
+import life.qbic.datamodel.identifiers.ExperimentCodeFunctions;
 import life.qbic.openbis.openbisclient.OpenBisClient;
 
 import life.qbic.projectbrowser.helpers.Utils;
@@ -74,16 +76,17 @@ import life.qbic.projectbrowser.helpers.BarcodeFunctions;
 import life.qbic.projectbrowser.model.DatasetBean;
 import life.qbic.projectbrowser.model.ExperimentBean;
 import life.qbic.projectbrowser.model.ExperimentStatusBean;
-import life.qbic.projectbrowser.model.ExperimentType;
 import life.qbic.projectbrowser.model.NewIvacSampleBean;
 import life.qbic.projectbrowser.model.SampleBean;
 import life.qbic.projectbrowser.model.ProjectBean;
 import life.qbic.projectbrowser.model.DBManager;
-import life.qbic.projectbrowser.model.spaceToProjectPrefixMap;
 import life.qbic.projectbrowser.helpers.AlternativeSecondaryNameCreator;
 
 import life.qbic.xml.persons.Qperson;
+import life.qbic.xml.properties.Property;
+import life.qbic.xml.study.Qexperiment;
 import life.qbic.xml.manager.PersonParser;
+import life.qbic.xml.manager.StudyXMLParser;
 
 
 public class DataHandler implements Serializable {
@@ -101,8 +104,8 @@ public class DataHandler implements Serializable {
   // Map<String, ExperimentInformation> experimentInformations =
   // new HashMap<String, ExperimentInformation>();
   // Map<String, SampleInformation> sampleInformations = new HashMap<String, SampleInformation>();
-  Map<String, ProjectBean> projectMap = new HashMap<String, ProjectBean>();
-  Map<String, ExperimentBean> experimentMap = new HashMap<String, ExperimentBean>();
+  // Map<String, ProjectBean> projectMap = new HashMap<String, ProjectBean>();
+  // Map<String, ExperimentBean> experimentMap = new HashMap<String, ExperimentBean>();
   Map<String, SampleBean> sampleMap = new HashMap<String, SampleBean>();
   Map<String, DatasetBean> datasetMap = new HashMap<String, DatasetBean>();
 
@@ -202,7 +205,12 @@ public class DataHandler implements Serializable {
   private DBManager databaseManager;
 
   private Map<String, Project> dtoProjects = new HashMap<String, Project>();
-  private Map<String, Experiment> dtoExperiments = new HashMap<String, Experiment>();
+  // private Map<String, Experiment> dtoExperiments = new HashMap<String, Experiment>();
+  private StudyXMLParser studyParser = new StudyXMLParser();
+  private Set<String> experimentalFactorLabels;
+  private Map<Pair<String, String>, Property> experimentalFactorsForLabelsAndSamples;
+  private Map<String, List<Property>> propertiesForSamples;
+  private JAXBElement<Qexperiment> experimentalSetup;
 
   public DataHandler(OpenBisClient client, DBManager databaseManager) {
     // reset(); //TODO useless?
@@ -417,36 +425,36 @@ public class DataHandler implements Serializable {
     return results;
   }
 
-  /**
-   * Method to get Bean from either openbis identifier or openbis object. Checks if corresponding
-   * bean is already stored in datahandler map.
-   * 
-   * @param
-   * @return
-   */
-  @Deprecated
-  public ProjectBean getProject(Object proj) {
-    Project project;
-    ProjectBean newProjectBean;
-    // System.out.println(proj);
-    // System.out.println(this.projectMap);
-
-    if (proj instanceof Project) {
-      project = (Project) proj;
-      newProjectBean = this.createProjectBean(project);
-      this.projectMap.put(newProjectBean.getId(), newProjectBean);
-    } else {
-      if (this.projectMap.get((String) proj) != null) {
-
-        newProjectBean = this.projectMap.get(proj);
-      } else {
-        project = this.getOpenBisClient().getProjectByIdentifier((String) proj);
-        newProjectBean = this.createProjectBean(project);
-        this.projectMap.put(newProjectBean.getId(), newProjectBean);
-      }
-    }
-    return newProjectBean;
-  }
+  // /**
+  // * Method to get Bean from either openbis identifier or openbis object. Checks if corresponding
+  // * bean is already stored in datahandler map.
+  // *
+  // * @param
+  // * @return
+  // */
+  // @Deprecated
+  // public ProjectBean getProject(Object proj) {
+  // Project project;
+  // ProjectBean newProjectBean;
+  // // System.out.println(proj);
+  // // System.out.println(this.projectMap);
+  //
+  // if (proj instanceof Project) {
+  // project = (Project) proj;
+  // newProjectBean = this.createProjectBean(project);
+  // this.projectMap.put(newProjectBean.getId(), newProjectBean);
+  // } else {
+  // if (this.projectMap.get((String) proj) != null) {
+  //
+  // newProjectBean = this.projectMap.get(proj);
+  // } else {
+  // project = this.getOpenBisClient().getProjectByIdentifier((String) proj);
+  // newProjectBean = this.createProjectBean(project);
+  // this.projectMap.put(newProjectBean.getId(), newProjectBean);
+  // }
+  // }
+  // return newProjectBean;
+  // }
 
   /**
    * Method to get Bean from either openbis identifier or openbis object. Does NOT check if
@@ -591,6 +599,7 @@ public class DataHandler implements Serializable {
    * @return
    */
   public ProjectBean getProject2(String projectIdentifier) {
+    LOG.debug("called getprojct2");
     List<Experiment> experiments =
         this.getOpenBisClient().getExperimentsForProject3(projectIdentifier);// TODO changed this
                                                                              // from
@@ -638,7 +647,6 @@ public class DataHandler implements Serializable {
 
     if (longDesc == null)
       longDesc = "";
-
     newProjectBean.setLongDescription(longDesc);
 
     newProjectBean.setId(project.getIdentifier());
@@ -661,6 +669,83 @@ public class DataHandler implements Serializable {
 
     AlternativeSecondaryNameCreator altNameCreator = new AlternativeSecondaryNameCreator(
         openBisClient.getVocabCodesAndLabelsForVocab("Q_NCBI_TAXONOMY"));
+
+    // this is the experiment that stores the experimental design xml
+    Experiment designExperiment = null;
+    Set<String> allSampleCodes = new HashSet<>();
+    for (Sample s : allSamples) {
+      allSampleCodes.add(s.getCode());
+    }
+
+    for (Experiment experiment : experiments) {
+      String type = experiment.getExperimentTypeCode();
+      if (type.equalsIgnoreCase(ExperimentType.Q_PROJECT_DETAILS.name())) {
+        designExperiment = experiment;
+        break;
+      }
+    }
+    // create basic experimental design, if it doesn't exist
+    String space = project.getSpaceCode();
+    String projectCode = project.getCode();
+    String designExpID = ExperimentCodeFunctions.getInfoExperimentID(space, projectCode);
+    String user = PortalUtils.getUser().getScreenName();
+    if (designExperiment == null) {
+      LOG.debug("design experiment null, creating new one.");
+      Map<String, Object> params = new HashMap<String, Object>();
+      Map<String, String> props = new HashMap<>();
+      // TODO empty xml is not valid, but should we add one at all?
+      // try {
+      // String basicXML = studyParser.toString(studyParser.getEmptyXML());
+      // props.put("Q_EXPERIMENTAL_SETUP", basicXML);
+      // } catch (JAXBException e) {
+      // // TODO Auto-generated catch block
+      // e.printStackTrace();
+      // }
+      params.put("user", user);
+      params.put("code", projectCode + "_INFO");
+      params.put("type", ExperimentType.Q_PROJECT_DETAILS);
+      params.put("project", projectCode);
+      params.put("space", space);
+      params.put("properties", props);
+      openBisClient.triggerIngestionService("register-exp", params);
+    }
+    // parse experimental design for later use
+    String xmlString = designExperiment.getProperties().get("Q_EXPERIMENTAL_SETUP");
+    JAXBElement<Qexperiment> expDesign = null;
+    try {
+      expDesign = studyParser.parseXMLString(xmlString);
+    } catch (JAXBException e) {
+      LOG.error("could not parse experimental design xml!");
+      e.printStackTrace();
+    }
+    if (expDesign != null) {
+      // experimental design found and parsed. remove samples that have since been deleted:
+      try {
+        if (!allSampleCodes.isEmpty()) {
+          LOG.info("comparing existing samples with references in experimental design");
+          expDesign = studyParser.removeReferencesToMissingIDs(expDesign, allSampleCodes, true);
+        }
+        HashMap<String, Object> params = new HashMap<>();
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("Q_EXPERIMENTAL_SETUP", studyParser.toString(expDesign));
+        params.put("user", user);
+        params.put("identifier", designExpID);
+        params.put("properties", properties);
+        openBisClient.triggerIngestionService("update-experiment-metadata", params);
+      } catch (JAXBException e) {
+        LOG.warn(
+            "could not create new experimental design xml from old one after removing missing ids. "
+                + "will continue with old design.");
+        e.printStackTrace();
+      }
+
+      this.experimentalSetup = expDesign;
+      this.experimentalFactorLabels = studyParser.getFactorLabels(expDesign);
+      this.experimentalFactorsForLabelsAndSamples =
+          studyParser.getFactorsForLabelsAndSamples(expDesign);
+      this.propertiesForSamples = studyParser.getPropertiesForSampleCode(expDesign);
+    }
+
     for (Experiment experiment : experiments) {
       ExperimentBean newExperimentBean = new ExperimentBean();
 
@@ -690,6 +775,9 @@ public class DataHandler implements Serializable {
         sbean.setCode(sample.getCode());
         sbean.setType(sample.getSampleTypeCode());
         sbean.setProperties(sample.getProperties());
+        List<Property> complexProps =
+            studyParser.getFactorsAndPropertiesForSampleCode(experimentalSetup, sample.getCode());
+        sbean.setComplexProperties(complexProps);
         sampleBeans.addBean(sbean);
       }
       newExperimentBean.setSamples(sampleBeans);
@@ -880,27 +968,27 @@ public class DataHandler implements Serializable {
    * @param
    * @return
    */
-  public ExperimentBean getExperiment(Object exp) {
-    Experiment experiment;
-    ExperimentBean newExperimentBean;
-
-    if (exp instanceof Experiment) {
-      experiment = (Experiment) exp;
-      newExperimentBean = this.createExperimentBean(experiment);
-      this.experimentMap.put(newExperimentBean.getId(), newExperimentBean);
-    }
-
-    else {
-      if (this.experimentMap.get((String) exp) != null) {
-        newExperimentBean = this.experimentMap.get(exp);
-      } else {
-        experiment = this.getOpenBisClient().getExperimentById((String) exp);
-        newExperimentBean = this.createExperimentBean(experiment);
-        this.experimentMap.put(newExperimentBean.getId(), newExperimentBean);
-      }
-    }
-    return newExperimentBean;
-  }
+  // public ExperimentBean getExperiment(Object exp) {
+  // Experiment experiment;
+  // ExperimentBean newExperimentBean;
+  //
+  // if (exp instanceof Experiment) {
+  // experiment = (Experiment) exp;
+  // newExperimentBean = this.createExperimentBean(experiment);
+  // this.experimentMap.put(newExperimentBean.getId(), newExperimentBean);
+  // }
+  //
+  // else {
+  // if (this.experimentMap.get((String) exp) != null) {
+  // newExperimentBean = this.experimentMap.get(exp);
+  // } else {
+  // experiment = this.getOpenBisClient().getExperimentById((String) exp);
+  // newExperimentBean = this.createExperimentBean(experiment);
+  // this.experimentMap.put(newExperimentBean.getId(), newExperimentBean);
+  // }
+  // }
+  // return newExperimentBean;
+  // }
 
 
   public ExperimentBean getExperiment2(String expIdentifiers) {
@@ -1026,6 +1114,9 @@ public class DataHandler implements Serializable {
       sbean.setCode(sample.getCode());
       sbean.setType(sample.getSampleTypeCode());
       sbean.setProperties(sample.getProperties());
+      List<Property> complexProps =
+          studyParser.getFactorsAndPropertiesForSampleCode(experimentalSetup, sample.getCode());
+      sbean.setComplexProperties(complexProps);
       /*
        * Map<String, String> sampleTypeLabels =
        * this.openBisClient.getLabelsofProperties(this.openBisClient.getSampleTypeByString(sample
@@ -1196,49 +1287,49 @@ public class DataHandler implements Serializable {
    * @return ProjectBean for corresponding project
    */
 
-  @Deprecated
-  ProjectBean createProjectBean(Project project) {
-
-    ProjectBean newProjectBean = new ProjectBean();
-
-    List<Experiment> experiments =
-        this.getOpenBisClient().getExperimentsOfProjectByIdentifier(project.getIdentifier());
-
-    ProgressBar progressBar = new ProgressBar();
-    progressBar.setValue(this.getOpenBisClient().computeProjectStatus(project));
-
-    Date registrationDate = project.getRegistrationDetails().getRegistrationDate();
-
-    newProjectBean.setId(project.getIdentifier());
-    newProjectBean.setCode(project.getCode());
-    String desc = project.getDescription();
-    if (desc == null)
-      desc = "";
-    newProjectBean.setDescription(desc);
-    newProjectBean.setRegistrationDate(registrationDate);
-    newProjectBean.setProgress(progressBar);
-    newProjectBean.setRegistrator(project.getRegistrationDetails().getUserId());
-    newProjectBean.setContact(project.getRegistrationDetails().getUserEmail());
-
-    BeanItemContainer<ExperimentBean> experimentBeans =
-        new BeanItemContainer<ExperimentBean>(ExperimentBean.class);
-
-    List<String> experiment_identifiers = new ArrayList<String>();
-
-    for (Experiment experiment : experiments) {
-      experimentBeans.addBean(this.getExperiment(experiment));
-      experiment_identifiers.add(experiment.getIdentifier());
-    }
-    List<DataSet> datasets = (experiment_identifiers.size() > 0)
-        ? getOpenBisClient().getFacade().listDataSetsForExperiments(experiment_identifiers)
-        : new ArrayList<DataSet>();
-    newProjectBean.setContainsData(datasets.size() != 0);
-
-    newProjectBean.setExperiments(experimentBeans);
-    newProjectBean.setMembers(this.getOpenBisClient().getSpaceMembers(project.getSpaceCode()));
-
-    return newProjectBean;
-  }
+  // @Deprecated
+  // ProjectBean createProjectBean(Project project) {
+  //
+  // ProjectBean newProjectBean = new ProjectBean();
+  //
+  // List<Experiment> experiments =
+  // this.getOpenBisClient().getExperimentsOfProjectByIdentifier(project.getIdentifier());
+  //
+  // ProgressBar progressBar = new ProgressBar();
+  // progressBar.setValue(this.getOpenBisClient().computeProjectStatus(project));
+  //
+  // Date registrationDate = project.getRegistrationDetails().getRegistrationDate();
+  //
+  // newProjectBean.setId(project.getIdentifier());
+  // newProjectBean.setCode(project.getCode());
+  // String desc = project.getDescription();
+  // if (desc == null)
+  // desc = "";
+  // newProjectBean.setDescription(desc);
+  // newProjectBean.setRegistrationDate(registrationDate);
+  // newProjectBean.setProgress(progressBar);
+  // newProjectBean.setRegistrator(project.getRegistrationDetails().getUserId());
+  // newProjectBean.setContact(project.getRegistrationDetails().getUserEmail());
+  //
+  // BeanItemContainer<ExperimentBean> experimentBeans =
+  // new BeanItemContainer<ExperimentBean>(ExperimentBean.class);
+  //
+  // List<String> experiment_identifiers = new ArrayList<String>();
+  //
+  // for (Experiment experiment : experiments) {
+  // experimentBeans.addBean(this.getExperiment(experiment));
+  // experiment_identifiers.add(experiment.getIdentifier());
+  // }
+  // List<DataSet> datasets = (experiment_identifiers.size() > 0)
+  // ? getOpenBisClient().getFacade().listDataSetsForExperiments(experiment_identifiers)
+  // : new ArrayList<DataSet>();
+  // newProjectBean.setContainsData(datasets.size() != 0);
+  //
+  // newProjectBean.setExperiments(experimentBeans);
+  // newProjectBean.setMembers(this.getOpenBisClient().getSpaceMembers(project.getSpaceCode()));
+  //
+  // return newProjectBean;
+  // }
 
 
   /**
@@ -1247,82 +1338,83 @@ public class DataHandler implements Serializable {
    * @param experiment
    * @return ExperimentBean for corresponding experiment
    */
-  @Deprecated
-  ExperimentBean createExperimentBean(Experiment experiment) {
-
-    ExperimentBean newExperimentBean = new ExperimentBean();
-    List<Sample> samples =
-        this.getOpenBisClient().getSamplesofExperiment(experiment.getIdentifier());
-
-    String status = "";
-
-    // Get all properties for metadata changing
-    List<PropertyType> completeProperties = this.getOpenBisClient().listPropertiesForType(
-        this.getOpenBisClient().getExperimentTypeByString(experiment.getExperimentTypeCode()));
-
-    Map<String, String> assignedProperties = experiment.getProperties();
-    Map<String, List<String>> controlledVocabularies = new HashMap<String, List<String>>();
-    Map<String, String> properties = new HashMap<String, String>();
-
-
-    if (assignedProperties.keySet().contains("Q_CURRENT_STATUS")) {
-      status = assignedProperties.get("Q_CURRENT_STATUS");
-    }
-
-    else if (assignedProperties.keySet().contains("Q_WF_STATUS")) {
-      status = assignedProperties.get("Q_WF_STATUS");
-    }
-
-    for (PropertyType p : completeProperties) {
-
-      // TODO no hardcoding
-
-      if (p instanceof ControlledVocabularyPropertyType) {
-        controlledVocabularies.put(p.getCode(),
-            getOpenBisClient().listVocabularyTermsForProperty(p));
-      }
-
-      if (assignedProperties.keySet().contains(p.getCode())) {
-        properties.put(p.getCode(), assignedProperties.get(p.getCode()));
-      } else {
-        properties.put(p.getCode(), "");
-      }
-    }
-
-    Map<String, String> typeLabels = this.getOpenBisClient().getLabelsofProperties(
-        this.getOpenBisClient().getExperimentTypeByString(experiment.getExperimentTypeCode()));
-
-    // Image statusColor = new Image(status, this.setExperimentStatusColor(status));
-    // statusColor.setWidth("15px");
-    // statusColor.setHeight("15px");
-
-    newExperimentBean.setId(experiment.getIdentifier());
-    newExperimentBean.setCode(experiment.getCode());
-    newExperimentBean.setType(experiment.getExperimentTypeCode());
-    newExperimentBean.setStatus(status);
-    newExperimentBean.setRegistrator(experiment.getRegistrationDetails().getUserId());
-    newExperimentBean
-        .setRegistrationDate(experiment.getRegistrationDetails().getRegistrationDate());
-    newExperimentBean.setProperties(properties);
-    newExperimentBean.setControlledVocabularies(controlledVocabularies);
-    newExperimentBean.setTypeLabels(typeLabels);
-
-    // TODO do we want to have that ? (last Changed)
-    newExperimentBean.setLastChangedSample(null);
-    newExperimentBean.setContainsData(false);
-
-    // Create sample Beans (or fetch them) for samples of experiment
-    BeanItemContainer<SampleBean> sampleBeans = new BeanItemContainer<SampleBean>(SampleBean.class);
-    for (Sample sample : samples) {
-      SampleBean sbean = this.getSample(sample);
-      if (sbean.getDatasets().size() > 0) {
-        newExperimentBean.setContainsData(true);
-      }
-      sampleBeans.addBean(sbean);
-    }
-    newExperimentBean.setSamples(sampleBeans);
-    return newExperimentBean;
-  }
+  // @Deprecated
+  // ExperimentBean createExperimentBean(Experiment experiment) {
+  //
+  // ExperimentBean newExperimentBean = new ExperimentBean();
+  // List<Sample> samples =
+  // this.getOpenBisClient().getSamplesofExperiment(experiment.getIdentifier());
+  //
+  // String status = "";
+  //
+  // // Get all properties for metadata changing
+  // List<PropertyType> completeProperties = this.getOpenBisClient().listPropertiesForType(
+  // this.getOpenBisClient().getExperimentTypeByString(experiment.getExperimentTypeCode()));
+  //
+  // Map<String, String> assignedProperties = experiment.getProperties();
+  // Map<String, List<String>> controlledVocabularies = new HashMap<String, List<String>>();
+  // Map<String, String> properties = new HashMap<String, String>();
+  //
+  //
+  // if (assignedProperties.keySet().contains("Q_CURRENT_STATUS")) {
+  // status = assignedProperties.get("Q_CURRENT_STATUS");
+  // }
+  //
+  // else if (assignedProperties.keySet().contains("Q_WF_STATUS")) {
+  // status = assignedProperties.get("Q_WF_STATUS");
+  // }
+  //
+  // for (PropertyType p : completeProperties) {
+  //
+  // // TODO no hardcoding
+  //
+  // if (p instanceof ControlledVocabularyPropertyType) {
+  // controlledVocabularies.put(p.getCode(),
+  // getOpenBisClient().listVocabularyTermsForProperty(p));
+  // }
+  //
+  // if (assignedProperties.keySet().contains(p.getCode())) {
+  // properties.put(p.getCode(), assignedProperties.get(p.getCode()));
+  // } else {
+  // properties.put(p.getCode(), "");
+  // }
+  // }
+  //
+  // Map<String, String> typeLabels = this.getOpenBisClient().getLabelsofProperties(
+  // this.getOpenBisClient().getExperimentTypeByString(experiment.getExperimentTypeCode()));
+  //
+  // // Image statusColor = new Image(status, this.setExperimentStatusColor(status));
+  // // statusColor.setWidth("15px");
+  // // statusColor.setHeight("15px");
+  //
+  // newExperimentBean.setId(experiment.getIdentifier());
+  // newExperimentBean.setCode(experiment.getCode());
+  // newExperimentBean.setType(experiment.getExperimentTypeCode());
+  // newExperimentBean.setStatus(status);
+  // newExperimentBean.setRegistrator(experiment.getRegistrationDetails().getUserId());
+  // newExperimentBean
+  // .setRegistrationDate(experiment.getRegistrationDetails().getRegistrationDate());
+  // newExperimentBean.setProperties(properties);
+  // newExperimentBean.setControlledVocabularies(controlledVocabularies);
+  // newExperimentBean.setTypeLabels(typeLabels);
+  //
+  // // TODO do we want to have that ? (last Changed)
+  // newExperimentBean.setLastChangedSample(null);
+  // newExperimentBean.setContainsData(false);
+  //
+  // // Create sample Beans (or fetch them) for samples of experiment
+  // BeanItemContainer<SampleBean> sampleBeans = new
+  // BeanItemContainer<SampleBean>(SampleBean.class);
+  // for (Sample sample : samples) {
+  // SampleBean sbean = this.getSample(sample);
+  // if (sbean.getDatasets().size() > 0) {
+  // newExperimentBean.setContainsData(true);
+  // }
+  // sampleBeans.addBean(sbean);
+  // }
+  // newExperimentBean.setSamples(sampleBeans);
+  // return newExperimentBean;
+  // }
 
 
   /**
@@ -1341,6 +1433,9 @@ public class DataHandler implements Serializable {
     newSampleBean.setCode(sample.getCode());
     newSampleBean.setType(sample.getSampleTypeCode());
     newSampleBean.setProperties(properties);
+    List<Property> complexProps =
+        studyParser.getFactorsAndPropertiesForSampleCode(experimentalSetup, sample.getCode());
+    newSampleBean.setComplexProperties(complexProps);
     newSampleBean.setParents(this.getOpenBisClient().getParentsBySearchService(sample.getCode()));
     newSampleBean
         .setChildren(this.getOpenBisClient().getFacade().listSamplesOfSample(sample.getPermId()));
@@ -1437,8 +1532,7 @@ public class DataHandler implements Serializable {
       newBean.setFileName(splitted_link[splitted_link.length - 1]);
       newBean.setFileSize(dto.getFileSize());
       newBean.setFileType(d.getDataSetTypeCode());
-      newBean
-          .setHumanReadableFileSize(PortalUtils.humanReadableByteCount(dto.getFileSize(), true));
+      newBean.setHumanReadableFileSize(PortalUtils.humanReadableByteCount(dto.getFileSize(), true));
       newBean.setParent(datasetBean);
       newBean.setProject(datasetBean.getProject());
       newBean.setRegistrationDate(datasetBean.getRegistrationDate());
@@ -2249,8 +2343,8 @@ public class DataHandler implements Serializable {
 
             String newNGSRunCode =
                 newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + "R";
-            String newNGSRunID = "/" + space + "/" + newNGSRunCode
-                + BarcodeFunctions.checksum(newNGSRunCode);
+            String newNGSRunID =
+                "/" + space + "/" + newNGSRunCode + BarcodeFunctions.checksum(newNGSRunCode);
             newNGSRunIDs.add(newNGSRunID);
             numberOfRegisteredSamples += 1;
 
@@ -2283,8 +2377,8 @@ public class DataHandler implements Serializable {
 
             String newNGSRunCode =
                 newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + "R";
-            String newNGSRunID = "/" + space + "/" + newNGSRunCode
-                + BarcodeFunctions.checksum(newNGSRunCode);
+            String newNGSRunID =
+                "/" + space + "/" + newNGSRunCode + BarcodeFunctions.checksum(newNGSRunCode);
             newNGSRunIDs.add(newNGSRunID);
             numberOfRegisteredSamples += 1;
 
@@ -2316,8 +2410,8 @@ public class DataHandler implements Serializable {
 
             String newNGSRunCode =
                 newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + "R";
-            String newNGSRunID = "/" + space + "/" + newNGSRunCode
-                + BarcodeFunctions.checksum(newNGSRunCode);
+            String newNGSRunID =
+                "/" + space + "/" + newNGSRunCode + BarcodeFunctions.checksum(newNGSRunCode);
             newNGSRunIDs.add(newNGSRunID);
             numberOfRegisteredSamples += 1;
 
@@ -2578,5 +2672,24 @@ public class DataHandler implements Serializable {
 
   public void setDatabaseManager(DBManager databaseManager) {
     this.databaseManager = databaseManager;
+  }
+
+
+  public Set<String> getFactorLabels() {
+    LOG.debug("returning factorlabels: " + experimentalFactorLabels);
+    return experimentalFactorLabels;
+  }
+
+
+  public Map<Pair<String, String>, Property> getFactorsForLabelsAndSamples() {
+    return experimentalFactorsForLabelsAndSamples;
+  }
+
+  public Map<String, List<Property>> getPropertiesForSamples() {
+    return propertiesForSamples;
+  }
+
+  public JAXBElement<Qexperiment> getExperimentalSetup() {
+    return experimentalSetup;
   }
 }
