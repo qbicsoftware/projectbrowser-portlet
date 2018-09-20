@@ -47,6 +47,8 @@ public class GraphPage extends VerticalLayout {
   private ProjectGraph sampleGraph;
 
   public GraphPage(Map<String, String> taxMap, Map<String, String> tissueMap) {
+    setSpacing(true);
+    setMargin(true);
     Map<String, String> reverseTaxMap = taxMap.entrySet().stream()
         .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
     Map<String, String> reverseTissueMap = tissueMap.entrySet().stream()
