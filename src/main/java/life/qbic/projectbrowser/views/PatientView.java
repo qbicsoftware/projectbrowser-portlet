@@ -1125,7 +1125,11 @@ public class PatientView extends VerticalLayout implements View {
   }
 
   void updateContentGraph() {
-    Resource resource = getGraphResourceAndParseNewGraph();
+    String projectID = currentBean.getId();
+    List<Sample> samples = datahandler.getOpenBisClient()
+        .getSamplesWithParentsAndChildrenOfProjectBySearchService(projectID);
+    parseNewGraph(projectID, samples);
+    Resource resource = getGraphResource(projectID, samples);
 
     if (resource != null) {
       graphSectionContent.removeAllComponents();
@@ -1145,31 +1149,30 @@ public class PatientView extends VerticalLayout implements View {
     }
   }
 
+  private void parseNewGraph(String projectID, List<Sample> samples) {
+    List<DataSet> datasets =
+        datahandler.getOpenBisClient().getDataSetsOfProjectByIdentifier(projectID);
+    Set<String> factorLabels = datahandler.getFactorLabels();
+    
+    Map<Pair<String, String>, Property> factorsForLabelsAndSamples =
+        datahandler.getFactorsForLabelsAndSamples();
+    newGraphContent.loadProjectGraph(projectID, samples, datasets, factorLabels,
+        factorsForLabelsAndSamples);
+  }
+
   /**
    * returns Resource which represents the project graph of the current Bean. Can be set as the
    * resource of an {@link Image}.
    * 
    * @return
    */
-  private Resource getGraphResourceAndParseNewGraph() {
+  private Resource getGraphResource(String projectID, List<Sample> samples) {
     Resource resource = null;
     try {
-      String projectID = currentBean.getId();
-      List<DataSet> datasets =
-          datahandler.getOpenBisClient().getDataSetsOfProjectByIdentifier(projectID);
-      List<Sample> samples = datahandler.getOpenBisClient()
-          .getSamplesWithParentsAndChildrenOfProjectBySearchService(projectID);
-
       GraphGenerator graphFrame =
           new GraphGenerator(samples, datahandler.getOpenBisClient().getSampleTypes(),
               datahandler.getOpenBisClient(), projectID);
       resource = graphFrame.getRes();
-
-      Set<String> factorLabels = datahandler.getFactorLabels();
-      Map<Pair<String, String>, Property> factorsForLabelsAndSamples =
-          datahandler.getFactorsForLabelsAndSamples();
-      newGraphContent.loadProjectGraph(projectID, samples, datasets, factorLabels,
-          factorsForLabelsAndSamples);
     } catch (IOException e) {
       LOG.error("graph creation failed", e.getStackTrace());
     }
