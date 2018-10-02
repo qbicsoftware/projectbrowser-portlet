@@ -904,6 +904,7 @@ public class ProjectView extends VerticalLayout implements View {
   @Override
   public void enter(ViewChangeEvent event) {
     String currentValue = event.getParameters();
+
     OpenBisClient oc = datahandler.getOpenBisClient();
     List<Project> userProjects = oc.getOpenbisInfoService().listProjectsOnBehalfOfUser(
         oc.getSessionToken(), PortalUtils.getUser().getScreenName().toString());
@@ -913,12 +914,11 @@ public class ProjectView extends VerticalLayout implements View {
     for (Project p : userProjects) {
       projectIDs.add(p.getIdentifier());
     }
-
     if (projectIDs.contains(currentValue)) {
       // TODO updateContent only if currentProject is not equal to newProject
       // this.table.unselect(this.table.getValue());
       ProjectBean pbean = datahandler.getProject2(currentValue);
-      // if the new project bean is different than reset the graph.
+      // if the new project bean is different then reset the graph.
       if (currentBean != null && !pbean.getId().equals(currentBean.getId())) {
         resetGraphs();
         projectview_tab.setSelectedTab(0);

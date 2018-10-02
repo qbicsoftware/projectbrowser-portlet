@@ -103,7 +103,6 @@ public class ProjectBrowserPortlet extends QBiCPortletUI {
       manager = ConfigurationManagerFactory.getInstance();
       // log who is connecting, when.
       LOG.info(String.format("ProjectBrowser used by: %s", PortalUtils.getUser().getScreenName()));
-
       // try to init connection to openbis and write some session attributes, that can be accessed
       // globally
       try {

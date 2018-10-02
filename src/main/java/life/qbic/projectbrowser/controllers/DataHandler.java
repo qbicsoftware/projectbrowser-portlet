@@ -599,7 +599,6 @@ public class DataHandler implements Serializable {
    * @return
    */
   public ProjectBean getProject2(String projectIdentifier) {
-    LOG.debug("called getprojct2");
     List<Experiment> experiments =
         this.getOpenBisClient().getExperimentsForProject3(projectIdentifier);// TODO changed this
                                                                              // from
@@ -690,7 +689,7 @@ public class DataHandler implements Serializable {
     String designExpID = ExperimentCodeFunctions.getInfoExperimentID(space, projectCode);
     String user = PortalUtils.getUser().getScreenName();
     if (designExperiment == null) {
-      LOG.debug("design experiment null, creating new one.");
+      LOG.info("design experiment null, creating new one.");
       Map<String, Object> params = new HashMap<String, Object>();
       Map<String, String> props = new HashMap<>();
       // TODO empty xml is not valid, but should we add one at all?
@@ -2676,7 +2675,6 @@ public class DataHandler implements Serializable {
 
 
   public Set<String> getFactorLabels() {
-    LOG.debug("returning factorlabels: " + experimentalFactorLabels);
     return experimentalFactorLabels;
   }
 
