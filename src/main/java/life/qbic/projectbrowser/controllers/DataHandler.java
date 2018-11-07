@@ -676,18 +676,20 @@ public class DataHandler implements Serializable {
       allSampleCodes.add(s.getCode());
     }
 
-    for (Experiment experiment : experiments) {
-      String type = experiment.getExperimentTypeCode();
-      if (type.equalsIgnoreCase(ExperimentType.Q_PROJECT_DETAILS.name())) {
-        designExperiment = experiment;
-        break;
-      }
-    }
     // create basic experimental design, if it doesn't exist
     String space = project.getSpaceCode();
     String projectCode = project.getCode();
     String designExpID = ExperimentCodeFunctions.getInfoExperimentID(space, projectCode);
+
+    for (Experiment experiment : experiments) {
+      String id = experiment.getIdentifier();
+      if (id.equals(designExpID)) {
+        designExperiment = experiment;
+        break;
+      }
+    }
     String user = PortalUtils.getUser().getScreenName();
+
     if (designExperiment == null) {
       LOG.info("design experiment null, creating new one.");
       Map<String, Object> params = new HashMap<String, Object>();
@@ -793,7 +795,6 @@ public class DataHandler implements Serializable {
       newExperimentBean.setStatus(status);
       experimentBeans.addBean(newExperimentBean);
     }
-
     List<ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet> projectData = this
         .getOpenBisClient().getDataSetsOfProjectByIdentifierWithSearchCriteria(projectIdentifier);
 
@@ -801,7 +802,6 @@ public class DataHandler implements Serializable {
     Boolean containsResults = false;
     Boolean attachmentResult = false;
     // Boolean containsAttachments = false;
-
     for (ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet ds : projectData) {
       attachmentResult = false;
       if (ds.getDataSetTypeCode().equals("Q_PROJECT_DATA")) {
@@ -1745,7 +1745,6 @@ public class DataHandler implements Serializable {
       String download_link = filelist[0].getPathInDataSet();
       String[] splitted_link = download_link.split("/");
       String file_name = download_link.split("/")[splitted_link.length - 1];
-      // System.out.println(file_name);
 
       dataset_container.getContainerProperty(new_ds, "Select").setValue(new CheckBox());
 
