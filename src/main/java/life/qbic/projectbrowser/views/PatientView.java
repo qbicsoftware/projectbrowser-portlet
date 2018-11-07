@@ -101,7 +101,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-
 public class PatientView extends VerticalLayout implements View {
 
   /**
@@ -776,7 +775,6 @@ public class PatientView extends VerticalLayout implements View {
 
   // OLD
   void updateProjectStatus() {
-
     BeanItemContainer<ExperimentStatusBean> experimentstatusBeans =
         datahandler.computeIvacPatientStatus(currentBean);
 
