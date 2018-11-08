@@ -26,6 +26,7 @@ import life.qbic.projectbrowser.model.ExperimentStatusBean;
 import life.qbic.projectbrowser.model.ProjectBean;
 import life.qbic.projectbrowser.controllers.*;
 import life.qbic.projectbrowser.views.PatientView;
+import life.qbic.projectbrowser.helpers.Utils;
 
 import com.vaadin.data.Item;
 import com.vaadin.data.util.BeanItemContainer;
@@ -180,7 +181,7 @@ public class PatientStatusComponent extends CustomComponent {
           args.put("id", currentBean.getId());
           args.put("type", "workflowExperimentType");
           args.put("experiment", "Q_WF_NGS_VARIANT_ANNOTATION");
-          parent.setSelectedTab(9);
+          parent.setSelectedTab(8);
           wp.update(args);
 
         } else if (esb.getDescription().equals("Epitope Prediction")) {
@@ -196,7 +197,7 @@ public class PatientStatusComponent extends CustomComponent {
           args.put("id", currentBean.getId());
           args.put("type", "workflowExperimentType");
           args.put("experiment", "Q_WF_NGS_EPITOPE_PREDICTION");
-          parent.setSelectedTab(9);
+          parent.setSelectedTab(8);
           wp.update(args);
         } else if (esb.getDescription().equals("HLA Typing")) {
           /*
@@ -210,18 +211,12 @@ public class PatientStatusComponent extends CustomComponent {
           args.put("id", currentBean.getId());
           args.put("type", "workflowExperimentType");
           args.put("experiment", "Q_WF_NGS_HLATYPING");
-          parent.setSelectedTab(9);
+          parent.setSelectedTab(8);
           wp.update(args);
         }
 
         else {
-          Notification notif =
-              new Notification("Workflow not (yet) available.", Type.TRAY_NOTIFICATION);
-          // Customize it
-          notif.setDelayMsec(60000);
-          notif.setPosition(Position.MIDDLE_CENTER);
-          // Show it in the page
-          notif.show(Page.getCurrent());
+          Utils.Notification("Not available.", "Workflow not available or no workflow selected.", "General");
         }
       }
     }));
