@@ -117,7 +117,7 @@
 		<dependency>
 			<groupId>life.qbic</groupId>
 			<artifactId>data-model-lib</artifactId>
-			<version>0.3.0</version>
+			<version>1.0.0</version>
 		</dependency>
 
 		<!-- workflow API based on guse -->

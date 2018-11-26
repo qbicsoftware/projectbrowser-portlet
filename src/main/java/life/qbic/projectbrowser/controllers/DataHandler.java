@@ -724,7 +724,10 @@ public class DataHandler implements Serializable {
       try {
         if (!allSampleCodes.isEmpty()) {
           LOG.info("comparing existing samples with references in experimental design");
-          expDesign = studyParser.removeReferencesToMissingIDs(expDesign, allSampleCodes, true);
+          if (studyParser.hasReferencesToMissingIDs(expDesign, allSampleCodes)) {
+            LOG.info("deleted samples found. updating xml in openBIS");
+            expDesign = studyParser.removeReferencesToMissingIDs(expDesign, allSampleCodes, true);
+          }
         }
         HashMap<String, Object> params = new HashMap<>();
         Map<String, Object> properties = new HashMap<>();
