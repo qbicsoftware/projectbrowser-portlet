@@ -360,15 +360,11 @@ public class WorkflowViewController {
     Set<String> factorNames = new HashSet<String>();
     Map<String, String> fileProps = new HashMap<String, String>();
 
-    // XML Parser
-//    XMLParser p = new XMLParser();
-
     Set<String> secondaryNames = new HashSet<String>();
     Set<String> factorLabels = datahandler.getFactorLabels();
 
     for (Serializable[] ss : res.getRows()) {
 
-      String xml = (String) ss[3];
       String sampleCode = (String) ss[0];
       List<Property> properties = new ArrayList<Property>();
       for (String label : factorLabels) {
@@ -380,7 +376,7 @@ public class WorkflowViewController {
       }
 
       List<String> matches = getMatchingStrings(fileNames, sampleCode);
-      if (!xml.isEmpty() && !matches.isEmpty()) {
+      if (!matches.isEmpty()) {
         for (String match : matches) {
           StringBuilder row = new StringBuilder();
           String extID = (String) ss[1];// how to use this if it is preferred over secondary name?
@@ -389,11 +385,6 @@ public class WorkflowViewController {
             secondaryName += "1";
           secondaryNames.add(secondaryName);
           row.append(secondaryName);
-//          try {
-//            properties = p.getAllPropertiesFromXML(xml);
-//          } catch (JAXBException e) {
-//            e.printStackTrace();
-//          }
           for (Property f : properties) {
             factorNames.add(f.getLabel());
             String val = f.getValue();
