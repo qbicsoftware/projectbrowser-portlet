@@ -446,7 +446,7 @@ public class ProjectBrowserPortlet extends QBiCPortletUI {
     this.openBisConnection = new OpenBisClient(manager.getDataSourceUser(),
         manager.getDataSourcePassword(), manager.getDataSourceUrl());
     this.openBisConnection.login();
-    DBConfig mysqlConfig = new DBConfig(manager.getMsqlHost(), manager.getMysqlPort(),
+    DBConfig mysqlConfig = new DBConfig(manager.getMysqlHost(), manager.getMysqlPort(),
         manager.getMysqlDB(), manager.getMysqlUser(), manager.getMysqlPass());
     DBManager databaseManager = new DBManager(mysqlConfig);
 

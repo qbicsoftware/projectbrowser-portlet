@@ -44,8 +44,6 @@ public class ProjectParser {
   public ProjectParser(Map<String, String> taxMap, Map<String, String> tissueMap) {
     this.taxMap = taxMap;
     this.tissueMap = tissueMap;
-    this.factorLabels = factorLabels;
-    this.factorsForLabelsAndSamples = factorsForLabelsAndSamples;
   }
 
   private boolean collectCodesOfDatasetsAttachedToSamples(List<ISampleBean> samples,

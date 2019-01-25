@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.net.SyslogAppender;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -129,8 +130,8 @@ public class ParameterComponent extends WorkflowParameterComponent {
 
       else if (entry.getValue() instanceof StringParameter) {
         StringParameter param = (StringParameter) entry.getValue();
-
-        if (param.getRange().size() == 0) {
+        // necessary for Microarray QC to create ComboBox instead of TextField
+        if (param.getRange().size() == 0 && !workFlow.getName().equals("Microarray QC")) {
           TextField newField = createInputField(param, null);
 
           parameterForm.addComponent(newField);
@@ -214,8 +215,6 @@ public class ParameterComponent extends WorkflowParameterComponent {
    */
   public void setComboboxOptions(String caption, Set<String> params) {
     for (Field<?> field : parameterFieldGroup.getFields()) {
-      LOG.debug("desc: " + field.getDescription());
-      LOG.debug("caption: " + field.getCaption());
       if (field.getDescription().equals(caption)) {
         if (field instanceof ComboBox) {
           ((ComboBox) field).addItems(params);
