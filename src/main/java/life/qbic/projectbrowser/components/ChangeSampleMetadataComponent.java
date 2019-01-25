@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -198,7 +199,7 @@ public class ChangeSampleMetadataComponent extends CustomComponent {
             }
           }
           JAXBElement<Qexperiment> newDesign =
-              parser.mergeDesigns(setup, new ArrayList<>(), factorStructure, otherProps);
+              parser.mergeDesigns(setup, new HashSet<String>(), new ArrayList<>(), factorStructure, otherProps);
           try {
             String newXML = parser.toString(newDesign);
             HashMap<String, Object> params = new HashMap<>();
