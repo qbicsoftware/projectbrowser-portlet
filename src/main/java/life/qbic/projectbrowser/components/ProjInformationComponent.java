@@ -305,7 +305,7 @@ public class ProjInformationComponent extends CustomComponent {
       projectManager.setValue(pm);
 
       contact.setValue(
-          "<a href=\"mailto:info@qbic.uni-tuebingen.de?subject=Question%20concerning%20project%20"
+          "<a href=\"mailto:support@qbic.zendesk.com?subject=Question%20concerning%20project%20"
               + identifier
               + "\" style=\"color: #0068AA; text-decoration: none\">Send question regarding project "
               + currentBean.getCode() + " (" + space + ")" + "</a>");

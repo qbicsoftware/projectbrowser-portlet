@@ -177,7 +177,7 @@ public class ProjectBrowserPortlet extends QBiCPortletUI {
    */
   private Layout buildNotLoggedinLayout() {
     // Mail to qbic
-    ExternalResource resource = new ExternalResource("mailto:info@qbic.uni-tuebingen.de");
+    ExternalResource resource = new ExternalResource("mailto:support@qbic.zendesk.com");
     Link mailToQbicLink = new Link("", resource);
     mailToQbicLink.setIcon(new ThemeResource("mail9.png"));
 
