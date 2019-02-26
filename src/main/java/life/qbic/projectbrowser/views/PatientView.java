@@ -384,7 +384,7 @@ public class PatientView extends VerticalLayout implements View {
 
   void updateContentDescription() {
     contact.setValue(
-        "<a href=\"mailto:info@qbic.uni-tuebingen.de?subject=Question%20concerning%20project%20"
+        "<a href=\"mailto:support@qbic.zendesk.com?subject=Question%20concerning%20project%20"
             + currentBean.getId()
             + "\" style=\"color: #0068AA; text-decoration: none\">Send question regarding patient "
             + currentBean.getCode() + "</a>");
@@ -1206,7 +1206,7 @@ public class PatientView extends VerticalLayout implements View {
     } else {
       Utils.Notification("Unable to load project",
           String.format(
-              "The requested project %s could not be loaded. You probably don't have access to the requested project. Please contact the corresponding project manager or write an email to info@qbic.uni-tuebingen.de.",
+              "The requested project %s could not be loaded. You probably don't have access to the requested project. Please contact the corresponding project manager or write an email to support@qbic.zendesk.com.",
               currentValue),
           "error");
     }
