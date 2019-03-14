@@ -1182,7 +1182,7 @@ public class PatientView extends VerticalLayout implements View {
     String currentValue = event.getParameters();
     OpenBisClient oc = datahandler.getOpenBisClient();
     List<Project> userProjects = oc.getOpenbisInfoService().listProjectsOnBehalfOfUser(
-        oc.getSessionToken(), PortalUtils.getUser().getScreenName().toString());
+        oc.getSessionToken(), PortalUtils.getNonNullScreenName());
 
     List<String> projectIDs = new ArrayList<String>();
 

@@ -151,7 +151,7 @@ public class ChangeSampleMetadataComponent extends CustomComponent {
           }
         }
 
-        String user = PortalUtils.getUser().getScreenName();
+        String user = PortalUtils.getNonNullScreenName();
 
         if (qpropertiesDefined) {
           String qProperties = "";

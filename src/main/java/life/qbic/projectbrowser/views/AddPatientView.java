@@ -286,7 +286,7 @@ public class AddPatientView extends VerticalLayout implements View {
 
     for (Project project : datahandler.getOpenBisClient().getOpenbisInfoService()
         .listProjectsOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(),
-            PortalUtils.getUser().getScreenName())) {
+            PortalUtils.getNonNullScreenName())) {
 
       if (project.getIdentifier().contains("IVAC")) {
         visibleSpaces.add(project.getSpaceCode());

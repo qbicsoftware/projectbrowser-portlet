@@ -101,7 +101,7 @@ public class ChangeProjectMetadataComponent extends CustomComponent {
         }
 
         parameters.put("identifier", projectBean.getId());
-        parameters.put("user", PortalUtils.getUser().getScreenName());
+        parameters.put("user", PortalUtils.getNonNullScreenName());
         datahandler.getOpenBisClient().triggerIngestionService("update-project-metadata",
             parameters);
         Utils.Notification("Project details changed succesfully", String

@@ -177,7 +177,7 @@ public class SearchBarView extends CustomComponent {
         MatchClause.createAttributeMatch(MatchClauseAttribute.CODE, samplecode + "*"));
     List<Sample> samples = datahandler.getOpenBisClient().getOpenbisInfoService()
         .searchForSamplesOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(), sc,
-            fetchOptions, PortalUtils.getUser().getScreenName());
+            fetchOptions, PortalUtils.getNonNullScreenName());
     List<String> ret = new ArrayList<String>(samples.size());
     for (Sample sample : samples) {
       ret.add(sample.getCode());

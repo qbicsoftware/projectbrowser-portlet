@@ -351,7 +351,7 @@ public class SearchEngineView extends CustomComponent {
     List<Project> projects =
         new ArrayList<Project>(datahandler.getOpenBisClient().getOpenbisInfoService()
             .listProjectsOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(),
-                PortalUtils.getUser().getScreenName()));
+                PortalUtils.getNonNullScreenName()));
 
     for (Project p : projects) {
       String projectDesc = p.getDescription();
@@ -378,7 +378,7 @@ public class SearchEngineView extends CustomComponent {
     List<Project> projects =
         new ArrayList<Project>(datahandler.getOpenBisClient().getOpenbisInfoService()
             .listProjectsOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(),
-                PortalUtils.getUser().getScreenName()));
+                PortalUtils.getNonNullScreenName()));
 
     Set<String> resultSpaceNames = new HashSet<String>();
 
@@ -401,7 +401,7 @@ public class SearchEngineView extends CustomComponent {
 
     List<Sample> samples = datahandler.getOpenBisClient().getOpenbisInfoService()
         .searchForSamplesOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(), sc,
-            fetchOptions, PortalUtils.getUser().getScreenName());
+            fetchOptions, PortalUtils.getNonNullScreenName());
     List<String> ret = new ArrayList<String>(samples.size());
     for (Sample sample : samples) {
       ret.add(sample.getCode());

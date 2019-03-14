@@ -356,17 +356,12 @@ public class HomeView extends VerticalLayout implements View {
       buildLayout(height, width, event.getNavigator().getUI().getPage().getWebBrowser());
     } catch (Exception e) {
       LOG.error(String.format("failed to load projects for user %s", user), e);
-      // homeview_content.removeAllComponents();
       removeAllComponents();
       Label error = new Label("Connection to database interrupted. Please try again later.");
       error.addStyleName(ValoTheme.LABEL_FAILURE);
       error.addStyleName(ValoTheme.LABEL_HUGE);
       addComponent(error);
       setComponentAlignment(error, Alignment.MIDDLE_CENTER);
-
-      // homeview_content.addComponent(error);
-      // homeview_content.setComponentAlignment(error, Alignment.MIDDLE_CENTER);
-      // this.addComponent(homeview_content);
     }
   }
 
