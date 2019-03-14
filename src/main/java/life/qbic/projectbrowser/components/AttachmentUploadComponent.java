@@ -59,7 +59,7 @@ public class AttachmentUploadComponent extends CustomComponent {
 
     mainView = new UploadsPanel(manager.getTmpFolder(), space, projectCode,
         new ArrayList<String>(Arrays.asList("Project Planning", "Results")),
-            PortalUtils.getUser().getScreenName(), attachConfig, openBisClient);
+            PortalUtils.getNonNullScreenName(), attachConfig, openBisClient);
     mainView.setResponsive(true);
 
     mainView.setWidth(100.0f, Unit.PERCENTAGE);

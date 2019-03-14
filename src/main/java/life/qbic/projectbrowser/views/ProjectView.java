@@ -888,7 +888,7 @@ public class ProjectView extends VerticalLayout implements View {
 
     OpenBisClient oc = datahandler.getOpenBisClient();
     List<Project> userProjects = oc.getOpenbisInfoService().listProjectsOnBehalfOfUser(
-        oc.getSessionToken(), PortalUtils.getUser().getScreenName().toString());
+        oc.getSessionToken(), PortalUtils.getNonNullScreenName());
 
     List<String> projectIDs = new ArrayList<String>();
 
