@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TarWriter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.helpers</a> &gt; <span class="el_source">TarWriter.java</span></div><h1>TarWriter.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects.
+ * Copyright (C) &quot;2016”  Christopher Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.helpers;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.tools.tar.TarEntry;
+import org.apache.tools.tar.TarOutputStream;
+
+
+<span class="nc" id="L36">public class TarWriter {</span>
+<span class="nc" id="L37">  private static final Logger LOG = LogManager.getLogger(TarWriter.class);</span>
+  // some default value
+<span class="nc" id="L39">  private String rootFolderName = &quot;qbic&quot;;</span>
+  // TODO Take Vaadin defaults!
+<span class="nc" id="L41">  private final int DEFAULT_BUFFER_SIZE = 32768;</span>
+<span class="nc" id="L42">  private int MAX_BUFFER_SIZE = 65536;</span>
+<span class="nc" id="L43">  private int BUFFER_SIZE = DEFAULT_BUFFER_SIZE;</span>
+  
+  // Standard in most modern tar applications
+<span class="nc" id="L46">  private final int tar_record_size = 512;</span>
+<span class="nc" id="L47">  final int tar_block_size = tar_record_size * 20;</span>
+
+<span class="nc" id="L49">  private TarOutputStream tar = null;</span>
+
+  /**
+   * Sets the root Folder Name. If the archive is extracted everything is extracted to this folder
+   * 
+   * @param rootFolderName
+   */
+  public void setRootFolderName(String rootFolderName) {
+<span class="nc" id="L57">    this.rootFolderName = rootFolderName;</span>
+<span class="nc" id="L58">  }</span>
+
+  /**
+   * Sets the buffer size to new value only if 0 &lt; bufferSize &lt;= MAX_BUFFER_SIZE.
+   * 
+   * @param bufferSize
+   */
+  public void setBufferSize(int bufferSize) {
+<span class="nc bnc" id="L66" title="All 4 branches missed.">    if (0 &lt; bufferSize &amp;&amp; bufferSize &lt;= MAX_BUFFER_SIZE) {</span>
+<span class="nc" id="L67">      BUFFER_SIZE = bufferSize;</span>
+    }
+<span class="nc" id="L69">  }</span>
+
+
+  /**
+   * sets the buffer size to default
+   */
+  public void resetBufferSize() {
+<span class="nc" id="L76">    BUFFER_SIZE = DEFAULT_BUFFER_SIZE;</span>
+<span class="nc" id="L77">  }</span>
+
+  /**
+   * if another outputstream was already used it is first closed.
+   * 
+   * @param out
+   */
+  public void setOutputStream(OutputStream out) {
+<span class="nc bnc" id="L85" title="All 2 branches missed.">    if (tar != null) {</span>
+      try {
+<span class="nc" id="L87">        tar.close();</span>
+<span class="nc" id="L88">      } catch (IOException e) {</span>
+<span class="nc" id="L89">        e.printStackTrace();</span>
+<span class="nc" id="L90">        LOG.error(&quot;closing previous stream failed.&quot;, e.getCause());</span>
+<span class="nc" id="L91">      }</span>
+    }
+<span class="nc" id="L93">    this.tar = new TarOutputStream(out);</span>
+<span class="nc" id="L94">    tar.setLongFileMode(TarOutputStream.LONGFILE_POSIX);</span>
+<span class="nc" id="L95">    tar.setBigNumberMode(TarOutputStream.BIGNUMBER_POSIX);</span>
+
+<span class="nc" id="L97">  }</span>
+
+  /**
+   * tries to close the tar stream
+   */
+  public void closeStream() {	  
+<span class="nc bnc" id="L103" title="All 2 branches missed.">    if (tar != null) {</span>
+      try {
+<span class="nc" id="L105">    	tar.flush();</span>
+        //tar.close();
+<span class="nc" id="L107">    	tar.finish();</span>
+<span class="nc" id="L108">      } catch (IOException e) {</span>
+<span class="nc" id="L109">        LOG.error(&quot;closing previous stream failed.&quot;, e.getCause());</span>
+<span class="nc" id="L110">      }</span>
+<span class="nc" id="L111">      tar = null;</span>
+    }
+<span class="nc" id="L113">  }</span>
+
+  /**
+   * writes entries into the Tar ball. Each key value pair of entries will be one entry.
+   * entries::key is the TarEntry name. entry::value the inputStream that will be written to that
+   * entry.
+   * 
+   * @param entry
+   */
+//  public void writeEntry(Map&lt;String, AbstractMap.SimpleEntry&lt;InputStream, Long&gt;&gt; entries) {
+//    Set&lt;Entry&lt;String, SimpleEntry&lt;InputStream, Long&gt;&gt;&gt; entrySet = entries.entrySet();
+//    Iterator&lt;Entry&lt;String, SimpleEntry&lt;InputStream, Long&gt;&gt;&gt; it = entrySet.iterator();
+//    while (it.hasNext()) {
+//      Entry&lt;String, SimpleEntry&lt;InputStream, Long&gt;&gt; entry = it.next();
+//      this.writeEntry(entry.getKey(), entry.getValue().getKey(), entry.getValue().getValue());
+//    }
+//  }
+
+
+
+  /**
+   * Writes the entry into the tar ball. filSize has to match the size of the entry. It will be
+   * written to the tar ball under the name entryName.
+   * 
+   * @param entryName
+   * @param entry
+   * @param fileSize
+   */
+  public void writeEntry(String entryName, InputStream entry, long fileSize) {
+//    LOG.debug(entryName + &quot; &quot; + entry + &quot; &quot; + fileSize);
+<span class="nc" id="L143">    TarEntry tar_entry = new TarEntry(entryName);</span>
+<span class="nc" id="L144">    tar_entry.setSize(fileSize);</span>
+<span class="nc" id="L145">    tar_entry.getRealSize();</span>
+<span class="nc" id="L146">    long totalWritten = 0;</span>
+    try {
+<span class="nc" id="L148">      tar.putNextEntry(tar_entry);</span>
+<span class="nc" id="L149">      int bytesRead = 0;</span>
+<span class="nc" id="L150">      final byte[] buffer = new byte[BUFFER_SIZE];</span>
+      // System.out.println(&quot;File: &quot; + entryName + &quot;, Size: &quot; + Long.toString(fileSize));
+
+
+<span class="nc bnc" id="L154" title="All 2 branches missed.">      while ((bytesRead = entry.read(buffer)) &gt; 0) {</span>
+        //System.out.println(&quot;bytes read: &quot; + Integer.toString(bytesRead) + &quot; buffer.length: &quot; +
+       //Integer.toString(buffer.length));
+<span class="nc" id="L157">        tar.write(buffer, 0, bytesRead);</span>
+<span class="nc" id="L158">        totalWritten += bytesRead;</span>
+        
+        //if (totalWritten &gt;= buffer.length) {
+          // Avoid chunked encoding for small resources
+          //tar.flush();
+        //}
+      }
+      // System.out.println(&quot;bytesRead&quot;);
+<span class="nc" id="L166">      tar.closeEntry();</span>
+
+      // try to close input stream
+<span class="nc bnc" id="L169" title="All 2 branches missed.">      if (entry != null) {</span>
+<span class="nc" id="L170">        entry.close();</span>
+      }
+<span class="nc" id="L172">    } catch (IOException e1) {</span>
+      // e1.printStackTrace();
+      /*
+      if (e1 instanceof ClientAbortException) {
+        LOG.info(&quot;client aborted download.&quot;);
+        return;
+      } else {
+      */
+<span class="nc" id="L180">        e1.printStackTrace();</span>
+<span class="nc" id="L181">        LOG.error(&quot;writing entry to client failed&quot;, e1.getCause());</span>
+<span class="nc" id="L182">      }</span>
+    //LOG.debug(&quot;Total Written: &quot; + totalWritten);
+<span class="nc" id="L184">  }</span>
+
+  /**
+   * creates a String path out of the given parameters
+   * 
+   * @param paths
+   * @return
+   */
+  public String getPath(String... paths) {
+<span class="nc" id="L193">    StringBuilder sb = new StringBuilder(rootFolderName);</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">    for (String s : paths) {</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">      if (!s.startsWith(java.io.File.separator))</span>
+<span class="nc" id="L196">        sb.append(java.io.File.separator);</span>
+<span class="nc" id="L197">      sb.append(s);</span>
+    }
+<span class="nc" id="L199">    return sb.toString();</span>
+  }
+
+  public long computeTarLength(Map&lt;String, SimpleEntry&lt;InputStream, Long&gt;&gt; entries) {
+<span class="nc" id="L203">    Set&lt;Entry&lt;String, SimpleEntry&lt;InputStream, Long&gt;&gt;&gt; entrySet = entries.entrySet();</span>
+<span class="nc" id="L204">    Iterator&lt;Entry&lt;String, SimpleEntry&lt;InputStream, Long&gt;&gt;&gt; it = entrySet.iterator();</span>
+<span class="nc" id="L205">    long[] tarLen = new long[entrySet.size()];</span>
+<span class="nc" id="L206">    int i = 0;</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">    while (it.hasNext()) {</span>
+<span class="nc" id="L208">      Entry&lt;String, SimpleEntry&lt;InputStream, Long&gt;&gt; entry = it.next();</span>
+<span class="nc" id="L209">      tarLen[i] = entry.getValue().getValue();</span>
+<span class="nc" id="L210">      i++;</span>
+<span class="nc" id="L211">    }</span>
+<span class="nc" id="L212">    return computeTarLength(tarLen, tar_record_size, tar_block_size);</span>
+  }
+
+  public long computeTarLength2(Map&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entries) {
+<span class="nc" id="L216">    Set&lt;Entry&lt;String, SimpleEntry&lt;String, Long&gt;&gt;&gt; entrySet = entries.entrySet();</span>
+<span class="nc" id="L217">    Iterator&lt;Entry&lt;String, SimpleEntry&lt;String, Long&gt;&gt;&gt; it = entrySet.iterator();</span>
+<span class="nc" id="L218">    long[] tarLen = new long[entrySet.size()];</span>
+<span class="nc" id="L219">    String[] fileNames = new String[entrySet.size()];</span>
+<span class="nc" id="L220">    int i = 0;</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">    while (it.hasNext()) {</span>
+<span class="nc" id="L222">      Entry&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entry = it.next();</span>
+<span class="nc" id="L223">      tarLen[i] = entry.getValue().getValue();</span>
+<span class="nc" id="L224">      fileNames[i] = entry.getKey();</span>
+<span class="nc" id="L225">      i++;</span>
+<span class="nc" id="L226">    }</span>
+<span class="nc" id="L227">    return computeTarLength(tarLen, tar_record_size, tar_block_size);</span>
+  }
+
+  /**
+   * Computes the size of an uncompressed tarball with the given parameters. See this for more
+   * information: http://en.wikipedia.org/wiki/Tar_%28computing%29#Format_details IMPORTANT:
+   * computed value might be slightly bigger than the real one. But it suffices for our purppose,
+   * where we want to show download progress.
+   * 
+   * @param file_sizes in bytes
+   * @param tar_record_size in bytes
+   * @param tar_block_size in bytes
+   * @return size of the whole tar ball
+   */
+  private long computeTarLength(long[] file_sizes, int tar_record_size, int tar_block_size) {
+    // Every file has a header
+<span class="nc" id="L243">    long length_tar_headers = (file_sizes.length + 2) * tar_record_size;</span>
+<span class="nc" id="L244">    long total_length_file_sizes = 0;</span>
+<span class="nc" id="L245">    long append_zeros = 0;</span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">    for (int i = 0; i &lt; file_sizes.length; i++) {</span>
+      // every file is saved uncomppressed, add just its file size
+<span class="nc" id="L248">      total_length_file_sizes += file_sizes[i];</span>
+      // Each entry must be a multiple of the record size. it is not. entry will be filled with
+      // zeros until it is.
+<span class="nc" id="L251">      long mod = file_sizes[i] % tar_record_size;</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">      if (mod &gt; 0) {</span>
+
+<span class="nc" id="L254">        append_zeros += tar_record_size - mod;</span>
+      }
+    }
+
+    // tar ball must be a multiple of block size. If it is not will be filled with zeros until it
+    // is.
+<span class="nc" id="L260">    long mod = (length_tar_headers + total_length_file_sizes + append_zeros) % tar_block_size;</span>
+<span class="nc bnc" id="L261" title="All 2 branches missed.">    if (mod &gt; 0) {</span>
+<span class="nc" id="L262">      mod = tar_block_size - mod;</span>
+    }
+<span class="nc" id="L264">    return length_tar_headers + total_length_file_sizes + append_zeros + mod;</span>
+  }
+
+  /**
+   * Computes the size of an uncompressed tarball with the given parameters. See this for more
+   * information: http://en.wikipedia.org/wiki/Tar_%28computing%29#Format_details Important: handles
+   * different header sizes DOES NOT WORK DO NOT USE
+   * 
+   * @param file_sizes in bytes
+   * @param tar_record_size in bytes
+   * @param tar_block_size in bytes
+   * @return size of the whole tar ball
+   */
+  @Deprecated
+  private long computeTarLength(String[] fileName, long[] file_sizes, int tar_record_size,
+      int tar_block_size) {
+    // Every file has a header
+<span class="nc" id="L281">    long total_length_file_sizes = 0;</span>
+<span class="nc" id="L282">    long append_zeros = 0;</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">    for (int i = 0; i &lt; file_sizes.length; i++) {</span>
+      // every file is saved uncomppressed, add just its file size
+<span class="nc" id="L285">      TarEntry entry = new TarEntry(fileName[i]);</span>
+<span class="nc" id="L286">      entry.setSize(file_sizes[i]);</span>
+<span class="nc" id="L287">      System.out.println(fileName[i]);</span>
+<span class="nc" id="L288">      System.out.println(file_sizes[i]);</span>
+<span class="nc" id="L289">      System.out.println(entry.getSize());</span>
+<span class="nc" id="L290">      System.out.println(entry.getSize());</span>
+<span class="nc" id="L291">      total_length_file_sizes += entry.getSize();</span>
+      // Each entry must be a multiple of the record size. it is not. entry will be filled with
+      // zeros until it is.
+<span class="nc" id="L294">      long mod = file_sizes[i] % tar_record_size;</span>
+<span class="nc bnc" id="L295" title="All 2 branches missed.">      if (mod &gt; 0) {</span>
+
+<span class="nc" id="L297">        append_zeros += tar_record_size - mod;</span>
+      }
+    }
+
+    // tar ball must be a multiple of block size. If it is not will be filled with zeros until it
+    // is.
+<span class="nc" id="L303">    long mod = (total_length_file_sizes + append_zeros) % tar_block_size;</span>
+<span class="nc bnc" id="L304" title="All 2 branches missed.">    if (mod &gt; 0) {</span>
+<span class="nc" id="L305">      mod = tar_block_size - mod;</span>
+    }
+<span class="nc" id="L307">    return total_length_file_sizes + append_zeros + mod;</span>
+  }
+
+  /**
+   * returns the content type of this particular writer
+   * 
+   * @return
+   */
+  public String getContentType() {
+<span class="nc" id="L316">    return &quot;application/x-tar&quot;;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

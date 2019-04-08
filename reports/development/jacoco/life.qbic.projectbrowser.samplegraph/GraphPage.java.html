@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GraphPage.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.samplegraph</a> &gt; <span class="el_source">GraphPage.java</span></div><h1>GraphPage.java</h1><pre class="source lang-java linenums">package life.qbic.projectbrowser.samplegraph;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.xml.bind.JAXBException;
+
+import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.data.Property.ValueChangeListener;
+import com.vaadin.server.FontAwesome;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.ComboBox;
+import com.vaadin.ui.Table;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Window;
+import com.vaadin.ui.themes.ValoTheme;
+import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
+
+import ch.systemsx.cisd.openbis.dss.client.api.v1.DataSet;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
+import life.qbic.portal.portlet.ProjectBrowserPortlet;
+import life.qbic.portal.utils.PortalUtils;
+import life.qbic.xml.properties.Property;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+public class GraphPage extends VerticalLayout {
+
+<span class="nc" id="L40">  private static final Logger LOG = LogManager.getLogger(GraphPage.class);</span>
+
+  private List&lt;Sample&gt; currentSamples;
+  private ProjectParser parser;
+  private StructuredExperiment structure;
+  private ComboBox factorBox;
+
+  private ProjectGraph sampleGraph;
+
+<span class="nc" id="L49">  public GraphPage(Map&lt;String, String&gt; taxMap, Map&lt;String, String&gt; tissueMap) {</span>
+<span class="nc" id="L50">    setSpacing(true);</span>
+<span class="nc" id="L51">    setMargin(true);</span>
+<span class="nc" id="L52">    Map&lt;String, String&gt; reverseTaxMap = taxMap.entrySet().stream()</span>
+<span class="nc" id="L53">        .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));</span>
+<span class="nc" id="L54">    Map&lt;String, String&gt; reverseTissueMap = tissueMap.entrySet().stream()</span>
+<span class="nc" id="L55">        .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));</span>
+
+<span class="nc" id="L57">    parser = new ProjectParser(reverseTaxMap, reverseTissueMap);</span>
+<span class="nc" id="L58">  }</span>
+
+  private String buildImagePath() {
+<span class="nc" id="L61">    StringBuilder pathBuilder = new StringBuilder();</span>
+
+<span class="nc bnc" id="L63" title="All 2 branches missed.">    if (PortalUtils.isLiferayPortlet()) {</span>
+<span class="nc" id="L64">      Properties prop = new Properties();</span>
+<span class="nc" id="L65">      InputStream in = this.getClass().getClassLoader()</span>
+<span class="nc" id="L66">          .getResourceAsStream(&quot;WEB-INF/liferay-plugin-package.properties&quot;);</span>
+      try {
+<span class="nc" id="L68">        prop.load(in);</span>
+<span class="nc" id="L69">        in.close();</span>
+<span class="nc" id="L70">      } catch (IOException e1) {</span>
+        // TODO Auto-generated catch block
+<span class="nc" id="L72">        e1.printStackTrace();</span>
+<span class="nc" id="L73">      }</span>
+<span class="nc" id="L74">      String portletName = prop.getProperty(&quot;name&quot;);</span>
+
+<span class="nc" id="L76">      URI location = UI.getCurrent().getPage().getLocation();</span>
+      // http
+<span class="nc" id="L78">      pathBuilder.append(location.getScheme());</span>
+<span class="nc" id="L79">      pathBuilder.append(&quot;://&quot;);</span>
+      // host+port
+<span class="nc" id="L81">      pathBuilder.append(location.getAuthority());</span>
+
+<span class="nc" id="L83">      String port = (Integer.toString(location.getPort()));</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">      if (location.toString().contains(port)) {</span>
+<span class="nc" id="L85">        pathBuilder.append(&quot;:&quot;);</span>
+<span class="nc" id="L86">        pathBuilder.append(port);</span>
+      }
+<span class="nc" id="L88">      pathBuilder.append(&quot;/&quot;);</span>
+<span class="nc" id="L89">      pathBuilder.append(portletName);</span>
+    }
+<span class="nc" id="L91">    pathBuilder.append(&quot;/VAADIN/img/&quot;);</span>
+<span class="nc" id="L92">    return pathBuilder.toString();</span>
+  }
+
+  public void loadProjectGraph(String projectIdentifier, List&lt;Sample&gt; samples,
+      List&lt;DataSet&gt; datasets, Set&lt;String&gt; factorLabels,
+      Map&lt;Pair&lt;String, String&gt;, Property&gt; factorsForLabelsAndSamples) {
+<span class="nc" id="L98">    this.factorBox = new ComboBox(&quot;Experimental Factor&quot;);</span>
+<span class="nc" id="L99">    factorBox.setVisible(false);</span>
+<span class="nc" id="L100">    addComponent(factorBox);</span>
+
+<span class="nc" id="L102">    currentSamples = samples;</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">    if (currentSamples.isEmpty()) {</span>
+<span class="nc" id="L104">      LOG.info(&quot;No samples to show found in this project.&quot;);</span>
+    } else {
+      try {
+        // load here
+<span class="nc" id="L108">        structure = parser.parseSamplesBreadthFirst(currentSamples, datasets, factorLabels, factorsForLabelsAndSamples);</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">        if (!structure.getFactorsToSamples().isEmpty()) {</span>
+<span class="nc" id="L110">          factorBox.addItems(structure.getFactorsToSamples().keySet());</span>
+<span class="nc" id="L111">          factorBox.setVisible(true);</span>
+        }
+<span class="nc" id="L113">      } catch (JAXBException e) {</span>
+<span class="nc" id="L114">        e.printStackTrace();</span>
+<span class="nc" id="L115">        LOG.error(&quot;JAXB Parsing error!&quot;);</span>
+<span class="nc" id="L116">      }</span>
+    }
+
+<span class="nc" id="L119">    factorBox.setImmediate(true);</span>
+<span class="nc" id="L120">    factorBox.setNullSelectionAllowed(false);</span>
+<span class="nc" id="L121">    final GraphPage parent = this;</span>
+<span class="nc" id="L122">    factorBox.addValueChangeListener(new ValueChangeListener() {</span>
+
+      @Override
+      public void valueChange(ValueChangeEvent event) {
+<span class="nc" id="L126">        Object factor = factorBox.getValue();</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">        if (sampleGraph != null) {</span>
+<span class="nc" id="L128">          parent.removeComponent(sampleGraph);</span>
+        }
+<span class="nc" id="L130">        sampleGraph = new ProjectGraph(parent, buildImagePath());</span>
+<span class="nc" id="L131">        sampleGraph.setSizeFull();</span>
+<span class="nc" id="L132">        parent.addComponent(sampleGraph);</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">        if (factor != null) {</span>
+<span class="nc" id="L134">          sampleGraph.setProject(structure.getFactorsToSamples().get(factor));</span>
+        }
+<span class="nc" id="L136">      }</span>
+    });
+<span class="nc" id="L138">  }</span>
+
+  public void showDatasetsForSamples(String label, List&lt;String&gt; sampleCodes) {
+<span class="nc" id="L141">    Window subWindow = new Window(&quot; &quot; + label + &quot; Dataset information&quot;);</span>
+<span class="nc" id="L142">    subWindow.setWidth(&quot;680px&quot;);</span>
+
+<span class="nc" id="L144">    VerticalLayout layout = new VerticalLayout();</span>
+<span class="nc" id="L145">    layout.setSpacing(true);</span>
+<span class="nc" id="L146">    layout.setMargin(true);</span>
+<span class="nc" id="L147">    List&lt;Sample&gt; samplesWithData = new ArrayList&lt;Sample&gt;();</span>
+<span class="nc" id="L148">    List&lt;Sample&gt; samplesWithoutData = new ArrayList&lt;Sample&gt;();</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">    for (String code : sampleCodes) {</span>
+<span class="nc" id="L150">      Sample s = parser.getSampleFromCode(code);</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">      if (parser.codeHasDatasets(code)) {</span>
+<span class="nc" id="L152">        samplesWithData.add(s);</span>
+      } else {
+<span class="nc" id="L154">        samplesWithoutData.add(s);</span>
+      }
+<span class="nc" id="L156">    }</span>
+
+<span class="nc" id="L158">    Table haveData = new Table(&quot;Samples/Entities with Data&quot;);</span>
+<span class="nc" id="L159">    haveData.setStyleName(ValoTheme.TABLE_SMALL);</span>
+<span class="nc" id="L160">    haveData.addContainerProperty(&quot;Sample&quot;, String.class, null);</span>
+<span class="nc" id="L161">    haveData.addContainerProperty(&quot;Secondary Name&quot;, String.class, null);</span>
+<span class="nc" id="L162">    haveData.addContainerProperty(&quot;Lab ID&quot;, String.class, null);</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">    for (Sample s : samplesWithData) {</span>
+<span class="nc" id="L164">      List&lt;Object&gt; row = new ArrayList&lt;Object&gt;();</span>
+<span class="nc" id="L165">      row.add(s.getCode());</span>
+<span class="nc" id="L166">      Map&lt;String, String&gt; props = s.getProperties();</span>
+<span class="nc" id="L167">      String secName = &quot;&quot;;</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">      if (props.get(&quot;Q_SECONDARY_NAME&quot;) != null) {</span>
+<span class="nc" id="L169">        secName = props.get(&quot;Q_SECONDARY_NAME&quot;);</span>
+      }
+<span class="nc" id="L171">      row.add(secName);</span>
+
+<span class="nc" id="L173">      String extID = &quot;&quot;;</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">      if (props.get(&quot;Q_EXTERNALDB_ID&quot;) != null) {</span>
+<span class="nc" id="L175">        extID = props.get(&quot;Q_EXTERNALDB_ID&quot;);</span>
+      }
+<span class="nc" id="L177">      row.add(extID);</span>
+
+<span class="nc" id="L179">      haveData.addItem(row.toArray(new Object[row.size()]), s);</span>
+<span class="nc" id="L180">    }</span>
+
+<span class="nc" id="L182">    Table noData = new Table(&quot;Samples/Entities without Data&quot;);</span>
+<span class="nc" id="L183">    noData.setStyleName(ValoTheme.TABLE_SMALL);</span>
+<span class="nc" id="L184">    noData.addContainerProperty(&quot;Sample&quot;, String.class, null);</span>
+<span class="nc" id="L185">    noData.addContainerProperty(&quot;Secondary Name&quot;, String.class, null);</span>
+<span class="nc" id="L186">    noData.addContainerProperty(&quot;Lab ID&quot;, String.class, null);</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">    for (Sample s : samplesWithoutData) {</span>
+<span class="nc" id="L188">      List&lt;Object&gt; row = new ArrayList&lt;Object&gt;();</span>
+<span class="nc" id="L189">      row.add(s.getCode());</span>
+<span class="nc" id="L190">      Map&lt;String, String&gt; props = s.getProperties();</span>
+<span class="nc" id="L191">      String secName = &quot;&quot;;</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">      if (props.get(&quot;Q_SECONDARY_NAME&quot;) != null) {</span>
+<span class="nc" id="L193">        secName = props.get(&quot;Q_SECONDARY_NAME&quot;);</span>
+      }
+<span class="nc" id="L195">      row.add(secName);</span>
+
+<span class="nc" id="L197">      String extID = &quot;&quot;;</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">      if (props.get(&quot;Q_EXTERNALDB_ID&quot;) != null) {</span>
+<span class="nc" id="L199">        extID = props.get(&quot;Q_EXTERNALDB_ID&quot;);</span>
+      }
+<span class="nc" id="L201">      row.add(extID);</span>
+
+<span class="nc" id="L203">      noData.addItem(row.toArray(new Object[row.size()]), s);</span>
+<span class="nc" id="L204">    }</span>
+<span class="nc" id="L205">    haveData.setPageLength(samplesWithData.size());</span>
+<span class="nc" id="L206">    noData.setPageLength(samplesWithoutData.size());</span>
+
+<span class="nc" id="L208">    layout.addComponent(haveData);</span>
+<span class="nc" id="L209">    layout.addComponent(noData);</span>
+<span class="nc" id="L210">    Button ok = new Button(&quot;Close&quot;);</span>
+<span class="nc" id="L211">    ok.addClickListener(new ClickListener() {</span>
+
+      @Override
+      public void buttonClick(ClickEvent event) {
+<span class="nc" id="L215">        subWindow.close();</span>
+<span class="nc" id="L216">      }</span>
+    });
+
+<span class="nc" id="L219">    layout.addComponent(ok);</span>
+
+<span class="nc" id="L221">    subWindow.setContent(layout);</span>
+    // Center it in the browser window
+<span class="nc" id="L223">    subWindow.center();</span>
+<span class="nc" id="L224">    subWindow.setModal(true);</span>
+<span class="nc" id="L225">    subWindow.setIcon(FontAwesome.FILE);</span>
+<span class="nc" id="L226">    subWindow.setResizable(false);</span>
+<span class="nc" id="L227">    ProjectBrowserPortlet ui = (ProjectBrowserPortlet) UI.getCurrent();</span>
+<span class="nc" id="L228">    ui.addWindow(subWindow);</span>
+<span class="nc" id="L229">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

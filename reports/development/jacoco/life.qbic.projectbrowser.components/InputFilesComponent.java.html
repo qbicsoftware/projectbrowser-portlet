@@ -1,0 +1,658 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InputFilesComponent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.components</a> &gt; <span class="el_source">InputFilesComponent.java</span></div><h1>InputFilesComponent.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.components;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.apache.commons.lang.NotImplementedException;
+
+import com.vaadin.data.Item;
+import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.data.util.GeneratedPropertyContainer;
+import com.vaadin.data.util.PropertyValueGenerator;
+import com.vaadin.shared.ui.MarginInfo;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.Grid.SelectionMode;
+import com.vaadin.ui.Grid.SingleSelectionModel;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Notification;
+import com.vaadin.ui.Notification.Type;
+import com.vaadin.ui.TabSheet;
+import com.vaadin.ui.TabSheet.Tab;
+import com.vaadin.ui.themes.ValoTheme;
+
+import life.qbic.projectbrowser.controllers.WorkflowViewController;
+import life.qbic.projectbrowser.helpers.Utils;
+import life.qbic.projectbrowser.helpers.GridFunctions;
+
+// from workflow API
+import de.uni_tuebingen.qbic.beans.DatasetBean;
+
+import fasta.FastaBean;
+import fasta.FastaDB;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import submitter.Workflow;
+import submitter.parameters.FileListParameter;
+import submitter.parameters.FileParameter;
+import submitter.parameters.InputList;
+import submitter.parameters.Parameter;
+import submitter.parameters.ParameterSet;
+
+public class InputFilesComponent extends WorkflowParameterComponent {
+
+
+  /**
+   * 
+   */
+  private static final long serialVersionUID = -675703070595329585L;
+<span class="nc" id="L71">  private TabSheet inputFileForm = new TabSheet();</span>
+
+<span class="nc" id="L73">  private static final Logger LOG = LogManager.getLogger(InputFilesComponent.class);</span>
+<span class="nc" id="L74">  private Map&lt;String, Parameter&gt; wfmap = new HashMap&lt;String, Parameter&gt;();;</span>
+
+
+  public InputFilesComponent(Map&lt;String, Parameter&gt; parameters) {
+<span class="nc" id="L78">    super();</span>
+<span class="nc" id="L79">    wfmap = parameters;</span>
+<span class="nc" id="L80">  }</span>
+
+<span class="nc" id="L82">  public InputFilesComponent() {</span>
+<span class="nc" id="L83">    this.setCaption(String.format(&quot;&lt;font color=#FF0000&gt;  Select input file(s) &lt;/font&gt;&quot;));</span>
+<span class="nc" id="L84">    this.setCaptionAsHtml(true);</span>
+<span class="nc" id="L85">    inputFileForm.setHeight(100.0f, Unit.PERCENTAGE);</span>
+<span class="nc" id="L86">    inputFileForm.addStyleName(ValoTheme.TABSHEET_FRAMED);</span>
+<span class="nc" id="L87">    inputFileForm.addStyleName(ValoTheme.TABSHEET_PADDED_TABBAR);</span>
+<span class="nc" id="L88">    setCompositionRoot(inputFileForm);</span>
+<span class="nc" id="L89">  }</span>
+
+  @Override
+  public Workflow getWorkflow() {
+    // TODO Auto-generated method stub
+<span class="nc" id="L94">    return null;</span>
+  }
+
+  @Override
+  public ParameterSet getParameters() {
+    // TODO Auto-generated method stub
+<span class="nc" id="L100">    return null;</span>
+  }
+
+  @Override
+  public void resetParameters() {
+    // TODO Auto-generated method stub
+<span class="nc" id="L106">  }</span>
+
+  /**
+   * DAVID
+   * 
+   * @param wfparameters
+   * @param datasets
+   */
+  public void buildLayout(Map&lt;String, Parameter&gt; wfparameters,
+      BeanItemContainer&lt;DatasetBean&gt; datasets) {
+<span class="nc" id="L116">    wfmap = wfparameters;</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">    for (Entry&lt;String, Parameter&gt; entry : wfmap.entrySet()) {</span>
+<span class="nc" id="L118">      GeneratedPropertyContainer gpcontainer = null;</span>
+<span class="nc" id="L119">      Grid newGrid = new Grid(gpcontainer);</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">      if (entry.getValue() instanceof FileParameter</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">          || entry.getValue() instanceof FileListParameter) {</span>
+
+        // TODO also do filtering on filetype level
+<span class="nc" id="L124">        List&lt;String&gt; range = getRange(entry.getValue());</span>
+
+<span class="nc bnc" id="L126" title="All 4 branches missed.">        if (range.contains(&quot;fasta&quot;) || range.contains(&quot;gtf&quot;)) {</span>
+<span class="nc" id="L127">          gpcontainer = fastaContainer();</span>
+          // show only bwaIndex references for bwa
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        } else if (range.contains(&quot;bwaIndex&quot;)) {</span>
+<span class="nc" id="L130">          gpcontainer = fastaContainerFiltered(&quot;bwa&quot;);</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">        } else if (range.contains(&quot;barcodes&quot;)) {</span>
+<span class="nc" id="L132">          gpcontainer = fastaContainerFiltered(&quot;barcodes&quot;);</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">        } else if (range.contains(&quot;shRNAlibrary&quot;)) {</span>
+<span class="nc" id="L134">          gpcontainer = fastaContainerFiltered(&quot;shRNAlibrary&quot;);</span>
+        } else {
+<span class="nc" id="L136">          gpcontainer = filter(datasets, range);</span>
+        }
+<span class="nc" id="L138">        newGrid.setContainerDataSource(gpcontainer);</span>
+<span class="nc" id="L139">        newGrid.setSelectionMode(getSelectionMode(entry.getValue()));</span>
+<span class="nc" id="L140">      } else {</span>
+        // showError(String.format(&quot;Invalid Inputfile Parameter!&quot;, entry.getKey()));
+<span class="nc" id="L142">        Utils.Notification(&quot;Invalid Inputfile Parameter&quot;,</span>
+<span class="nc" id="L143">            &quot;Invalid value for inputfile parameter has been provided.&quot; + entry.getKey(), &quot;error&quot;);</span>
+      }
+<span class="nc" id="L145">      HorizontalLayout layout = new HorizontalLayout();</span>
+<span class="nc" id="L146">      layout.setMargin(new MarginInfo(true, true, true, true));</span>
+<span class="nc" id="L147">      layout.setSizeFull();</span>
+
+<span class="nc" id="L149">      newGrid.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L150">      layout.addComponent(newGrid);</span>
+
+      // if (newGrid.getContainerDataSource().size() == 0) {
+      // Notification.show(
+      // String.format(&quot;No dataset of type %s available in this project!&quot;, entry.getKey()),
+      // Type.WARNING_MESSAGE);
+      // helpers.Utils
+      // .Notification(
+      // &quot;Missing Dataset Type&quot;,
+      // String
+      // .format(
+      // &quot;Workflow submission might not be possible because no dataset of type %s is available in
+      // this project&quot;,
+      // entry.getKey()), &quot;warning&quot;);
+<span class="nc" id="L164">      layout.addComponent(newGrid);</span>
+      // }
+
+<span class="nc" id="L167">      GridFunctions.addColumnFilters(newGrid, gpcontainer);</span>
+<span class="nc" id="L168">      inputFileForm.addTab(layout, entry.getKey());</span>
+<span class="nc" id="L169">    }</span>
+<span class="nc" id="L170">  }</span>
+
+  private SelectionMode getSelectionMode(Parameter param) {
+<span class="nc bnc" id="L173" title="All 2 branches missed.">    if (param instanceof FileParameter) {</span>
+<span class="nc" id="L174">      return SelectionMode.SINGLE;</span>
+<span class="nc bnc" id="L175" title="All 2 branches missed.">    } else if (param instanceof FileListParameter) {</span>
+<span class="nc" id="L176">      return SelectionMode.MULTI;</span>
+    } else {
+<span class="nc" id="L178">      return SelectionMode.NONE;</span>
+    }
+  }
+
+  private List&lt;String&gt; getRange(Parameter param) {
+<span class="nc bnc" id="L183" title="All 2 branches missed.">    if (param instanceof FileParameter) {</span>
+<span class="nc" id="L184">      return ((FileParameter) param).getRange();</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">    } else if (param instanceof FileListParameter) {</span>
+<span class="nc" id="L186">      return ((FileListParameter) param).getRange();</span>
+    } else {
+<span class="nc" id="L188">      return new ArrayList&lt;String&gt;();</span>
+    }
+
+  }
+
+  public GeneratedPropertyContainer fastaContainer() {
+<span class="nc" id="L194">    BeanItemContainer&lt;FastaBean&gt; subContainer = new BeanItemContainer&lt;FastaBean&gt;(FastaBean.class);</span>
+<span class="nc" id="L195">    FastaDB db = new FastaDB();</span>
+<span class="nc" id="L196">    subContainer.addAll(db.getAll());</span>
+<span class="nc" id="L197">    GeneratedPropertyContainer gpcontainer = new GeneratedPropertyContainer(subContainer);</span>
+<span class="nc" id="L198">    gpcontainer.addGeneratedProperty(&quot;Type&quot;, new PropertyValueGenerator&lt;String&gt;() {</span>
+      @Override
+      public Class&lt;String&gt; getType() {
+<span class="nc" id="L201">        return String.class;</span>
+      }
+
+      @Override
+      public String getValue(Item item, Object itemId, Object propertyId) {
+<span class="nc" id="L206">        String detailedType = item.getItemProperty(&quot;detailedType&quot;).getValue().toString();</span>
+<span class="nc" id="L207">        return detailedType;</span>
+      }
+    });
+<span class="nc" id="L210">    gpcontainer.removeContainerProperty(&quot;path&quot;);</span>
+<span class="nc" id="L211">    gpcontainer.removeContainerProperty(&quot;detailedType&quot;);</span>
+
+<span class="nc" id="L213">    return gpcontainer;</span>
+  }
+
+  // Function to retrieve only specific references, e.g. bwa for BWA indices, could be used for
+  // proteomics as well
+  public GeneratedPropertyContainer fastaContainerFiltered(String filter) {
+<span class="nc" id="L219">    BeanItemContainer&lt;FastaBean&gt; subContainer = new BeanItemContainer&lt;FastaBean&gt;(FastaBean.class);</span>
+<span class="nc" id="L220">    FastaDB db = new FastaDB();</span>
+
+<span class="nc bnc" id="L222" title="All 2 branches missed.">    if (filter.equals(&quot;bwa&quot;)) {</span>
+<span class="nc" id="L223">      subContainer.addAll(db.getBWAIndices());</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">    } else if (filter.equals(&quot;barcodes&quot;)) {</span>
+<span class="nc" id="L225">      subContainer.addAll(db.getBarcodeBeans());</span>
+<span class="nc bnc" id="L226" title="All 2 branches missed.">    } else if (filter.equals(&quot;shRNAlibrary&quot;)) {</span>
+<span class="nc" id="L227">      subContainer.addAll(db.getshRNABeans());</span>
+    }
+
+<span class="nc" id="L230">    GeneratedPropertyContainer gpcontainer = new GeneratedPropertyContainer(subContainer);</span>
+<span class="nc" id="L231">    gpcontainer.addGeneratedProperty(&quot;Type&quot;, new PropertyValueGenerator&lt;String&gt;() {</span>
+      @Override
+      public Class&lt;String&gt; getType() {
+<span class="nc" id="L234">        return String.class;</span>
+      }
+
+      @Override
+      public String getValue(Item item, Object itemId, Object propertyId) {
+<span class="nc" id="L239">        String detailedType = item.getItemProperty(&quot;detailedType&quot;).getValue().toString();</span>
+<span class="nc" id="L240">        return detailedType;</span>
+      }
+    });
+<span class="nc" id="L243">    gpcontainer.removeContainerProperty(&quot;path&quot;);</span>
+<span class="nc" id="L244">    gpcontainer.removeContainerProperty(&quot;detailedType&quot;);</span>
+
+<span class="nc" id="L246">    return gpcontainer;</span>
+  }
+
+  /**
+   * filters all DataSetBeans which are NOT in the filter and returns a new Container
+   * 
+   * @param datasets
+   * @param filter
+   * @return
+   */
+  public GeneratedPropertyContainer filter(BeanItemContainer&lt;DatasetBean&gt; datasets,
+      List&lt;String&gt; filter) {
+<span class="nc" id="L258">    BeanItemContainer&lt;DatasetBean&gt; subContainer =</span>
+        new BeanItemContainer&lt;DatasetBean&gt;(DatasetBean.class);
+
+<span class="nc bnc" id="L261" title="All 2 branches missed.">    for (java.util.Iterator&lt;DatasetBean&gt; i = datasets.getItemIds().iterator(); i.hasNext();) {</span>
+<span class="nc" id="L262">      DatasetBean dataset = i.next();</span>
+
+      // We dont' want to show html and zip files as workflow input (for now). In general we should
+      // use the filter[1] which is the filetype.
+      // However it has to be specified in the corresponding CTD.
+      // For now, do workflow specific filtering additionally
+<span class="nc" id="L268">      if (((filter.contains(dataset.getFileType().toLowerCase())</span>
+<span class="nc" id="L269">          | filter.contains(dataset.getFileType())))</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">          &amp; dataset.getFileType().equals(&quot;Q_WF_NGS_HLATYPING_RESULTS&quot;)) {</span>
+<span class="nc bnc" id="L271" title="All 2 branches missed.">        if (dataset.getFileName().endsWith(&quot;alleles&quot;)) {</span>
+<span class="nc" id="L272">          subContainer.addBean(dataset);</span>
+        }
+<span class="nc" id="L274">      } else if (filter.contains(dataset.getFileType().toLowerCase())</span>
+<span class="nc" id="L275">          | filter.contains(dataset.getFileType())</span>
+<span class="nc" id="L276">              &amp; !(dataset.getFileName().endsWith(&quot;.html&quot;) | dataset.getFileName().endsWith(&quot;.zip&quot;)</span>
+<span class="nc" id="L277">                  | dataset.getFileName().endsWith(&quot;.pdf&quot;) | dataset.getFileName().endsWith(&quot;.png&quot;)</span>
+<span class="nc" id="L278">                  | dataset.getFileName().endsWith(&quot;.origlabfilename&quot;)</span>
+<span class="nc" id="L279">                  | dataset.getFileName().endsWith(&quot;.sha256sum&quot;)</span>
+<span class="nc bnc" id="L280" title="All 4 branches missed.">                  | dataset.getFileName().contains(&quot;source_dropbox&quot;))) {</span>
+<span class="nc" id="L281">        subContainer.addBean(dataset);</span>
+      }
+<span class="nc" id="L283">    }</span>
+
+<span class="nc" id="L285">    GeneratedPropertyContainer gpcontainer = new GeneratedPropertyContainer(subContainer);</span>
+<span class="nc" id="L286">    gpcontainer.removeContainerProperty(&quot;fullPath&quot;);</span>
+<span class="nc" id="L287">    gpcontainer.removeContainerProperty(&quot;openbisCode&quot;);</span>
+<span class="nc" id="L288">    gpcontainer.removeContainerProperty(&quot;properties&quot;);</span>
+
+<span class="nc" id="L290">    gpcontainer.addGeneratedProperty(&quot;Additional Info&quot;, new PropertyValueGenerator&lt;String&gt;() {</span>
+
+      @Override
+      public Class&lt;String&gt; getType() {
+<span class="nc" id="L294">        return String.class;</span>
+      }
+
+      @Override
+      public String getValue(Item item, Object itemId, Object propertyId) {
+<span class="nc" id="L299">        Map&lt;String, String&gt; properties =</span>
+<span class="nc" id="L300">            (Map&lt;String, String&gt;) item.getItemProperty(&quot;properties&quot;).getValue();</span>
+
+<span class="nc" id="L302">        String additionalInfo = &quot;&quot;;</span>
+<span class="nc bnc" id="L303" title="All 2 branches missed.">        if (properties != null) {</span>
+<span class="nc bnc" id="L304" title="All 2 branches missed.">          if (properties.containsKey(&quot;Q_ADDITIONAL_INFO&quot;)) {</span>
+<span class="nc" id="L305">            additionalInfo = properties.get(&quot;Q_ADDITIONAL_INFO&quot;);</span>
+          }
+        }
+<span class="nc" id="L308">        return additionalInfo;</span>
+      }
+    });
+<span class="nc" id="L311">    return gpcontainer;</span>
+  }
+
+
+  /*
+   * public void buildLayout(Set&lt;Entry&lt;String, Parameter&gt;&gt; wfparameters,
+   * BeanItemContainer&lt;DatasetBean&gt; datasets) { this.wfparameters = wfparameters;
+   * buildForm(wfparameters, datasets); }
+   */
+  public void buildForm(Set&lt;Entry&lt;String, Parameter&gt;&gt; wfparameters,
+      BeanItemContainer&lt;DatasetBean&gt; datasets) {
+
+<span class="nc" id="L323">    inputFileForm.removeAllComponents();</span>
+<span class="nc" id="L324">    inputFileForm.setSizeFull();</span>
+
+<span class="nc" id="L326">    wfmap.clear();</span>
+<span class="nc bnc" id="L327" title="All 2 branches missed.">    for (Entry&lt;String, Parameter&gt; entry : wfparameters) {</span>
+<span class="nc" id="L328">      wfmap.put(entry.getKey(), entry.getValue());</span>
+<span class="nc" id="L329">      GeneratedPropertyContainer gpcontainer = null;</span>
+<span class="nc" id="L330">      Grid newGrid = new Grid(gpcontainer);</span>
+
+<span class="nc bnc" id="L332" title="All 2 branches missed.">      if (entry.getValue() instanceof FileParameter) {</span>
+<span class="nc" id="L333">        FileParameter fileParam = (FileParameter) entry.getValue();</span>
+<span class="nc" id="L334">        List&lt;String&gt; associatedDataTypes = fileParam.getRange();</span>
+        // String associatedDataType = fileParam.getTitle();
+
+<span class="nc bnc" id="L337" title="All 4 branches missed.">        if (associatedDataTypes.contains(&quot;fasta&quot;) || associatedDataTypes.contains(&quot;gtf&quot;)) {</span>
+          // if (associatedDataType.toLowerCase().equals(&quot;fasta&quot;)) {
+<span class="nc" id="L339">          BeanItemContainer&lt;FastaBean&gt; subContainer =</span>
+              new BeanItemContainer&lt;FastaBean&gt;(FastaBean.class);
+<span class="nc" id="L341">          FastaDB db = new FastaDB();</span>
+<span class="nc" id="L342">          subContainer.addAll(db.getAll());</span>
+<span class="nc" id="L343">          gpcontainer = new GeneratedPropertyContainer(subContainer);</span>
+<span class="nc" id="L344">          gpcontainer.addGeneratedProperty(&quot;Type&quot;, new PropertyValueGenerator&lt;String&gt;() {</span>
+            @Override
+            public Class&lt;String&gt; getType() {
+<span class="nc" id="L347">              return String.class;</span>
+            }
+
+            @Override
+            public String getValue(Item item, Object itemId, Object propertyId) {
+<span class="nc" id="L352">              String detailedType = item.getItemProperty(&quot;detailedType&quot;).getValue().toString();</span>
+<span class="nc" id="L353">              return detailedType;</span>
+            }
+          });
+<span class="nc" id="L356">          gpcontainer.removeContainerProperty(&quot;path&quot;);</span>
+<span class="nc" id="L357">          gpcontainer.removeContainerProperty(&quot;detailedType&quot;);</span>
+
+<span class="nc" id="L359">        }</span>
+
+        else {
+<span class="nc" id="L362">          BeanItemContainer&lt;DatasetBean&gt; subContainer =</span>
+              new BeanItemContainer&lt;DatasetBean&gt;(DatasetBean.class);
+
+<span class="nc bnc" id="L365" title="All 2 branches missed.">          for (java.util.Iterator&lt;DatasetBean&gt; i = datasets.getItemIds().iterator(); i.hasNext();) {</span>
+<span class="nc" id="L366">            DatasetBean dataset = i.next();</span>
+
+<span class="nc bnc" id="L368" title="All 2 branches missed.">            if (associatedDataTypes.contains(dataset.getFileType().toLowerCase())) {</span>
+
+              // if (associatedDataType.toLowerCase().equals(dataset.getFileType().toLowerCase())) {
+<span class="nc" id="L371">              subContainer.addBean(dataset);</span>
+            }
+<span class="nc" id="L373">          }</span>
+
+<span class="nc" id="L375">          gpcontainer = new GeneratedPropertyContainer(subContainer);</span>
+<span class="nc" id="L376">          gpcontainer.removeContainerProperty(&quot;fullPath&quot;);</span>
+<span class="nc" id="L377">          gpcontainer.removeContainerProperty(&quot;openbisCode&quot;);</span>
+
+        }
+<span class="nc" id="L380">        newGrid.setContainerDataSource(gpcontainer);</span>
+<span class="nc" id="L381">        newGrid.setSelectionMode(SelectionMode.SINGLE);</span>
+<span class="nc" id="L382">      }</span>
+
+<span class="nc bnc" id="L384" title="All 2 branches missed.">      else if (entry.getValue() instanceof FileListParameter) {</span>
+<span class="nc" id="L385">        FileListParameter fileParam = (FileListParameter) entry.getValue();</span>
+<span class="nc" id="L386">        List&lt;String&gt; associatedDataTypes = fileParam.getRange();</span>
+
+<span class="nc" id="L388">        BeanItemContainer&lt;DatasetBean&gt; subContainer =</span>
+            new BeanItemContainer&lt;DatasetBean&gt;(DatasetBean.class);
+
+<span class="nc bnc" id="L391" title="All 2 branches missed.">        for (java.util.Iterator&lt;DatasetBean&gt; i = datasets.getItemIds().iterator(); i.hasNext();) {</span>
+<span class="nc" id="L392">          DatasetBean dataset = i.next();</span>
+
+<span class="nc bnc" id="L394" title="All 2 branches missed.">          if (associatedDataTypes.contains(dataset.getFileType().toLowerCase())) {</span>
+<span class="nc" id="L395">            subContainer.addBean(dataset);</span>
+          }
+<span class="nc" id="L397">        }</span>
+
+<span class="nc" id="L399">        gpcontainer = new GeneratedPropertyContainer(subContainer);</span>
+<span class="nc" id="L400">        gpcontainer.removeContainerProperty(&quot;fullPath&quot;);</span>
+<span class="nc" id="L401">        gpcontainer.removeContainerProperty(&quot;openbisCode&quot;);</span>
+
+<span class="nc" id="L403">        newGrid.setContainerDataSource(gpcontainer);</span>
+<span class="nc" id="L404">        newGrid.setSelectionMode(SelectionMode.MULTI);</span>
+<span class="nc" id="L405">      }</span>
+
+      else {
+<span class="nc" id="L408">        Utils.Notification(&quot;Invalid Inputfile Parameter&quot;,</span>
+<span class="nc" id="L409">            &quot;Invalid inputfile parameter has been selected: &quot; + entry.getKey(), &quot;error&quot;);</span>
+      }
+
+<span class="nc" id="L412">      HorizontalLayout layout = new HorizontalLayout();</span>
+<span class="nc" id="L413">      layout.setMargin(new MarginInfo(true, true, true, true));</span>
+<span class="nc" id="L414">      layout.setSizeFull();</span>
+
+<span class="nc" id="L416">      newGrid.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L417">      layout.addComponent(newGrid);</span>
+
+      // if (newGrid.getContainerDataSource().size() == 0) {
+      // helpers.Utils
+      // .Notification(
+      // &quot;Missing Dataset Type&quot;,
+      // String
+      // .format(
+      // &quot;Workflow submission might not be possible because no dataset of type %s is available in
+      // this project&quot;,
+      // entry.getKey()), &quot;warning&quot;);
+      // Notification.show(
+      // String.format(&quot;No dataset of type %s available in this project!&quot;, entry.getKey()),
+      // Type.WARNING_MESSAGE);
+<span class="nc" id="L431">      layout.addComponent(newGrid);</span>
+      // }
+
+<span class="nc" id="L434">      inputFileForm.addTab(layout, entry.getKey());</span>
+<span class="nc" id="L435">    }</span>
+<span class="nc" id="L436">  }</span>
+
+  // TODO
+  public void resetInputList() {
+<span class="nc" id="L440">    throw new NotImplementedException(&quot;Not implemented.&quot;);</span>
+    /*
+     * Collection&lt;Field&lt;?&gt;&gt; registeredFields = inputFileFieldGroup.getFields();
+     * 
+     * for (Field&lt;?&gt; field : registeredFields) { TextField fieldToReset = (TextField) field;
+     * fieldToReset.setValue(wfmap.get(field.getCaption()).getValue().toString()); }
+     */
+  }
+
+  /**
+   * returns the currently selected datasets by the user. If no datasets are selected, the list is
+   * simply empty Note that no db selections are returned.
+   * 
+   * @return
+   */
+  public List&lt;DatasetBean&gt; getSelectedDatasets() {
+<span class="nc" id="L456">    List&lt;DatasetBean&gt; selectedDatasets = new ArrayList&lt;DatasetBean&gt;();</span>
+
+<span class="nc" id="L458">    java.util.Iterator&lt;Component&gt; tabs = inputFileForm.iterator();</span>
+<span class="nc bnc" id="L459" title="All 2 branches missed.">    while (tabs.hasNext()) {</span>
+<span class="nc" id="L460">      Tab tab = inputFileForm.getTab(tabs.next());</span>
+<span class="nc" id="L461">      HorizontalLayout current = (HorizontalLayout) tab.getComponent();</span>
+<span class="nc" id="L462">      java.util.Iterator&lt;Component&gt; grids = current.iterator();</span>
+
+<span class="nc bnc" id="L464" title="All 2 branches missed.">      while (grids.hasNext()) {</span>
+<span class="nc" id="L465">        Grid currentGrid = (Grid) grids.next();</span>
+        // returns one (in single-selection mode) or all (in multi-selection mode) selected items
+<span class="nc" id="L467">        Collection&lt;Object&gt; selected = currentGrid.getSelectedRows();</span>
+<span class="nc bnc" id="L468" title="All 2 branches missed.">        for (Object o : selected) {</span>
+<span class="nc bnc" id="L469" title="All 2 branches missed.">          if (o instanceof DatasetBean) {</span>
+<span class="nc" id="L470">            DatasetBean selectedBean = (DatasetBean) o;</span>
+<span class="nc" id="L471">            selectedDatasets.add(selectedBean);</span>
+          }
+<span class="nc" id="L473">        }</span>
+<span class="nc" id="L474">      }</span>
+<span class="nc" id="L475">    }</span>
+<span class="nc bnc" id="L476" title="All 2 branches missed.">    if (selectedDatasets.size() == 0) {</span>
+<span class="nc" id="L477">      Utils.Notification(&quot;No dataset selected&quot;, &quot;Please select at least one dataset.&quot;,</span>
+          &quot;error&quot;);
+    }
+<span class="nc" id="L480">    return selectedDatasets;</span>
+  }
+
+  /**
+   * returns the currently selected datasets by the user as a map with the tab names (defined in the
+   * input file CTD) as keys. If no datasets are selected, the Map is simply empty Note that no db
+   * selections are returned.
+   * 
+   * @return
+   */
+  public Map&lt;String, List&lt;DatasetBean&gt;&gt; getSelectedDatasetsAsMap() {
+<span class="nc" id="L491">    Map&lt;String, List&lt;DatasetBean&gt;&gt; selectedDatasets = new HashMap&lt;String, List&lt;DatasetBean&gt;&gt;();</span>
+
+<span class="nc" id="L493">    java.util.Iterator&lt;Component&gt; tabs = inputFileForm.iterator();</span>
+<span class="nc bnc" id="L494" title="All 2 branches missed.">    while (tabs.hasNext()) {</span>
+<span class="nc" id="L495">      List&lt;DatasetBean&gt; tempList = new ArrayList&lt;DatasetBean&gt;();</span>
+
+<span class="nc" id="L497">      Tab tab = inputFileForm.getTab(tabs.next());</span>
+<span class="nc" id="L498">      HorizontalLayout current = (HorizontalLayout) tab.getComponent();</span>
+<span class="nc" id="L499">      java.util.Iterator&lt;Component&gt; grids = current.iterator();</span>
+<span class="nc bnc" id="L500" title="All 2 branches missed.">      while (grids.hasNext()) {</span>
+<span class="nc" id="L501">        Grid currentGrid = (Grid) grids.next();</span>
+        // returns one (in single-selection mode) or all (in multi-selection mode) selected items
+<span class="nc" id="L503">        Collection&lt;Object&gt; selected = currentGrid.getSelectedRows();</span>
+<span class="nc bnc" id="L504" title="All 2 branches missed.">        for (Object o : selected) {</span>
+<span class="nc bnc" id="L505" title="All 2 branches missed.">          if (o instanceof DatasetBean) {</span>
+<span class="nc" id="L506">            DatasetBean selectedBean = (DatasetBean) o;</span>
+<span class="nc" id="L507">            tempList.add(selectedBean);</span>
+          }
+<span class="nc" id="L509">        }</span>
+<span class="nc" id="L510">      }</span>
+<span class="nc" id="L511">      selectedDatasets.put(tab.getCaption(), tempList);</span>
+<span class="nc" id="L512">    }</span>
+<span class="nc bnc" id="L513" title="All 2 branches missed.">    if (selectedDatasets.size() == 0) {</span>
+<span class="nc" id="L514">      Utils.Notification(&quot;No dataset selected&quot;, &quot;Please select at least one dataset.&quot;,</span>
+          &quot;error&quot;);
+    }
+<span class="nc" id="L517">    return selectedDatasets;</span>
+  }
+
+  /**
+   * returns true if at least one dataset was selected for each tab
+   * 
+   * @return
+   */
+  boolean hasDastasetSelected() {
+<span class="nc" id="L526">    java.util.Iterator&lt;Component&gt; tabs = inputFileForm.iterator();</span>
+<span class="nc bnc" id="L527" title="All 2 branches missed.">    while (tabs.hasNext()) {</span>
+<span class="nc" id="L528">      Tab tab = inputFileForm.getTab(tabs.next());</span>
+<span class="nc" id="L529">      HorizontalLayout current = (HorizontalLayout) tab.getComponent();</span>
+<span class="nc" id="L530">      java.util.Iterator&lt;Component&gt; grids = current.iterator();</span>
+<span class="nc bnc" id="L531" title="All 2 branches missed.">      while (grids.hasNext()) {</span>
+<span class="nc" id="L532">        Grid currentGrid = (Grid) grids.next();</span>
+        // getSelectedRows returns one (in single-selection mode) or all (in multi-selection mode)
+        // selected items
+<span class="nc bnc" id="L535" title="All 2 branches missed.">        if (currentGrid.getSelectedRows().size() == 0)</span>
+<span class="nc" id="L536">          return false;</span>
+<span class="nc" id="L537">      }</span>
+<span class="nc" id="L538">    }</span>
+<span class="nc" id="L539">    return true;</span>
+  }
+
+  /**
+   * updates workflow parameters with the currently selected datasets and databases. Be aware that
+   * it is not checked, whether the correct workflow is given as parameter
+   * 
+   * @param wf
+   * @return false if nothing is selected for some tabs or wf is null or wf is empty
+   */
+  public boolean updateWorkflow(Workflow wf, WorkflowViewController controller) {
+<span class="nc bnc" id="L550" title="All 6 branches missed.">    if (wf == null || wf.getData() == null || wf.getData().getData() == null</span>
+<span class="nc bnc" id="L551" title="All 2 branches missed.">        || wf.getData().getData().isEmpty())</span>
+<span class="nc" id="L552">      return false;</span>
+
+<span class="nc" id="L554">    java.util.Iterator&lt;Component&gt; i = inputFileForm.iterator();</span>
+<span class="nc" id="L555">    InputList inpList = wf.getData();</span>
+<span class="nc bnc" id="L556" title="All 2 branches missed.">    while (i.hasNext()) {</span>
+<span class="nc" id="L557">      Tab tab = inputFileForm.getTab(i.next());</span>
+
+<span class="nc" id="L559">      HorizontalLayout current = (HorizontalLayout) tab.getComponent();</span>
+<span class="nc" id="L560">      java.util.Iterator&lt;Component&gt; j = current.iterator();</span>
+<span class="nc bnc" id="L561" title="All 2 branches missed.">      while (j.hasNext()) {</span>
+<span class="nc" id="L562">        Grid currentGrid = (Grid) j.next();</span>
+
+<span class="nc" id="L564">        String caption = tab.getCaption();</span>
+
+<span class="nc bnc" id="L566" title="All 2 branches missed.">        if (currentGrid.getSelectionModel() instanceof SingleSelectionModel) {</span>
+<span class="nc" id="L567">          Object selectionSingle = currentGrid.getSelectedRow();</span>
+<span class="nc bnc" id="L568" title="All 2 branches missed.">          if (selectionSingle == null) {</span>
+<span class="nc bnc" id="L569" title="All 2 branches missed.">            if (wf.getData().getData().get(caption).isRequired()) {</span>
+<span class="nc" id="L570">              Utils.Notification(&quot;Missing input file(s)&quot;,</span>
+                  &quot;Nothing selected for required input file category&quot; + caption, &quot;error&quot;);
+<span class="nc" id="L572">              return false;</span>
+            } else {
+              continue;
+            }
+          }
+
+          else {
+<span class="nc bnc" id="L579" title="All 2 branches missed.">            if (selectionSingle instanceof FastaBean) {</span>
+<span class="nc" id="L580">              FastaBean selectedBean = (FastaBean) selectionSingle;</span>
+<span class="nc" id="L581">              inpList.getData().get(caption).setValue(selectedBean.getPath());</span>
+<span class="nc" id="L582">            } else {</span>
+<span class="nc" id="L583">              DatasetBean selectedBean = (DatasetBean) selectionSingle;</span>
+              try {
+<span class="nc" id="L585">                inpList.getData().get(caption)</span>
+<span class="nc" id="L586">                    .setValue(controller.getDatasetsNfsPath(selectedBean));</span>
+<span class="nc" id="L587">              } catch (Exception e) {</span>
+<span class="nc" id="L588">                LOG.error(&quot;could not retrieve nfs path. Using datasetbeans getfullpath instead. &quot;</span>
+<span class="nc" id="L589">                    + e.getMessage(), e.getStackTrace());</span>
+<span class="nc" id="L590">                inpList.getData().get(caption).setValue(selectedBean.getFullPath());</span>
+<span class="nc" id="L591">              }</span>
+            }
+          }
+
+<span class="nc" id="L595">        } else {</span>
+<span class="nc" id="L596">          Collection&lt;Object&gt; selectionMulti = currentGrid.getSelectedRows();</span>
+          // if ((selectionMulti == null || selectionMulti.isEmpty())
+          // &amp;&amp; (!caption.equals(&quot;InputFiles.1.fastq&quot;))) {
+<span class="nc bnc" id="L599" title="All 4 branches missed.">          if ((selectionMulti == null || selectionMulti.isEmpty())) {</span>
+
+<span class="nc bnc" id="L601" title="All 2 branches missed.">            if (wf.getData().getData().get(caption).isRequired()) {</span>
+<span class="nc" id="L602">              Utils.Notification(&quot;Missing input file(s)&quot;,</span>
+                  &quot;Nothing selected for required input file(s) category&quot; + caption, &quot;warning&quot;);
+<span class="nc" id="L604">              return false;</span>
+            }
+
+            else {
+              continue;
+            }
+          } else {
+
+<span class="nc" id="L612">            List&lt;String&gt; selectedPaths = new ArrayList&lt;String&gt;();</span>
+
+<span class="nc bnc" id="L614" title="All 2 branches missed.">            for (Object o : selectionMulti) {</span>
+<span class="nc" id="L615">              DatasetBean selectedBean = (DatasetBean) o;</span>
+              try {
+<span class="nc" id="L617">                selectedPaths.add(controller.getDatasetsNfsPath(selectedBean));</span>
+<span class="nc" id="L618">              } catch (Exception e) {</span>
+<span class="nc" id="L619">                LOG.error(&quot;could not retrieve nfs path. Using datasetbeans getfullpath instead. &quot;</span>
+<span class="nc" id="L620">                    + e.getMessage(), e.getStackTrace());</span>
+<span class="nc" id="L621">                selectedPaths.add(selectedBean.getFullPath());</span>
+<span class="nc" id="L622">              }</span>
+<span class="nc" id="L623">            }</span>
+<span class="nc" id="L624">            inpList.getData().get(caption).setValue(selectedPaths);</span>
+          }
+        }
+<span class="nc" id="L627">      }</span>
+<span class="nc" id="L628">    }</span>
+<span class="nc" id="L629">    return true;</span>
+  }
+
+  /**
+   * returns the number of file parameters
+   * 
+   * @return
+   */
+  public int size() {
+<span class="nc" id="L638">    return this.wfmap.size();</span>
+  }
+
+  @Override
+  public void buildLayout() {
+    // TODO Auto-generated method stub
+
+<span class="nc" id="L645">  }</span>
+
+  public void showError(String message) {
+<span class="nc" id="L648">    LOG.warn(message);</span>
+<span class="nc" id="L649">    Notification.show(message, Type.WARNING_MESSAGE);</span>
+<span class="nc" id="L650">  }</span>
+
+  @Override
+  public void buildLayout(Workflow wf) {
+    // TODO Auto-generated method stub
+
+<span class="nc" id="L656">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

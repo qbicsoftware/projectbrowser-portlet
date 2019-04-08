@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>spaceToProjectPrefixMap.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.model</a> &gt; <span class="el_source">spaceToProjectPrefixMap.java</span></div><h1>spaceToProjectPrefixMap.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016”
+ * Christopher Mohr, David Wojnar, Andreas Friedrich
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.model;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+<span class="nc" id="L22">public class spaceToProjectPrefixMap {</span>
+  public static final Map&lt;String, String&gt; myMap;
+  static {
+<span class="nc" id="L25">    Map&lt;String, String&gt; aMap = new HashMap&lt;String, String&gt;();</span>
+<span class="nc" id="L26">    aMap.put(&quot;IVAC_ALL&quot;, &quot;QA&quot;);</span>
+<span class="nc" id="L27">    aMap.put(&quot;IVAC_ALL_1&quot;, &quot;QO&quot;);</span>
+<span class="nc" id="L28">    aMap.put(&quot;IVAC_CEGAT&quot;, &quot;QC&quot;);</span>
+<span class="nc" id="L29">    aMap.put(&quot;IVAC_TEST_SPACE&quot;, &quot;QT&quot;);</span>
+<span class="nc" id="L30">    aMap.put(&quot;IVAC_HEPA_VAC&quot;, &quot;QH&quot;);</span>
+<span class="nc" id="L31">    aMap.put(&quot;IVAC_INDIVIDUAL_LIVER&quot;, &quot;QI&quot;);</span>
+<span class="nc" id="L32">    aMap.put(&quot;IVAC_SFB685_C9_PC&quot;, &quot;QS&quot;);</span>
+<span class="nc" id="L33">    aMap.put(&quot;IVAC_ALL_DKTK&quot;, &quot;QD&quot;);</span>
+<span class="nc" id="L34">    aMap.put(&quot;IVAC_AML_KIKLI&quot;, &quot;QAK&quot;);</span>
+<span class="nc" id="L35">    aMap.put(&quot;IVAC_EWING&quot;, &quot;QE&quot;);</span>
+<span class="nc" id="L36">    aMap.put(&quot;IVAC_INFORM_DKTK_KIKLI&quot;, &quot;QFK&quot;);</span>
+<span class="nc" id="L37">    aMap.put(&quot;IVAC_LUCA&quot;, &quot;QL&quot;);</span>
+<span class="nc" id="L38">    aMap.put(&quot;IVAC_PANC&quot;, &quot;QP&quot;);</span>
+<span class="nc" id="L39">    aMap.put(&quot;IVAC_PANC_KIKLI&quot;, &quot;QPK&quot;);</span>
+<span class="nc" id="L40">    aMap.put(&quot;IVAC_RCC&quot;, &quot;QR&quot;);</span>
+<span class="nc" id="L41">    aMap.put(&quot;IVAC_RCC_KIKLI&quot;, &quot;QRK&quot;);</span>
+<span class="nc" id="L42">    aMap.put(&quot;IVAC_SARC&quot;, &quot;QS&quot;);</span>
+<span class="nc" id="L43">    aMap.put(&quot;IVAC_MACA&quot;, &quot;QB&quot;);</span>
+<span class="nc" id="L44">    aMap.put(&quot;IVAC_OVCA&quot;, &quot;QO&quot;);</span>
+<span class="nc" id="L45">    aMap.put(&quot;IVAC_BRAINTUMOR_MUE&quot;, &quot;QBM&quot;);</span>
+<span class="nc" id="L46">    myMap = Collections.unmodifiableMap(aMap);</span>
+<span class="nc" id="L47">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

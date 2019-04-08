@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Group.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.model.maxquant</a> &gt; <span class="el_source">Group.java</span></div><h1>Group.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects.
+ * Copyright (C) &quot;2016”  Christopher Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.model.maxquant;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+
+<span class="nc" id="L29">public class Group implements Serializable {</span>
+
+
+
+  private static final long serialVersionUID = 5252681184750898666L;
+<span class="nc" id="L34">  List&lt;RawFilesBean&gt; files = new ArrayList&lt;RawFilesBean&gt;();</span>
+<span class="nc" id="L35">  private GroupSpecificParameters parameters = new GroupSpecificParameters();</span>
+
+
+  /**
+   * adds a raw file bean to the groups files. If a bean is already contained with the exact same
+   * values, it will not be added again.
+   * 
+   * @param bean
+   */
+  public void addFile(RawFilesBean bean) {
+<span class="nc bnc" id="L45" title="All 2 branches missed.">    if (!files.contains(bean)) {</span>
+<span class="nc" id="L46">      files.add(bean);</span>
+    }
+<span class="nc" id="L48">  }</span>
+
+  /**
+   * removes all files from this group
+   */
+  public void removeFiles() {
+<span class="nc" id="L54">    files.clear();</span>
+<span class="nc" id="L55">  }</span>
+
+
+  public void setFiles(List&lt;RawFilesBean&gt; list) {
+<span class="nc" id="L59">    removeFiles();</span>
+<span class="nc" id="L60">    files.addAll(list);</span>
+<span class="nc" id="L61">  }</span>
+
+  @Override
+  public String toString() {
+<span class="nc" id="L65">    return &quot;Group [files=&quot; + files + &quot;, parameters=&quot; + parameters + &quot;]&quot;;</span>
+  }
+
+  public GroupSpecificParameters getParameters() {
+<span class="nc" id="L69">    return parameters;</span>
+  }
+
+  public JSONObject toJson() throws JSONException {
+<span class="nc" id="L73">    JSONObject group = new JSONObject();</span>
+<span class="nc" id="L74">    JSONObject params = this.parameters.toJson();</span>
+<span class="nc" id="L75">    JSONArray files = this.filesToJson();</span>
+
+<span class="nc" id="L77">    group.put(&quot;params&quot;, params);</span>
+<span class="nc" id="L78">    group.put(&quot;files&quot;, files);</span>
+
+<span class="nc" id="L80">    return group;</span>
+  }
+
+  private JSONArray filesToJson() throws JSONException {
+<span class="nc" id="L84">    JSONArray fls = new JSONArray();</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">    for (RawFilesBean file : files) {</span>
+<span class="nc" id="L86">      JSONObject tmp = new JSONObject();</span>
+      // tmp.put(&quot;name&quot;, file.getFile());
+      // mqrun needs filenames without file ending
+<span class="nc" id="L89">      tmp.put(&quot;name&quot;, file.generateParamFile());</span>
+<span class="nc" id="L90">      tmp.put(&quot;fraction&quot;, file.getFraction());</span>
+<span class="nc" id="L91">      tmp.put(&quot;experiment&quot;, file.getExperiment());</span>
+<span class="nc" id="L92">      fls.put(tmp);</span>
+<span class="nc" id="L93">    }</span>
+<span class="nc" id="L94">    return fls;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BiologicalEntitySampleBean.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.model</a> &gt; <span class="el_source">BiologicalEntitySampleBean.java</span></div><h1>BiologicalEntitySampleBean.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects.
+ * Copyright (C) &quot;2016”  Christopher Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.model;
+
+import life.qbic.projectbrowser.helpers.UglyToPrettyNameMapper;
+
+import java.util.List;
+import java.util.Map;
+import javax.xml.bind.JAXBException;
+
+import life.qbic.xml.properties.Property;
+
+public class BiologicalEntitySampleBean {
+  private static final long serialVersionUID = -61486023394904818L;
+  private String id;
+  private String code;
+  private String type;
+
+  private String organism;
+
+  private String organismName;
+
+  private String gender;
+
+  private String secondaryName;
+  private String additionalInfo;
+  private String externalDB;
+
+  private String properties;
+
+<span class="nc" id="L46">  private UglyToPrettyNameMapper prettyNameMapper = new UglyToPrettyNameMapper();</span>
+
+
+
+  public BiologicalEntitySampleBean(String id, String code, String type, String organism,
+      String organismName, String gender, String secondaryName, String additionalInfo,
+      String externalDB, String properties) {
+<span class="nc" id="L53">    super();</span>
+<span class="nc" id="L54">    this.id = id;</span>
+<span class="nc" id="L55">    this.code = code;</span>
+<span class="nc" id="L56">    this.type = type;</span>
+<span class="nc" id="L57">    this.setOrganism(organism);</span>
+<span class="nc" id="L58">    this.organismName = organismName;</span>
+<span class="nc" id="L59">    this.gender = gender;</span>
+<span class="nc" id="L60">    this.secondaryName = secondaryName;</span>
+<span class="nc" id="L61">    this.additionalInfo = additionalInfo;</span>
+<span class="nc" id="L62">    this.externalDB = externalDB;</span>
+<span class="nc" id="L63">    this.properties = properties;</span>
+
+<span class="nc" id="L65">  }</span>
+
+<span class="nc" id="L67">  public BiologicalEntitySampleBean() {</span>
+
+<span class="nc" id="L69">  }</span>
+
+
+
+  public String getId() {
+<span class="nc" id="L74">    return id;</span>
+  }
+
+
+
+  public void setId(String id) {
+<span class="nc" id="L80">    this.id = id;</span>
+<span class="nc" id="L81">  }</span>
+
+
+
+  public String getCode() {
+<span class="nc" id="L86">    return code;</span>
+  }
+
+
+
+  public void setCode(String code) {
+<span class="nc" id="L92">    this.code = code;</span>
+<span class="nc" id="L93">  }</span>
+
+
+
+  public String getType() {
+<span class="nc" id="L98">    return type;</span>
+  }
+
+
+
+  public void setType(String type) {
+<span class="nc" id="L104">    this.type = type;</span>
+<span class="nc" id="L105">  }</span>
+
+
+
+  public int compareTo(Object o) {
+<span class="nc" id="L110">    return id.compareTo(((BiologicalEntitySampleBean) o).getId());</span>
+  }
+
+  @Override
+  public boolean equals(Object o) {
+<span class="nc bnc" id="L115" title="All 2 branches missed.">    if (o instanceof SampleBean) {</span>
+<span class="nc" id="L116">      SampleBean b = (SampleBean) o;</span>
+<span class="nc" id="L117">      return id.equals(b.getId());</span>
+    } else
+<span class="nc" id="L119">      return false;</span>
+  }
+
+  @Override
+  public int hashCode() {
+<span class="nc" id="L124">    return id.hashCode();</span>
+  }
+
+  public String getSecondaryName() {
+<span class="nc" id="L128">    return secondaryName;</span>
+  }
+
+  public void setSecondaryName(String secondaryName) {
+<span class="nc" id="L132">    this.secondaryName = secondaryName;</span>
+<span class="nc" id="L133">  }</span>
+
+  public String getAdditionalInfo() {
+<span class="nc" id="L136">    return additionalInfo;</span>
+  }
+
+  public void setAdditionalInfo(String additionalInfo) {
+<span class="nc" id="L140">    this.additionalInfo = additionalInfo;</span>
+<span class="nc" id="L141">  }</span>
+
+  public String getExternalDB() {
+<span class="nc" id="L144">    return externalDB;</span>
+  }
+
+  public void setExternalDB(String externalDB) {
+<span class="nc" id="L148">    this.externalDB = externalDB;</span>
+<span class="nc" id="L149">  }</span>
+
+
+  public String getProperties() {
+<span class="nc" id="L153">    return properties;</span>
+  }
+
+  public void setProperties(Map&lt;String, String&gt; properties, List&lt;Property&gt; complexProps) {
+    try {
+<span class="nc" id="L158">      this.properties = generateXMLPropertiesFormattedString(complexProps);</span>
+<span class="nc" id="L159">    } catch (JAXBException e) {</span>
+      // TODO Auto-generated catch block
+<span class="nc" id="L161">      e.printStackTrace();</span>
+<span class="nc" id="L162">    }</span>
+<span class="nc" id="L163">  }</span>
+
+  public String generateXMLPropertiesFormattedString(List&lt;Property&gt; properties)
+      throws JAXBException {
+
+<span class="nc" id="L168">    String xmlPropertiesString = &quot;&quot;;</span>
+
+<span class="nc bnc" id="L170" title="All 2 branches missed.">    for (Property p : properties) {</span>
+<span class="nc" id="L171">      xmlPropertiesString += p.getLabel() + &quot;: &quot; + p.getValue();</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">      if (p.hasUnit()) {</span>
+<span class="nc" id="L173">        xmlPropertiesString += &quot; &quot; + p.getUnit();</span>
+      }
+<span class="nc" id="L175">      xmlPropertiesString += &quot; &quot;;</span>
+<span class="nc" id="L176">    }</span>
+<span class="nc" id="L177">    return xmlPropertiesString;</span>
+  }
+
+//  public String generateXMLPropertiesFormattedString(Map&lt;String, String&gt; properties)
+//      throws JAXBException {
+//
+//    String xmlPropertiesString = &quot;&quot;;
+//    Iterator&lt;Entry&lt;String, String&gt;&gt; it = properties.entrySet().iterator();
+//    while (it.hasNext()) {
+//      Entry pairs = (Entry) it.next();
+//      if (pairs.getKey().equals(&quot;Q_PROPERTIES&quot;)) {
+//        XMLParser xmlParser = new XMLParser();
+//        JAXBElement&lt;Qproperties&gt; xmlProperties =
+//            xmlParser.parseXMLString(pairs.getValue().toString());
+//        Map&lt;String, String&gt; xmlPropertiesMap = xmlParser.getMapOfProperties(xmlProperties);
+//
+//        Iterator itProperties = xmlPropertiesMap.entrySet().iterator();
+//        while (itProperties.hasNext()) {
+//          Entry pairsProperties = (Entry) itProperties.next();
+//
+//          xmlPropertiesString += pairsProperties.getKey() + &quot;: &quot; + pairsProperties.getValue() + &quot; &quot;;
+//        }
+//        break;
+//      }
+//    }
+//    return xmlPropertiesString;
+//  }
+
+  public String getOrganism() {
+<span class="nc" id="L206">    return organism;</span>
+  }
+
+  public void setOrganism(String organism) {
+<span class="nc" id="L210">    this.organism = organism;</span>
+<span class="nc" id="L211">  }</span>
+
+  public String getOrganismName() {
+<span class="nc" id="L214">    return organismName;</span>
+  }
+
+  public void setOrganismName(String organismName) {
+<span class="nc" id="L218">    this.organismName = organismName;</span>
+<span class="nc" id="L219">  }</span>
+
+  public String getGender() {
+<span class="nc" id="L222">    return gender;</span>
+  }
+
+  public void setGender(String gender) {
+<span class="nc" id="L226">    this.gender = gender;</span>
+<span class="nc" id="L227">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

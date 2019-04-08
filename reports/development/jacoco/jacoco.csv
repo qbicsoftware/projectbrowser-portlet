@@ -1,0 +1,256 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+ProjectBrowser Portlet,life.qbic.projectbrowser.samplegraph,ProjectGraph,23,0,0,0,7,0,3,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.samplegraph,OpenbisSampleAdapter,146,0,8,0,34,0,20,0,16,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.samplegraph,GraphPage,485,0,24,0,118,0,17,0,5,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.samplegraph,GraphPage.new Property.ValueChangeListener() {...},60,0,4,0,10,0,4,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.samplegraph,GraphPage.new Button.ClickListener() {...},13,0,0,0,3,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.samplegraph,ProjectParser,867,0,93,0,175,0,62,0,11,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.samplegraph,ProjectGraphState,17,0,0,0,7,0,5,0,5,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.samplegraph,StructuredExperiment,17,0,0,0,7,0,4,0,4,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.samplegraph,ProjectGraph.new NodeClickRpc() {...},15,0,0,0,3,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model.maxquant,MaxQuantModel,293,0,36,0,76,0,40,0,22,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model.maxquant,Group,123,0,4,0,28,0,10,0,8,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model.maxquant,RawFilesBean,179,0,30,0,54,0,28,0,13,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model.maxquant,MaxquantConverterFactory,21,0,6,0,4,0,5,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model.maxquant,MaxquantDigestionModeToNameConverter,90,0,4,0,16,0,8,0,6,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model.maxquant,GroupSpecificParameters,284,0,8,0,63,0,29,0,25,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model.maxquant,DigestionMode,34,0,4,0,9,0,8,0,6,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model.userdb,RoleAt,15,0,0,0,6,0,3,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model.userdb,Person,138,0,0,0,35,0,12,0,12,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model.notes,Notes,14,0,2,0,4,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model.notes,Note,24,0,0,0,10,0,7,0,7,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model.notes,ObjectFactory,11,0,0,0,4,0,3,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.controllers,MultiscaleController,371,0,18,0,85,0,19,0,10,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.controllers,WorkflowViewController.SpaceAndProjectCodes,12,0,0,0,4,0,1,0,1,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.controllers,WorkflowViewController.workflow_statuses,14,0,0,0,2,0,1,0,1,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.controllers,DataHandler,5034,0,322,0,1093,0,210,0,49,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.controllers,State,91,0,4,0,16,0,5,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.controllers,WorkflowViewController,1361,0,64,0,270,0,54,0,20,0
+ProjectBrowser Portlet,life.qbic.portal.portlet,ProjectBrowserPortlet.new Button.ClickListener() {...},14,0,0,0,3,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.portal.portlet,ProjectBrowserPortlet.new Button.ClickListener() {...},14,0,0,0,3,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.portal.portlet,ProjectBrowserPortlet,597,0,20,0,139,0,23,0,13,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,UploadsPanel,595,0,26,0,123,0,27,0,14,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,StandardTextField,21,0,0,0,9,0,3,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,BiologicalSamplesComponent.9.new Window.CloseListener() {...},15,0,0,0,3,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,DatasetComponent.TableCheckBoxValueChangeListener,174,0,10,0,35,0,8,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,WorkflowComponent.NGSMappingSubmissionListener,35,0,0,0,11,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,GridEditForm.new Button.ClickListener() {...},13,0,0,0,5,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,GridEditForm.new Button.ClickListener() {...},11,0,0,0,3,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,UploadsPanel.3.new Button.ClickListener() {...},30,0,0,0,6,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ProjInformationComponent.1.new Window.CloseListener() {...},27,0,0,0,4,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ProjInformationComponent.new Button.ClickListener() {...},60,0,0,0,16,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ProjInformationComponent.new Button.ClickListener() {...},32,0,2,0,6,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ProjInformationComponent.new FieldEvents.BlurListener() {...},29,0,0,0,5,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ProjInformationComponent.new Property.ValueChangeListener() {...},119,0,4,0,22,0,4,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ProjInformationComponent.new Button.ClickListener() {...},32,0,2,0,6,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ProjInformationComponent.new ItemClickEvent.ItemClickListener() {...},187,0,10,0,41,0,7,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,SelectFileComponent,226,0,6,0,56,0,10,0,7,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,MultiscaleComponent,309,0,8,0,63,0,11,0,7,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ProjInformationComponent.TableCheckBoxValueChangeListener,174,0,10,0,37,0,8,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,LevelComponent,2141,0,104,0,427,0,74,0,21,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,PatientStatusComponent.new PropertyValueGenerator() {...},59,0,2,0,11,0,4,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,PatientStatusComponent.new ClickableRenderer.RendererClickListener() {...},150,0,8,0,33,0,6,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,TSVDownloadComponent,460,0,26,0,95,0,22,0,9,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,WorkflowComponent.DifferentialExpressionSubmissionListener,35,0,0,0,11,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,GroupSpecificParameterComponent,369,0,8,0,77,0,11,0,7,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,CustomVisibilityComponent,130,0,12,0,38,0,19,0,13,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ExperimentComponent.new ItemClickEvent.ItemClickListener() {...},45,0,0,0,10,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,WorkflowComponent.ResetListener,13,0,0,0,5,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ExperimentComponent.new ClickableRenderer.RendererClickListener() {...},69,0,0,0,18,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ExperimentComponent.new PropertyValueGenerator() {...},33,0,0,0,8,0,3,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ExperimentComponent.new PropertyValueGenerator() {...},10,0,0,0,3,0,3,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,EditableLabel,123,0,2,0,32,0,7,0,6,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ChangeSampleMetadataComponent,460,0,20,0,98,0,17,0,7,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,WorkflowComponent.new ItemClickEvent.ItemClickListener() {...},48,0,4,0,10,0,4,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,WorkflowComponent.new Grid.DetailsGenerator() {...},35,0,0,0,7,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ChangeExperimentMetadataComponent.new Button.ClickListener() {...},167,0,8,0,40,0,6,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,DatasetComponent,1449,0,60,0,296,0,47,0,16,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,BiologicalSamplesComponent.7.new Window.CloseListener() {...},15,0,0,0,3,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,StandardWorkflowComponent,116,0,2,0,31,0,8,0,7,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,WorkflowComponent.MicroarrayQCSubmissionListener,35,0,0,0,11,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,NGSMappingComponent,201,0,6,0,48,0,12,0,9,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,GridEditForm,154,0,0,0,27,0,1,0,1,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,MicroarrayQCComponent,227,0,8,0,51,0,13,0,9,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,BiologicalSamplesComponent.sampleTypes,24,0,0,0,2,0,1,0,1,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,MaxQuantComponent.new Button.ClickListener() {...},59,0,8,0,12,0,6,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,MaxQuantComponent.new Button.ClickListener() {...},41,0,6,0,9,0,5,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,WorkflowComponent.MicroarrayQCResetListener,13,0,0,0,5,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,MaxQuantComponent.new TabSheet.SelectedTabChangeListener() {...},25,0,2,0,6,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,MaxQuantComponent.new Button.ClickListener() {...},10,0,0,0,3,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,MaxQuantComponent.new Button.ClickListener() {...},41,0,6,0,9,0,5,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ButtonLink,63,0,0,0,19,0,3,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,MaxQuantComponent.new Button.ClickListener() {...},59,0,8,0,12,0,6,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,MaxQuantComponent,803,0,32,0,168,0,31,0,15,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,LevelComponent.new ItemClickEvent.ItemClickListener() {...},373,0,26,0,97,0,15,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,LevelComponent.new Button.ClickListener() {...},32,0,2,0,6,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,LevelComponent.new Button.ClickListener() {...},32,0,2,0,6,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,LevelComponent.new ItemClickEvent.ItemClickListener() {...},44,0,0,0,10,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,LevelComponent.new ClickableRenderer.RendererClickListener() {...},81,0,0,0,18,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,LevelComponent.new ItemClickEvent.ItemClickListener() {...},44,0,0,0,10,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,BiologicalSamplesComponent,914,0,30,0,172,0,20,0,5,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,LevelComponent.new PropertyValueGenerator() {...},10,0,0,0,3,0,3,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,DifferentialExpressionComponent,247,0,12,0,58,0,16,0,10,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ChangeProjectMetadataComponent,153,0,0,0,40,0,5,0,5,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,MultiscaleComponent.new Button.ClickListener() {...},83,0,4,0,17,0,4,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,BiologicalSamplesComponent.new PropertyValueGenerator() {...},10,0,0,0,3,0,3,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,BiologicalSamplesComponent.new PropertyValueGenerator() {...},38,0,0,0,7,0,3,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,BiologicalSamplesComponent.new SelectionEvent.SelectionListener() {...},50,0,2,0,12,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,LevelComponent.TableCheckBoxValueChangeListener,174,0,10,0,37,0,8,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,WorkflowParameterComponent,12,0,0,0,6,0,3,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,BiologicalSamplesComponent.new SelectionEvent.SelectionListener() {...},50,0,2,0,12,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ChangeProjectMetadataComponent.new Button.ClickListener() {...},69,0,2,0,12,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,WorkflowComponent.StandardSubmissionListener,32,0,0,0,10,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,BiologicalSamplesComponent.new ClickableRenderer.RendererClickListener() {...},78,0,0,0,20,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,BiologicalSamplesComponent.new ItemClickEvent.ItemClickListener() {...},44,0,0,0,10,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,BiologicalSamplesComponent.new ClickableRenderer.RendererClickListener() {...},69,0,0,0,17,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,BiologicalSamplesComponent.new ItemClickEvent.ItemClickListener() {...},44,0,0,0,10,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,BiologicalSamplesComponent.new PropertyValueGenerator() {...},10,0,0,0,3,0,3,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,QuantificationLabelComponent,120,0,0,0,29,0,8,0,8,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,AttachmentUploadComponent,107,0,0,0,23,0,3,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,InputFilesComponent,1104,0,112,0,268,0,78,0,22,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ChangeExperimentMetadataComponent,453,0,22,0,98,0,18,0,7,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,UploadComponent.new Button.ClickListener() {...},15,0,0,0,4,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ChangeMetadataComponent.new Button.ClickListener() {...},69,0,2,0,13,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,DatasetComponent.new ItemClickEvent.ItemClickListener() {...},353,0,26,0,86,0,15,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,DatasetComponent.new Button.ClickListener() {...},32,0,2,0,5,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,DatasetComponent.new Button.ClickListener() {...},32,0,2,0,5,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,InputFilesComponent.new PropertyValueGenerator() {...},16,0,0,0,4,0,3,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ProjInformationComponent,2045,0,94,0,416,0,62,0,15,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ParameterComponent,707,0,46,0,164,0,40,0,17,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,InputFilesComponent.new PropertyValueGenerator() {...},16,0,0,0,4,0,3,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,InputFilesComponent.new PropertyValueGenerator() {...},29,0,4,0,9,0,5,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,InputFilesComponent.new PropertyValueGenerator() {...},16,0,0,0,4,0,3,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,UploadComponent,304,0,14,0,77,0,21,0,14,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ChangeMetadataComponent,362,0,16,0,77,0,14,0,6,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,LevelComponent.3.new Window.CloseListener() {...},20,0,0,0,3,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,WorkflowComponent,858,0,59,0,193,0,46,0,15,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,PatientStatusComponent,282,0,2,0,55,0,4,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ExperimentComponent,319,0,2,0,64,0,5,0,4,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,WorkflowComponent.MaxQuantSubmissionListener,36,0,0,0,12,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,WorkflowComponent.NGSMappingResetListener,13,0,0,0,5,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,WorkflowComponent.DifferentialExpressionResetListener,13,0,0,0,5,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,GroupSpecificParameterComponent.new Property.ValueChangeListener() {...},38,0,6,0,9,0,5,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,GroupSpecificParameterComponent.new Property.ValueChangeListener() {...},22,0,4,0,4,0,4,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,UploadsPanel.new Upload.FinishedListener() {...},182,0,10,0,32,0,7,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,UploadsPanel.new FieldEvents.TextChangeListener() {...},19,0,2,0,3,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,UploadsPanel.new Button.ClickListener() {...},41,0,0,0,8,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,EditableLabel.new FieldEvents.BlurListener() {...},40,0,2,0,8,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,EditableLabel.new LayoutEvents.LayoutClickListener() {...},51,0,6,0,10,0,5,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,ChangeSampleMetadataComponent.new Button.ClickListener() {...},410,0,22,0,84,0,13,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,BiologicalSamplesComponent.propertyTypes,44,0,0,0,2,0,1,0,1,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,SearchBarView.new Button.ClickListener() {...},164,0,8,0,39,0,6,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,ExperimentView,778,0,4,0,179,0,28,0,26,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,DatasetView,1046,0,40,0,213,0,32,0,11,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,DatasetView.new Button.ClickListener() {...},339,0,24,0,69,0,14,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,DatasetView.new Property.ValueChangeListener() {...},93,0,18,0,18,0,11,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,DatasetView.new Property.ValueChangeListener() {...},119,0,4,0,21,0,4,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,DatasetView.new Button.ClickListener() {...},32,0,2,0,5,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,DatasetView.new Button.ClickListener() {...},32,0,2,0,5,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,SearchResultsView,621,0,18,0,139,0,23,0,14,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,WorkflowView,658,0,39,0,150,0,36,0,15,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,PatientView.Worker,23,0,0,0,8,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,ProjectView.new TabSheet.SelectedTabChangeListener() {...},178,0,18,0,24,0,11,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,SampleView,1158,0,28,0,250,0,43,0,29,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,SearchResultsView.new ItemClickEvent.ItemClickListener() {...},57,0,2,0,13,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,WorkflowView.StandardSubmissionListener,32,0,0,0,10,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,SearchResultsView.new ItemClickEvent.ItemClickListener() {...},57,0,2,0,13,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,SearchResultsView.new ItemClickEvent.ItemClickListener() {...},57,0,2,0,13,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,PatientView.MemberWorker,193,0,10,0,39,0,7,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,AddPatientView,981,0,36,0,196,0,32,0,14,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,HomeView.new SelectionEvent.SelectionListener() {...},49,0,4,0,15,0,4,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,HomeView.new ClickableRenderer.RendererClickListener() {...},87,0,0,0,21,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,HomeView.new PropertyValueGenerator() {...},10,0,0,0,3,0,3,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,WorkflowView.MaxQuantSubmissionListener,38,0,0,0,12,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,HomeView,590,0,16,0,134,0,21,0,13,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,SampleView.new TabSheet.SelectedTabChangeListener() {...},23,0,2,0,4,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,SampleView.new Button.ClickListener() {...},39,0,0,0,8,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,WorkflowView.new Grid.DetailsGenerator() {...},35,0,0,0,7,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,WorkflowView.new ItemClickEvent.ItemClickListener() {...},48,0,4,0,10,0,4,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,DatasetView.5.new ClientConnector.DetachListener() {...},15,0,0,0,3,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,ProjectView,1496,0,28,0,326,0,53,0,39,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,WorkflowView.ResetListener,13,0,0,0,5,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,PatientView.new ClickableRenderer.RendererClickListener() {...},90,0,2,0,21,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,SearchEngineView,486,0,16,0,119,0,17,0,9,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,PatientView.new PropertyValueGenerator() {...},59,0,2,0,11,0,4,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,PatientView.new ClickableRenderer.RendererClickListener() {...},87,0,6,0,19,0,5,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,PatientView.new TabSheet.SelectedTabChangeListener() {...},197,0,20,0,27,0,12,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,SearchEngineView.new Property.ValueChangeListener() {...},101,0,5,0,13,0,6,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,SearchEngineView.new Button.ClickListener() {...},120,0,6,0,21,0,5,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,AddPatientView.new FieldEvents.TextChangeListener() {...},22,0,0,0,5,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,PatientView,2051,0,48,0,435,0,61,0,37,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,AddPatientView.new Button.ClickListener() {...},10,0,0,0,3,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,AddPatientView.new Property.ValueChangeListener() {...},12,0,0,0,3,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,AddPatientView.new FieldEvents.TextChangeListener() {...},12,0,0,0,3,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,AddPatientView.new FieldEvents.TextChangeListener() {...},12,0,0,0,3,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,AddPatientView.new Button.ClickListener() {...},27,0,0,0,3,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,SearchBarView,154,0,2,0,39,0,5,0,4,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,AddPatientView.new SelectionEvent.SelectionListener() {...},30,0,0,0,5,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,ProjectView.MemberWorker,176,0,10,0,37,0,7,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,DatasetView.TableCheckBoxValueChangeListener,174,0,10,0,35,0,8,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.views,ProjectView.Worker,23,0,0,0,8,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,SampleToBarcodeFieldTranslator,208,0,26,0,50,0,21,0,5,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,ProjectBean,242,0,14,0,90,0,48,0,41,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,SampleBean,345,0,18,0,83,0,38,0,29,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,ExperimentStatusBean,56,0,0,0,24,0,12,0,12,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,SearchResultsProjectBean,30,0,0,0,12,0,6,0,6,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,DBConfig,33,0,0,0,12,0,6,0,6,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,BiologicalEntitySampleBean,201,0,6,0,62,0,29,0,26,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,SearchResultsSampleItem,79,0,4,0,18,0,3,0,1,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,SortBy,62,0,0,0,7,0,4,0,4,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,SearchResultsExperimentBean,293,0,24,0,71,0,23,0,11,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,BiologicalSampleBean,201,0,6,0,62,0,29,0,26,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,spaceToProjectPrefixMap,111,0,0,0,24,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,SearchResultsSampleBean,293,0,24,0,71,0,23,0,11,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,DatasetBean,299,0,22,0,100,0,58,0,47,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,DBVocabularies,107,0,0,0,38,0,19,0,19,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,PropertyBean,60,0,0,0,26,0,14,0,14,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,TestSampleBean,181,0,6,0,54,0,25,0,22,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,NewIvacSampleBean,86,0,0,0,36,0,18,0,18,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,AggregationAdaptorBean,76,0,0,0,27,0,14,0,14,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,DBManager,678,0,40,0,178,0,32,0,12,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,ExperimentBean,401,0,30,0,117,0,54,0,39,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,NewSampleModelBean,33,0,0,0,14,0,7,0,7,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.model,SpaceBean,164,0,14,0,57,0,30,0,23,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,ProcessBuilderWrapper,94,0,4,0,25,0,8,0,6,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,AttachmentMover,198,0,10,0,37,0,10,0,5,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,DatasetViewFilterDecorator,69,0,8,0,22,0,22,0,18,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,SummaryFetcher,1359,0,110,0,282,0,71,0,14,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,ProjectSummaryReadyRunnable,67,0,4,0,19,0,4,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,JsonHelper,31,0,6,0,7,0,5,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,ViewTablesClickListener,85,0,6,0,26,0,11,0,8,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,AlternativeSecondaryNameCreator,272,0,56,0,64,0,35,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,AttachmentMover.new Runnable() {...},175,0,2,0,28,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,QcMlOpenbisSource,32,0,0,0,15,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,ProxyForGenomeViewerRestApi,365,0,28,0,94,0,16,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,HTMLConverter,17,0,0,0,5,0,5,0,5,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,AttachmentConfig,27,0,0,0,10,0,5,0,5,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,AttachmentInformation,55,0,0,0,20,0,8,0,8,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,CustomVaadinPortlet,1738,0,94,0,345,0,68,0,21,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,SummaryFetcher.new Runnable() {...},28,0,0,0,6,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,SummaryFetcher.new HashMap() {...},176,0,0,0,36,0,1,0,1,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,Utils,546,0,28,0,134,0,31,0,17,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,TSVReadyRunnable.new StreamResource.StreamSource() {...},23,0,0,0,6,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,MoveUploadsReadyRunnable,21,0,0,0,11,0,3,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,TSVReadyRunnable,102,0,2,0,18,0,4,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,Docx4jHelper,745,0,76,0,222,0,58,0,20,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,Pair,47,0,6,0,11,0,8,0,5,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,GraphGenerator.new StreamResource.StreamSource() {...},23,0,2,0,5,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,DocxStyle,129,0,0,0,55,0,37,0,37,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,OpenBisFunctions,170,0,18,0,38,0,17,0,7,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,BarcodeFunctions,109,0,8,0,23,0,10,0,6,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,ToolTip,22,0,0,0,6,0,3,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,GridFunctions,41,0,2,0,10,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,ExperimentTypeComparator.new HashMap() {...},192,0,0,0,33,0,1,0,1,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,StreamBoozer,42,0,2,0,16,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,ExperimentTypeComparator,293,0,62,0,68,0,38,0,7,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,TarWriter,433,0,32,0,110,0,30,0,14,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,UglyToPrettyNameMapper,1262,0,4,0,217,0,5,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,CustomVaadinPortlet.CustomVaadinPortletService,11,0,0,0,4,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,UpdateProgressBar,50,0,2,0,11,0,3,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,HistoryReader,64,0,0,0,21,0,5,0,5,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,GraphGenerator,1380,0,92,0,268,0,53,0,7,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,Utils.new StreamResource.StreamSource() {...},20,0,0,0,6,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,Utils.new PopupView.Content() {...},41,0,0,0,8,0,3,0,3,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,Utils.new VisibilityChangeListener() {...},11,0,0,0,3,0,2,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,GridFunctions.new FieldEvents.TextChangeListener() {...},44,0,4,0,9,0,4,0,2,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.helpers,DatasetViewFilterGenerator,118,0,16,0,24,0,15,0,7,0

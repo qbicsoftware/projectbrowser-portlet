@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProxyForGenomeViewerRestApi.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.helpers</a> &gt; <span class="el_source">ProxyForGenomeViewerRestApi.java</span></div><h1>ProxyForGenomeViewerRestApi.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.helpers;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.Set;
+
+import javax.portlet.PortletRequest;
+import javax.servlet.http.HttpServletRequest;
+
+import com.liferay.portal.util.PortalUtil;
+import com.vaadin.server.RequestHandler;
+import com.vaadin.server.VaadinPortletService;
+import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.VaadinResponse;
+import com.vaadin.server.VaadinSession;
+import com.vaadin.ui.UI;
+
+import life.qbic.portal.utils.ConfigurationManagerFactory;
+import life.qbic.portal.utils.PortalUtils;
+
+public class ProxyForGenomeViewerRestApi implements RequestHandler {
+
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 3929423697741337860L;
+  private long session;
+
+<span class="nc" id="L53">  public ProxyForGenomeViewerRestApi() {</span>
+<span class="nc" id="L54">    Random rand = new Random();</span>
+<span class="nc" id="L55">    rand.setSeed(</span>
+<span class="nc" id="L56">        System.nanoTime() + Long.parseLong(PortalUtils.getNonNullScreenName(), 36));</span>
+<span class="nc" id="L57">    session = rand.nextLong();</span>
+<span class="nc" id="L58">    UI.getCurrent().getSession().setAttribute(&quot;gv-restapi-session&quot;, session);</span>
+<span class="nc" id="L59">  }</span>
+
+  @Override
+  public boolean handleRequest(VaadinSession session, VaadinRequest request,
+      VaadinResponse response) throws IOException {
+<span class="nc bnc" id="L64" title="All 4 branches missed.">    if (UI.getCurrent() != null &amp;&amp; UI.getCurrent().getPage() != null</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        &amp;&amp; UI.getCurrent().getPage().getUriFragment() != null) {</span>
+<span class="nc" id="L66">      System.out.println(UI.getCurrent().getPage().getUriFragment());</span>
+    }
+<span class="nc" id="L68">    System.out.println(&quot;is handling request&quot;);</span>
+<span class="nc" id="L69">    System.out.println(request.getPathInfo());</span>
+<span class="nc" id="L70">    System.out.println(request.getContextPath());</span>
+<span class="nc" id="L71">    PortletRequest portletRequest = VaadinPortletService.getCurrentPortletRequest();</span>
+<span class="nc" id="L72">    Map&lt;String, String[]&gt; para = request.getParameterMap();</span>
+<span class="nc" id="L73">    Set&lt;Entry&lt;String, String[]&gt;&gt; s = para.entrySet();</span>
+<span class="nc" id="L74">    Iterator&lt;Entry&lt;String, String[]&gt;&gt; it = s.iterator();</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">    while (it.hasNext()) {</span>
+<span class="nc" id="L76">      Entry&lt;String, String[]&gt; en = it.next();</span>
+<span class="nc" id="L77">      System.out.println(&quot;Key: &quot; + en.getKey());</span>
+<span class="nc" id="L78">      System.out.println(&quot;Value:&quot;);</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">      for (int i = 0; i &lt; en.getValue().length; i++) {</span>
+<span class="nc" id="L80">        System.out.println(en.getValue()[i]);</span>
+      }
+<span class="nc" id="L82">      System.out.println(&quot;Next&quot;);</span>
+<span class="nc" id="L83">    }</span>
+<span class="nc" id="L84">    Enumeration&lt;String&gt; enu = portletRequest.getParameterNames();</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">    while (enu.hasMoreElements()) {</span>
+<span class="nc" id="L86">      String su = enu.nextElement();</span>
+<span class="nc" id="L87">      System.out.println(su + &quot; &quot; + portletRequest.getParameter(su));</span>
+<span class="nc" id="L88">    }</span>
+<span class="nc" id="L89">    enu = portletRequest.getPropertyNames();</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">    while (enu.hasMoreElements()) {</span>
+<span class="nc" id="L91">      String su = enu.nextElement();</span>
+<span class="nc" id="L92">      System.out.println(su + &quot; &quot; + portletRequest.getProperty(su));</span>
+<span class="nc" id="L93">    }</span>
+<span class="nc" id="L94">    HttpServletRequest httpRequest = PortalUtil.getHttpServletRequest(portletRequest);</span>
+<span class="nc" id="L95">    System.out.println(httpRequest.getPathInfo());</span>
+<span class="nc" id="L96">    enu = httpRequest.getParameterNames();</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">    while (enu.hasMoreElements()) {</span>
+<span class="nc" id="L98">      String su = enu.nextElement();</span>
+<span class="nc" id="L99">      System.out.println(su + &quot; &quot; + httpRequest.getParameter(su));</span>
+<span class="nc" id="L100">    }</span>
+<span class="nc" id="L101">    System.out.println(httpRequest.getQueryString());</span>
+<span class="nc" id="L102">    enu = PortalUtil.getOriginalServletRequest(httpRequest).getParameterNames();</span>
+<span class="nc" id="L103">    System.out.println(PortalUtil.getOriginalServletRequest(httpRequest).getPathInfo());</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">    while (enu.hasMoreElements()) {</span>
+<span class="nc" id="L105">      String su = enu.nextElement();</span>
+<span class="nc" id="L106">      System.out</span>
+<span class="nc" id="L107">          .println(su + &quot; &quot; + PortalUtil.getOriginalServletRequest(httpRequest).getParameter(su));</span>
+<span class="nc" id="L108">    }</span>
+
+
+<span class="nc bnc" id="L111" title="All 2 branches missed.">    if (!String.valueOf(session).equals(request.getPathInfo())) {</span>
+<span class="nc" id="L112">      return false;</span>
+    }
+
+<span class="nc" id="L115">    String fileId = request.getParameter(&quot;fileId&quot;);</span>
+<span class="nc" id="L116">    String filepaths = request.getParameter(&quot;filepath&quot;);</span>
+<span class="nc" id="L117">    String removeZeroGenotypes = request.getParameter(&quot;removeZeroGenotypes&quot;);</span>
+<span class="nc" id="L118">    String region = request.getParameter(&quot;region&quot;);</span>
+<span class="nc" id="L119">    String interval = request.getParameter(&quot;interval&quot;);</span>
+<span class="nc" id="L120">    String histogram = request.getParameter(&quot;histogram&quot;);</span>
+
+    URL u;
+    try {
+<span class="nc" id="L124">      StringBuilder sb = new StringBuilder();</span>
+<span class="nc" id="L125">      sb.append(ConfigurationManagerFactory.getInstance().getGenomeViewerRestApiUrl());</span>
+<span class="nc" id="L126">      sb.append(fileId);</span>
+<span class="nc" id="L127">      sb.append(&quot;/fetch?filepaths=&quot;);</span>
+<span class="nc" id="L128">      sb.append(filepaths);</span>
+<span class="nc" id="L129">      sb.append(&quot;&amp;region=&quot;);</span>
+<span class="nc" id="L130">      sb.append(region);</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">      if (interval != null) {</span>
+<span class="nc" id="L132">        sb.append(&quot;&amp;interval=&quot;);</span>
+<span class="nc" id="L133">        sb.append(interval);</span>
+      }
+<span class="nc bnc" id="L135" title="All 2 branches missed.">      if (histogram != null) {</span>
+<span class="nc" id="L136">        sb.append(&quot;&amp;histogram=&quot;);</span>
+<span class="nc" id="L137">        sb.append(histogram);</span>
+      }
+<span class="nc bnc" id="L139" title="All 2 branches missed.">      if (removeZeroGenotypes != null) {</span>
+<span class="nc" id="L140">        sb.append(&quot;&quot;);</span>
+      }
+<span class="nc" id="L142">      u = new URL(sb.toString());</span>
+      // u = new
+      // URL(&quot;http://localhost:7777/vizrest/rest/data/QBAMS001AB.bam/fetch?filepaths=/store/1/0EEF79A2-8140-4FC7-BA67-E51908FE4619/f0/91/36/20141116104428925-3161/original/QBAMS001AB.bam&amp;removeZeroGenotypes=false&amp;region=9:117163200-117164799,9:117164800-117166399,9:117166400-117167999,9:117168000-117169599&amp;interval=1600&amp;h&quot;);
+<span class="nc" id="L145">      URLConnection urlConnection = u.openConnection();</span>
+
+<span class="nc" id="L147">      urlConnection.setUseCaches(false);</span>
+<span class="nc" id="L148">      urlConnection.setDoOutput(false);</span>
+<span class="nc" id="L149">      urlConnection.connect();</span>
+<span class="nc" id="L150">      InputStream is = urlConnection.getInputStream();</span>
+<span class="nc" id="L151">      response.setContentType(&quot;application/json&quot;);</span>
+<span class="nc" id="L152">      response.setHeader(&quot;Content-Type&quot;, &quot;application/json&quot;);</span>
+<span class="nc" id="L153">      OutputStream out = response.getOutputStream();</span>
+<span class="nc" id="L154">      byte[] buffer = new byte[com.vaadin.server.Constants.DEFAULT_BUFFER_SIZE];</span>
+      while (true) {
+<span class="nc" id="L156">        int readCount = is.read(buffer);</span>
+<span class="nc bnc" id="L157" title="All 2 branches missed.">        if (readCount &lt; 0) {</span>
+<span class="nc" id="L158">          break;</span>
+        }
+<span class="nc" id="L160">        out.write(buffer, 0, readCount);</span>
+<span class="nc" id="L161">      }</span>
+
+<span class="nc" id="L163">    } catch (MalformedURLException e) {</span>
+      // TODO Auto-generated catch block
+<span class="nc" id="L165">      e.printStackTrace();</span>
+<span class="nc" id="L166">    } catch (IOException e) {</span>
+      // TODO Auto-generated catch block
+<span class="nc" id="L168">      e.printStackTrace();</span>
+<span class="nc" id="L169">    }</span>
+<span class="nc" id="L170">    return true;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

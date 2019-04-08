@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HomeView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.views</a> &gt; <span class="el_source">HomeView.java</span></div><h1>HomeView.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.views;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
+import life.qbic.portal.portlet.ProjectBrowserPortlet;
+import org.tepi.filtertable.FilterTable;
+
+import com.vaadin.data.Item;
+import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.data.util.GeneratedPropertyContainer;
+import com.vaadin.data.util.PropertyValueGenerator;
+import com.vaadin.event.SelectionEvent;
+import com.vaadin.event.SelectionEvent.SelectionListener;
+import com.vaadin.navigator.View;
+import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
+import com.vaadin.server.FileDownloader;
+import com.vaadin.server.FontAwesome;
+import com.vaadin.server.StreamResource;
+import com.vaadin.server.WebBrowser;
+import com.vaadin.shared.ui.grid.HeightMode;
+import com.vaadin.ui.Alignment;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.Grid.Column;
+import com.vaadin.ui.Grid.SelectionMode;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.ProgressBar;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Window;
+import com.vaadin.ui.renderers.ButtonRenderer;
+import com.vaadin.ui.renderers.ClickableRenderer.RendererClickEvent;
+import com.vaadin.ui.renderers.ClickableRenderer.RendererClickListener;
+import com.vaadin.ui.themes.ValoTheme;
+
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Project;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import life.qbic.projectbrowser.model.ExperimentBean;
+import life.qbic.projectbrowser.model.ProjectBean;
+import life.qbic.projectbrowser.model.SpaceBean;
+import life.qbic.projectbrowser.helpers.Utils;
+import life.qbic.projectbrowser.helpers.GridFunctions;
+import life.qbic.projectbrowser.helpers.ProjectSummaryReadyRunnable;
+import life.qbic.projectbrowser.helpers.SummaryFetcher;
+import life.qbic.projectbrowser.controllers.*;
+
+public class HomeView extends VerticalLayout implements View {
+
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 377522772714840963L;
+
+<span class="nc" id="L76">  private static final Logger LOG = LogManager.getLogger(HomeView.class);</span>
+
+  private String caption;
+  private FilterTable table;
+  private Grid projectGrid;
+  private VerticalLayout homeview_content;
+<span class="nc" id="L82">  private VerticalLayout buttonLayoutSection = new VerticalLayout();</span>
+  private SpaceBean currentBean;
+  // Boolean includePatientCreation = false;
+  private State state;
+  private String resourceUrl;
+  private String header;
+
+  public String getHeader() {
+<span class="nc" id="L90">    return header;</span>
+  }
+
+  public void setHeader(String header) {
+<span class="nc" id="L94">    this.header = header;</span>
+<span class="nc" id="L95">  }</span>
+
+
+  private DataHandler datahandler;
+  private SummaryFetcher summaryFetcher;
+
+<span class="nc" id="L101">  private Button export = new Button(&quot;Export as TSV&quot;);</span>
+
+<span class="nc" id="L103">  private int numberOfProjects = 0;</span>
+
+  private String user;
+
+  public HomeView(DataHandler datahandler, String caption, String user, State state, String resUrl,
+<span class="nc" id="L108">      String tmpFolderPath) {</span>
+<span class="nc" id="L109">    homeview_content = new VerticalLayout();</span>
+    // this.table = buildFilterTable();
+<span class="nc" id="L111">    this.projectGrid = new Grid();</span>
+<span class="nc" id="L112">    this.datahandler = datahandler;</span>
+<span class="nc" id="L113">    this.state = state;</span>
+<span class="nc" id="L114">    this.resourceUrl = resUrl;</span>
+<span class="nc" id="L115">    this.summaryFetcher = new SummaryFetcher(datahandler.getOpenBisClient(), tmpFolderPath);</span>
+
+<span class="nc" id="L117">    this.user = user;</span>
+    // tableClickChangeTreeView();
+<span class="nc" id="L119">  }</span>
+
+  /**
+   * execute the above constructor with default settings, in order to have the same settings
+   */
+  public HomeView(DataHandler datahandler) {
+<span class="nc" id="L125">    this(datahandler, &quot;You seem to have no registered projects. Please contact QBiC.&quot;, &quot;&quot;,</span>
+        new State(), &quot;&quot;, &quot;&quot;);
+<span class="nc" id="L127">  }</span>
+
+  public void setSizeFull() {
+    // homeview_content.setSizeFull();
+    // super.setSizeFull();
+    // this.table.setSizeFull();
+    // this.projectGrid.setSizeFull();
+    // homeview_content.setSpacing(true);
+    // homeview_content.setMargin(true);
+<span class="nc" id="L136">  }</span>
+
+  /**
+   * sets the ContainerDataSource of this view. Should usually contain project information. Caption
+   * is caption.
+   * 
+   * @param spaceBean
+   * @param newCaption
+   */
+  public void setContainerDataSource(SpaceBean spaceBean, String newCaption) {
+
+<span class="nc" id="L147">    caption = newCaption;</span>
+<span class="nc" id="L148">    currentBean = spaceBean;</span>
+<span class="nc" id="L149">    numberOfProjects = currentBean.getProjects().size();</span>
+<span class="nc" id="L150">    projectGrid = new Grid();</span>
+
+<span class="nc" id="L152">    GeneratedPropertyContainer gpcProjects =</span>
+<span class="nc" id="L153">        new GeneratedPropertyContainer(spaceBean.getProjects());</span>
+<span class="nc" id="L154">    gpcProjects.removeContainerProperty(&quot;members&quot;);</span>
+<span class="nc" id="L155">    gpcProjects.removeContainerProperty(&quot;id&quot;);</span>
+<span class="nc" id="L156">    gpcProjects.removeContainerProperty(&quot;experiments&quot;);</span>
+<span class="nc" id="L157">    gpcProjects.removeContainerProperty(&quot;contact&quot;);</span>
+<span class="nc" id="L158">    gpcProjects.removeContainerProperty(&quot;contactPerson&quot;);</span>
+<span class="nc" id="L159">    gpcProjects.removeContainerProperty(&quot;projectManager&quot;);</span>
+<span class="nc" id="L160">    gpcProjects.removeContainerProperty(&quot;containsData&quot;);</span>
+<span class="nc" id="L161">    gpcProjects.removeContainerProperty(&quot;containsResults&quot;);</span>
+<span class="nc" id="L162">    gpcProjects.removeContainerProperty(&quot;containsAttachments&quot;);</span>
+<span class="nc" id="L163">    gpcProjects.removeContainerProperty(&quot;description&quot;);</span>
+<span class="nc" id="L164">    gpcProjects.removeContainerProperty(&quot;progress&quot;);</span>
+<span class="nc" id="L165">    gpcProjects.removeContainerProperty(&quot;registrationDate&quot;);</span>
+<span class="nc" id="L166">    gpcProjects.removeContainerProperty(&quot;registrator&quot;);</span>
+<span class="nc" id="L167">    gpcProjects.removeContainerProperty(&quot;longDescription&quot;);</span>
+
+<span class="nc" id="L169">    projectGrid.setContainerDataSource(gpcProjects);</span>
+
+<span class="nc" id="L171">    projectGrid.setHeightMode(HeightMode.ROW);</span>
+<span class="nc" id="L172">    projectGrid.setHeightByRows(20);</span>
+
+    // projectGrid.getColumn(&quot;space&quot;).setWidthUndefined();
+    // projectGrid.getColumn(&quot;code&quot;).setWidthUndefined();
+    // projectGrid.getColumn(&quot;secondaryName&quot;).setWidthUndefined();
+    // projectGrid.getColumn(&quot;principalInvestigator&quot;).setWidthUndefined();
+
+<span class="nc" id="L179">    projectGrid.getColumn(&quot;code&quot;).setHeaderCaption(&quot;Sub-Project&quot;).setWidth(150);</span>
+    // projectGrid.getColumn(&quot;space&quot;).setWidth(200);
+
+<span class="nc" id="L182">    Column nameCol = projectGrid.getColumn(&quot;secondaryName&quot;);</span>
+<span class="nc" id="L183">    nameCol.setHeaderCaption(&quot;Short Name&quot;);</span>
+<span class="nc" id="L184">    nameCol.setMaximumWidth(450);</span>
+<span class="nc" id="L185">    projectGrid.getColumn(&quot;space&quot;).setMaximumWidth(350);</span>
+<span class="nc" id="L186">    projectGrid.getColumn(&quot;space&quot;).setHeaderCaption(&quot;Project&quot;);</span>
+<span class="nc" id="L187">    projectGrid.getColumn(&quot;principalInvestigator&quot;).setHeaderCaption(&quot;Investigator&quot;);</span>
+<span class="nc" id="L188">    projectGrid.setColumnOrder(&quot;code&quot;, &quot;space&quot;, &quot;secondaryName&quot;, &quot;principalInvestigator&quot;);</span>
+
+<span class="nc" id="L190">    projectGrid.setResponsive(true);</span>
+
+<span class="nc" id="L192">    GridFunctions.addColumnFilters(projectGrid, gpcProjects);</span>
+
+<span class="nc" id="L194">    gpcProjects.addGeneratedProperty(&quot;Summary&quot;, new PropertyValueGenerator&lt;String&gt;() {</span>
+      @Override
+      public String getValue(Item item, Object itemId, Object propertyId) {
+<span class="nc" id="L197">        return &quot;show&quot;;</span>
+      }
+
+      @Override
+      public Class&lt;String&gt; getType() {
+<span class="nc" id="L202">        return String.class;</span>
+      }
+    });
+
+<span class="nc" id="L206">    projectGrid.getColumn(&quot;Summary&quot;).setWidthUndefined();</span>
+
+
+<span class="nc" id="L209">    projectGrid.getColumn(&quot;Summary&quot;).setRenderer(new ButtonRenderer(new RendererClickListener() {</span>
+
+      @Override
+      public void click(RendererClickEvent event) {
+        // Show loading window
+<span class="nc" id="L214">        ProgressBar bar = new ProgressBar();</span>
+<span class="nc" id="L215">        bar.setIndeterminate(true);</span>
+<span class="nc" id="L216">        VerticalLayout vl = new VerticalLayout(bar);</span>
+<span class="nc" id="L217">        vl.setComponentAlignment(bar, Alignment.MIDDLE_CENTER);</span>
+<span class="nc" id="L218">        vl.setWidth(&quot;50%&quot;);</span>
+<span class="nc" id="L219">        vl.setSpacing(true);</span>
+<span class="nc" id="L220">        vl.setMargin(true);</span>
+
+<span class="nc" id="L222">        Window loadingWindow = new Window(&quot;Loading project summary...&quot;);</span>
+<span class="nc" id="L223">        loadingWindow.setWidth(&quot;50%&quot;);</span>
+<span class="nc" id="L224">        loadingWindow.setContent(vl);</span>
+<span class="nc" id="L225">        loadingWindow.center();</span>
+<span class="nc" id="L226">        loadingWindow.setModal(true);</span>
+<span class="nc" id="L227">        loadingWindow.setResizable(false);</span>
+<span class="nc" id="L228">        ProjectBrowserPortlet ui = (ProjectBrowserPortlet) UI.getCurrent();</span>
+<span class="nc" id="L229">        ui.addWindow(loadingWindow);</span>
+
+        // fetch summary and create docx in tmp folder
+
+<span class="nc" id="L233">        ProjectBean proj = (ProjectBean) event.getItemId();</span>
+<span class="nc" id="L234">        summaryFetcher.fetchSummaryComponent(proj.getSpace(), proj.getCode(), proj.getSecondaryName(),</span>
+<span class="nc" id="L235">            proj.getDescription(),</span>
+<span class="nc" id="L236">            new ProjectSummaryReadyRunnable(summaryFetcher, loadingWindow, proj.getCode()));</span>
+<span class="nc" id="L237">      }</span>
+    }));
+<span class="nc" id="L239">    projectGrid.getColumn(&quot;Summary&quot;).setWidth(100);</span>
+
+<span class="nc" id="L241">    projectGrid.addSelectionListener(new SelectionListener() {</span>
+
+      @Override
+      public void select(SelectionEvent event) {
+<span class="nc" id="L245">        Set&lt;Object&gt; selectedElements = event.getSelected();</span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">        if (selectedElements == null) {</span>
+<span class="nc" id="L247">          return;</span>
+        }
+
+<span class="nc" id="L250">        ProjectBean selectedProject = (ProjectBean) selectedElements.iterator().next();</span>
+
+<span class="nc bnc" id="L252" title="All 2 branches missed.">        if (selectedProject == null) {</span>
+<span class="nc" id="L253">          return;</span>
+        }
+
+<span class="nc" id="L256">        String entity = selectedProject.getId();</span>
+<span class="nc" id="L257">        State state = (State) UI.getCurrent().getSession().getAttribute(&quot;state&quot;);</span>
+<span class="nc" id="L258">        ArrayList&lt;String&gt; message = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L259">        message.add(&quot;clicked&quot;);</span>
+<span class="nc" id="L260">        message.add(entity);</span>
+<span class="nc" id="L261">        message.add(ProjectView.navigateToLabel);</span>
+<span class="nc" id="L262">        state.notifyObservers(message);</span>
+<span class="nc" id="L263">      }</span>
+    });
+<span class="nc" id="L265">  }</span>
+
+  private void setExportButton() {
+<span class="nc" id="L268">    buttonLayoutSection.removeAllComponents();</span>
+<span class="nc" id="L269">    HorizontalLayout buttonLayout = new HorizontalLayout();</span>
+<span class="nc" id="L270">    buttonLayout.setHeight(null);</span>
+<span class="nc" id="L271">    buttonLayout.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L272">    buttonLayoutSection.addComponent(buttonLayout);</span>
+
+<span class="nc" id="L274">    buttonLayout.addComponent(this.export);</span>
+
+<span class="nc" id="L276">    StreamResource sr =</span>
+<span class="nc" id="L277">        Utils.getTSVStream(Utils.containerToString(currentBean.getProjects()), &quot;project_overview&quot;);</span>
+<span class="nc" id="L278">    FileDownloader fileDownloader = new FileDownloader(sr);</span>
+<span class="nc" id="L279">    fileDownloader.extend(this.export);</span>
+<span class="nc" id="L280">  }</span>
+
+  /**
+   * updates view, if height, width or the browser changes.
+   * 
+   * @param browserHeight
+   * @param browserWidth
+   * @param browser
+   */
+  public void updateView(int browserHeight, int browserWidth, WebBrowser browser) {
+    // setWidth((browserWidth * 0.85f), Unit.PIXELS);
+<span class="nc" id="L291">  }</span>
+
+  void buildLayout(int browserHeight, int browserWidth, WebBrowser browser) {
+    // clean up first
+    // homeview_content.removeAllComponents();
+<span class="nc" id="L296">    removeAllComponents();</span>
+<span class="nc" id="L297">    setSpacing(true);</span>
+
+    // updateView(browserWidth, browserWidth, browser);
+
+    // view overall statistics
+    // VerticalLayout homeViewDescription = new VerticalLayout();
+
+    /*
+     * Label statContent; if (numberOfProjects &gt; 0) { statContent = new
+     * Label(String.format(&quot;You have %s Sub-Project(s)&quot;, numberOfProjects));
+     * setHeader(String.format(&quot;Total number of Sub-Projects: %s&quot;, numberOfProjects)); } else {
+     * statContent = new Label(
+     * String.format(&quot;You have no projects so far. Please contact your project manager.&quot;));
+     * statContent.addStyleName(ValoTheme.LABEL_FAILURE);
+     * statContent.addStyleName(ValoTheme.LABEL_LARGE); }
+     */
+
+    // homeViewDescription.setWidth(&quot;100%&quot;);
+    // homeview_content.addComponent(homeViewDescription);
+
+
+    // table
+    // VerticalLayout tableSection = new VerticalLayout();
+    // VerticalLayout tableSectionContent = new VerticalLayout();
+
+    // tableSectionContent.setCaption(&quot;Sub-Projects&quot;);
+    // tableSectionContent.setIcon(FontAwesome.TABLE);
+    // tableSectionContent.addComponent(this.table);
+<span class="nc" id="L325">    addComponent(projectGrid);</span>
+<span class="nc" id="L326">    addComponent(buttonLayoutSection);</span>
+<span class="nc" id="L327">    setExportButton();</span>
+
+<span class="nc" id="L329">    setCaption(&quot;Sub-Projects&quot;);</span>
+<span class="nc" id="L330">    setIcon(FontAwesome.TABLE);</span>
+
+    // tableSection.setMargin(new MarginInfo(false, false, false, false));
+
+<span class="nc" id="L334">    projectGrid.setWidth(100, Unit.PERCENTAGE);</span>
+<span class="nc" id="L335">    projectGrid.setSelectionMode(SelectionMode.SINGLE);</span>
+<span class="nc" id="L336">    projectGrid.setResponsive(true);</span>
+
+<span class="nc" id="L338">    export.setIcon(FontAwesome.DOWNLOAD);</span>
+
+    // tableSection.setWidth(&quot;100%&quot;);
+    // tableSectionContent.setWidth(&quot;100%&quot;);
+
+    // tableSection.addComponent(tableSectionContent);
+    // homeview_content.addComponent(tableSection);
+<span class="nc" id="L345">    setWidth(100, Unit.PERCENTAGE);</span>
+<span class="nc" id="L346">    setResponsive(true);</span>
+    // this.addComponent(homeview_content);
+<span class="nc" id="L348">  }</span>
+
+  @Override
+  public void enter(ViewChangeEvent event) {
+    try {
+<span class="nc" id="L353">      loadProjects();</span>
+<span class="nc" id="L354">      int height = event.getNavigator().getUI().getPage().getBrowserWindowHeight();</span>
+<span class="nc" id="L355">      int width = event.getNavigator().getUI().getPage().getBrowserWindowWidth();</span>
+<span class="nc" id="L356">      buildLayout(height, width, event.getNavigator().getUI().getPage().getWebBrowser());</span>
+<span class="nc" id="L357">    } catch (Exception e) {</span>
+<span class="nc" id="L358">      LOG.error(String.format(&quot;failed to load projects for user %s&quot;, user), e);</span>
+<span class="nc" id="L359">      removeAllComponents();</span>
+<span class="nc" id="L360">      Label error = new Label(&quot;Connection to database interrupted. Please try again later.&quot;);</span>
+<span class="nc" id="L361">      error.addStyleName(ValoTheme.LABEL_FAILURE);</span>
+<span class="nc" id="L362">      error.addStyleName(ValoTheme.LABEL_HUGE);</span>
+<span class="nc" id="L363">      addComponent(error);</span>
+<span class="nc" id="L364">      setComponentAlignment(error, Alignment.MIDDLE_CENTER);</span>
+<span class="nc" id="L365">    }</span>
+<span class="nc" id="L366">  }</span>
+
+  /**
+   * Enables or disables the component. The user can not interact disabled components, which are
+   * shown with a style that indicates the status, usually shaded in light gray color. Components
+   * are enabled by default.
+   */
+  public void setEnabled(boolean enabled) {
+<span class="nc" id="L374">    this.export.setEnabled(enabled);</span>
+<span class="nc" id="L375">    this.table.setEnabled(enabled);</span>
+<span class="nc" id="L376">  }</span>
+
+
+  /**
+   * refresh all openbis project for current user. Basically currentBean is overwritten
+   */
+  public void loadProjects() {
+    // this.includePatientCreation = false;
+<span class="nc" id="L384">    final SpaceBean homeSpaceBean =</span>
+<span class="nc" id="L385">        new SpaceBean(&quot;homeSpace&quot;, &quot;&quot;, false, null, null, null, null, null, null);</span>
+<span class="nc" id="L386">    BeanItemContainer&lt;ProjectBean&gt; projectContainer =</span>
+        new BeanItemContainer&lt;ProjectBean&gt;(ProjectBean.class);
+
+<span class="nc" id="L389">    LOG.info(&quot;Loading projects...&quot;);</span>
+<span class="nc" id="L390">    List&lt;Project&gt; projects = datahandler.getOpenBisClient().getOpenbisInfoService()</span>
+<span class="nc" id="L391">        .listProjectsOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(), user);</span>
+<span class="nc" id="L392">    LOG.info(&quot;Loading projects...done.&quot;);</span>
+
+<span class="nc bnc" id="L394" title="All 2 branches missed.">    for (Project project : projects) {</span>
+<span class="nc" id="L395">      String projectIdentifier = project.getIdentifier();</span>
+<span class="nc" id="L396">      String projectCode = project.getCode();</span>
+<span class="nc" id="L397">      String desc = project.getDescription();</span>
+<span class="nc bnc" id="L398" title="All 2 branches missed.">      if (desc == null) {</span>
+<span class="nc" id="L399">        desc = &quot;&quot;;</span>
+<span class="nc bnc" id="L400" title="All 2 branches missed.">      } else if (desc.length() &gt; 0) {</span>
+<span class="nc" id="L401">        desc = desc.substring(0, Math.min(desc.length(), 100));</span>
+<span class="nc bnc" id="L402" title="All 2 branches missed.">        if (desc.length() == 100) {</span>
+<span class="nc" id="L403">          desc += &quot;...&quot;;</span>
+        }
+      }
+
+      // TODO isn't this slow in this fashion? what about SELECT * and creating a map?
+<span class="nc" id="L408">      String secondaryName = datahandler.getDatabaseManager().getProjectName(projectIdentifier);</span>
+<span class="nc bnc" id="L409" title="All 4 branches missed.">      if (secondaryName.isEmpty() || secondaryName == null)</span>
+<span class="nc" id="L410">        secondaryName = &quot;n/a&quot;;</span>
+
+<span class="nc" id="L412">      ProjectBean newProjectBean = new ProjectBean(projectIdentifier, projectCode, secondaryName,</span>
+<span class="nc" id="L413">          desc, project.getSpaceCode(), new BeanItemContainer&lt;ExperimentBean&gt;(ExperimentBean.class),</span>
+<span class="nc" id="L414">          new ProgressBar(), new Date(), &quot;&quot;, &quot;&quot;, null, false, false, false, &quot;&quot;);</span>
+
+      // TODO isn't this slow in this fashion? what about SELECT * and creating a map?
+<span class="nc" id="L417">      String pi = datahandler.getDatabaseManager().getInvestigatorForProject(projectIdentifier);</span>
+
+<span class="nc bnc" id="L419" title="All 2 branches missed.">      if (pi.equals(&quot;&quot;)) {</span>
+<span class="nc" id="L420">        newProjectBean.setPrincipalInvestigator(&quot;n/a&quot;);</span>
+      } else {
+<span class="nc" id="L422">        newProjectBean.setPrincipalInvestigator(pi);</span>
+      }
+
+<span class="nc" id="L425">      projectContainer.addBean(newProjectBean);</span>
+<span class="nc" id="L426">    }</span>
+
+<span class="nc" id="L428">    homeSpaceBean.setProjects(projectContainer);</span>
+<span class="nc bnc" id="L429" title="All 2 branches missed.">    if (homeSpaceBean.getProjects().size() &gt; 0) {</span>
+<span class="nc" id="L430">      this.setContainerDataSource(homeSpaceBean, caption);</span>
+    }
+<span class="nc" id="L432">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

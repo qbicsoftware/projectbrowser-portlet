@@ -1,0 +1,597 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WorkflowViewController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.controllers</a> &gt; <span class="el_source">WorkflowViewController.java</span></div><h1>WorkflowViewController.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.controllers;
+
+import java.io.Serializable;
+import java.net.ConnectException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.xml.bind.JAXBException;
+
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
+import com.vaadin.data.Container;
+import com.vaadin.data.util.BeanItemContainer;
+
+import ch.systemsx.cisd.openbis.dss.client.api.v1.DataSet;
+import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.FileInfoDssDTO;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Experiment;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
+import ch.systemsx.cisd.openbis.plugin.query.shared.api.v1.dto.QueryTableModel;
+
+import life.qbic.projectbrowser.views.DatasetView;
+import life.qbic.projectbrowser.views.ExperimentView;
+import life.qbic.projectbrowser.views.PatientView;
+import life.qbic.projectbrowser.views.ProjectView;
+import life.qbic.projectbrowser.views.SampleView;
+import life.qbic.projectbrowser.helpers.Utils;
+import life.qbic.openbis.openbisclient.OpenBisClient;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import life.qbic.xml.manager.XMLParser;
+import life.qbic.xml.properties.Property;
+import life.qbic.xml.properties.PropertyType;
+
+// from workflow API
+import submitter.SubmitFailedException;
+import submitter.Submitter;
+import submitter.Workflow;
+import submitter.parameters.Parameter;
+import submitter.parameters.ParameterSet;
+import de.uni_tuebingen.qbic.beans.DatasetBean;
+
+
+public class WorkflowViewController {
+  private DataHandler datahandler;
+  private Submitter submitter;
+
+<span class="nc" id="L71">  private static final Logger LOG = LogManager.getLogger(WorkflowViewController.class);</span>
+  private String user;
+<span class="nc" id="L73">  private final String wf_id = &quot;Q_WF_ID&quot;;</span>
+<span class="nc" id="L74">  private final String wf_version = &quot;Q_WF_VERSION&quot;;</span>
+<span class="nc" id="L75">  private final String wf_executer = &quot;Q_WF_EXECUTED_BY&quot;;</span>
+<span class="nc" id="L76">  private final String wf_started = &quot;Q_WF_STARTED_AT&quot;;</span>
+<span class="nc" id="L77">  private final String wf_status = &quot;Q_WF_STATUS&quot;;</span>
+<span class="nc" id="L78">  private final String wf_name = &quot;Q_WF_NAME&quot;;</span>
+<span class="nc" id="L79">  private final String openbis_dss = &quot;DSS1&quot;; // TODO this shouldn't be hardcoded</span>
+
+  // used by Microarray QC Workflow. See function mapExperimentalProperties
+  private Map&lt;String, String&gt; expProps;
+  private Set&lt;String&gt; expFactors;
+  private String projectID;
+  private List&lt;String&gt; fileNames;
+<span class="nc" id="L86">  private List&lt;String&gt; expDesignWfs = new ArrayList&lt;String&gt;(Arrays.asList(&quot;Microarray QC&quot;));</span>
+
+<span class="nc" id="L88">  private enum workflow_statuses {</span>
+<span class="nc" id="L89">    RUNNING</span>
+  };
+
+<span class="nc" id="L92">  public WorkflowViewController(Submitter submitter, DataHandler datahandler, String user) {</span>
+<span class="nc" id="L93">    this.datahandler = datahandler;</span>
+<span class="nc" id="L94">    this.submitter = submitter;</span>
+<span class="nc" id="L95">    this.user = user;</span>
+<span class="nc" id="L96">  }</span>
+
+  /**
+   * Returns a Container with the informations of de.uni_tuebingen.qbic.beans.DatasetBean.
+   * 
+   * @param datasets
+   * @return
+   */
+  public Container fillTable(
+      List&lt;ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet&gt; datasets, String projectID) {
+<span class="nc" id="L106">    HashMap&lt;String, ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet&gt; dataMap =</span>
+        new HashMap&lt;String, ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet&gt;();
+<span class="nc" id="L108">    BeanItemContainer&lt;DatasetBean&gt; container =</span>
+        new BeanItemContainer&lt;DatasetBean&gt;(DatasetBean.class);
+
+<span class="nc bnc" id="L111" title="All 2 branches missed.">    for (ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet ds : datasets) {</span>
+<span class="nc" id="L112">      dataMap.put(ds.getCode(), ds);</span>
+<span class="nc" id="L113">    }</span>
+
+<span class="nc" id="L115">    List&lt;life.qbic.projectbrowser.model.DatasetBean&gt; datasetBeans =</span>
+        new ArrayList&lt;life.qbic.projectbrowser.model.DatasetBean&gt;();
+<span class="nc" id="L117">    datasetBeans = datahandler.queryDatasetsForFiles(datasets);</span>
+
+<span class="nc" id="L119">    List&lt;String&gt; fileNames = new ArrayList&lt;String&gt;();</span>
+
+<span class="nc bnc" id="L121" title="All 2 branches missed.">    for (life.qbic.projectbrowser.model.DatasetBean bean : datasetBeans) {</span>
+<span class="nc" id="L122">      fileNames.add(bean.getFileName());</span>
+
+<span class="nc" id="L124">      DatasetBean newBean = new DatasetBean(bean.getFileName(),</span>
+<span class="nc" id="L125">          dataMap.get(bean.getCode()).getDataSetTypeCode(), bean.getCode(), bean.getDssPath(),</span>
+<span class="nc" id="L126">          dataMap.get(bean.getCode()).getSampleIdentifierOrNull());</span>
+
+<span class="nc bnc" id="L128" title="All 2 branches missed.">      if (dataMap.get(bean.getCode()).getProperties() != null) {</span>
+<span class="nc" id="L129">        newBean.setProperties(dataMap.get(bean.getCode()).getProperties());</span>
+      }
+
+<span class="nc" id="L132">      container.addBean(newBean);</span>
+<span class="nc" id="L133">    }</span>
+
+<span class="nc" id="L135">    this.projectID = projectID;</span>
+<span class="nc" id="L136">    this.fileNames = fileNames;</span>
+
+<span class="nc" id="L138">    return container;</span>
+  }
+
+  /**
+   * Register a new Workflow experiment in openBIS. Should be done when starting the workflow.
+   * Experiment name is automatically created from the project name and the number of existing
+   * experiments in that project. Standard workflow experiment fields are also initialized.
+   * 
+   * @param space space code
+   * @param project project code
+   * @param typecode openbis type code of the workflow
+   * @param wfName name of the workflow
+   * @param wfVersion version of the workflow
+   * @param userID the user that starts the workflow
+   * @param qProperties
+   * @return Code of the newly registered experiment
+   */
+  public String registerWFExperiment(String space, String project, String typecode, String wfName,
+      String wfVersion, String userID, String qProperties) {
+<span class="nc" id="L157">    int last = 0;</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">    for (Experiment e : datahandler.getOpenBisClient().getExperimentsOfProjectByIdentifier(</span>
+<span class="nc" id="L159">        (new StringBuilder(&quot;/&quot;)).append(space).append(&quot;/&quot;).append(project).toString())) {</span>
+<span class="nc" id="L160">      String[] codeSplit = e.getCode().split(&quot;E&quot;);</span>
+<span class="nc" id="L161">      String number = codeSplit[codeSplit.length - 1];</span>
+<span class="nc" id="L162">      int num = 0;</span>
+      try {
+<span class="nc" id="L164">        num = Integer.parseInt(number);</span>
+<span class="nc" id="L165">      } catch (NumberFormatException ex) {</span>
+<span class="nc" id="L166">      }</span>
+<span class="nc" id="L167">      last = Math.max(num, last);</span>
+<span class="nc" id="L168">    }</span>
+
+<span class="nc" id="L170">    LOG.debug(&quot;Space: &quot; + space);</span>
+<span class="nc" id="L171">    LOG.debug(&quot;Project: &quot; + project);</span>
+<span class="nc" id="L172">    LOG.debug(&quot;StringBuilder: &quot;</span>
+<span class="nc" id="L173">        + new StringBuilder(&quot;/&quot;).append(space).append(&quot;/&quot;).append(project).toString());</span>
+
+<span class="nc" id="L175">    String code = project + &quot;E&quot; + Integer.toString(last + 1);</span>
+
+<span class="nc" id="L177">    LOG.debug(&quot;Code: &quot; + code);</span>
+
+<span class="nc" id="L179">    Map&lt;String, Object&gt; params = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L180">    params.put(&quot;code&quot;, code);</span>
+<span class="nc" id="L181">    params.put(&quot;type&quot;, typecode);</span>
+<span class="nc" id="L182">    params.put(&quot;project&quot;, project);</span>
+<span class="nc" id="L183">    params.put(&quot;space&quot;, space);</span>
+
+<span class="nc" id="L185">    Map&lt;String, Object&gt; properties = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L186">    properties.put(wf_name, wfName);</span>
+<span class="nc" id="L187">    properties.put(wf_version, wfVersion);</span>
+<span class="nc" id="L188">    properties.put(wf_executer, userID);</span>
+<span class="nc" id="L189">    properties.put(wf_started, Utils.getTime());</span>
+<span class="nc" id="L190">    properties.put(wf_status, workflow_statuses.RUNNING.toString());</span>
+<span class="nc" id="L191">    properties.put(&quot;Q_PROPERTIES&quot;, qProperties);</span>
+
+<span class="nc" id="L193">    params.put(&quot;properties&quot;, properties);</span>
+
+<span class="nc" id="L195">    datahandler.getOpenBisClient().ingest(openbis_dss, &quot;register-exp&quot;, params);</span>
+<span class="nc" id="L196">    return code;</span>
+  }
+
+
+  public List&lt;String&gt; getConnectedSamples(List&lt;DatasetBean&gt; datasetBeans) {
+<span class="nc" id="L201">    List&lt;String&gt; sampleIDs = new ArrayList&lt;String&gt;();</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">    for (DatasetBean bean : datasetBeans) {</span>
+<span class="nc" id="L203">      sampleIDs.add(bean.getSampleIdentifier());</span>
+<span class="nc" id="L204">    }</span>
+<span class="nc" id="L205">    return sampleIDs;</span>
+  }
+
+  public String registerWFSample(String space, String project, String experiment, String typecode,
+      List&lt;String&gt; parents, List&lt;DatasetBean&gt; datasets) {
+<span class="nc" id="L210">    int last = 0;</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">    for (Sample s : datahandler.getOpenBisClient().getSamplesofExperiment((new StringBuilder(&quot;/&quot;))</span>
+<span class="nc" id="L212">        .append(space).append(&quot;/&quot;).append(project).append(&quot;/&quot;).append(experiment).toString())) {</span>
+<span class="nc" id="L213">      String[] codeSplit = s.getCode().split(&quot;R&quot;);</span>
+<span class="nc" id="L214">      String number = codeSplit[codeSplit.length - 1];</span>
+<span class="nc" id="L215">      int num = 0;</span>
+      try {
+<span class="nc" id="L217">        num = Integer.parseInt(number);</span>
+<span class="nc" id="L218">      } catch (NumberFormatException ex) {</span>
+<span class="nc" id="L219">      }</span>
+<span class="nc" id="L220">      last = Math.max(num, last);</span>
+<span class="nc" id="L221">    }</span>
+
+<span class="nc" id="L223">    String code =</span>
+<span class="nc" id="L224">        (new StringBuilder(experiment)).append(&quot;R&quot;).append(Integer.toString(last + 1)).toString();</span>
+<span class="nc" id="L225">    Map&lt;String, Object&gt; params = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L226">    params.put(&quot;code&quot;, code);</span>
+<span class="nc" id="L227">    params.put(&quot;type&quot;, typecode);</span>
+
+<span class="nc" id="L229">    params.put(&quot;sample_class&quot;, &quot;&quot;);</span>
+<span class="nc" id="L230">    params.put(&quot;parents&quot;, parents);</span>
+
+<span class="nc" id="L232">    params.put(&quot;project&quot;, project);</span>
+<span class="nc" id="L233">    params.put(&quot;space&quot;, space);</span>
+<span class="nc" id="L234">    params.put(&quot;experiment&quot;, experiment);</span>
+
+<span class="nc" id="L236">    StringBuilder result = new StringBuilder();</span>
+<span class="nc" id="L237">    result.append(&quot;Input Files: &quot;);</span>
+
+<span class="nc bnc" id="L239" title="All 2 branches missed.">    for (DatasetBean b : datasets) {</span>
+<span class="nc" id="L240">      result.append(b.getFileName());</span>
+<span class="nc" id="L241">      result.append(&quot;,&quot;);</span>
+<span class="nc" id="L242">    }</span>
+
+<span class="nc bnc" id="L244" title="All 2 branches missed.">    String secName = result.length() &gt; 0 ? result.substring(0, result.length() - 1) : &quot;&quot;;</span>
+
+<span class="nc" id="L246">    Map&lt;String, Object&gt; properties = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L247">    properties.put(&quot;Q_ADDITIONAL_INFO&quot;, secName);</span>
+<span class="nc" id="L248">    params.put(&quot;properties&quot;, properties);</span>
+
+<span class="nc" id="L250">    datahandler.getOpenBisClient().ingest(openbis_dss, &quot;register-samp&quot;, params);</span>
+<span class="nc" id="L251">    return code;</span>
+  }
+
+
+  /**
+   * Set the workflow ID for a workflow experiment. This must be the experiment whose code has been
+   * given to the submitter to ensure correct registration of the results and log files.
+   * 
+   * @param space space code
+   * @param project project code
+   * @param experiment experiment code
+   * @param wfID workflow ID created by the submitter for this workflow experiment
+   */
+  public void setWorkflowID(String space, String project, String experiment, String wfID) {
+<span class="nc" id="L265">    Map&lt;String, Object&gt; params = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L266">    params.put(&quot;identifier&quot;, &quot;/&quot; + space + &quot;/&quot; + project + &quot;/&quot; + experiment);</span>
+<span class="nc" id="L267">    Map&lt;String, Object&gt; properties = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L268">    properties.put(wf_id, wfID);</span>
+<span class="nc" id="L269">    params.put(&quot;properties&quot;, properties);</span>
+<span class="nc" id="L270">    datahandler.getOpenBisClient().ingest(openbis_dss, &quot;update-experiment-metadata&quot;, params);</span>
+<span class="nc" id="L271">  }</span>
+
+  /**
+   * returns all known workflows, that can be executed with the given filetype
+   * 
+   * @param fileType
+   * @return
+   */
+  public BeanItemContainer&lt;Workflow&gt; suitableWorkflows(String fileType) {
+    try {
+<span class="nc" id="L281">      return submitter.getAvailableSuitableWorkflows(fileType);</span>
+<span class="nc" id="L282">    } catch (Exception e) {</span>
+<span class="nc" id="L283">      e.printStackTrace();</span>
+<span class="nc" id="L284">      return new BeanItemContainer&lt;Workflow&gt;(Workflow.class);</span>
+    }
+  }
+
+  /**
+   * returns all known workflows, that can be executed with one of the given filetypes
+   * 
+   * @param fileType
+   * @return
+   */
+  public BeanItemContainer&lt;Workflow&gt; suitableWorkflows(List&lt;String&gt; fileType) {
+    try {
+<span class="nc" id="L296">      BeanItemContainer&lt;Workflow&gt; wfs = submitter.getAvailableSuitableWorkflows(fileType);</span>
+<span class="nc bnc" id="L297" title="All 2 branches missed.">      for (Workflow wf : wfs.getItemIds()) {</span>
+<span class="nc bnc" id="L298" title="All 2 branches missed.">        if (expDesignWfs.contains(wf.getName()))// TODO add other workflows to the list that are</span>
+                                                // needed
+<span class="nc" id="L300">          mapExperimentalProperties(projectID, fileNames);</span>
+<span class="nc" id="L301">      }</span>
+<span class="nc" id="L302">      return wfs;</span>
+<span class="nc" id="L303">    } catch (Exception e) {</span>
+<span class="nc" id="L304">      e.printStackTrace();</span>
+      // LOG.debug(&quot;No suitable workflows founds.&quot;);
+<span class="nc" id="L306">      return new BeanItemContainer&lt;Workflow&gt;(Workflow.class);</span>
+    }
+  }
+
+  /**
+   * returns all known workflows, that can be executed with one of the given filetypes
+   * 
+   * @param experimentType
+   * @return
+   */
+  public BeanItemContainer&lt;Workflow&gt; suitableWorkflowsByExperimentType(String experimentType) {
+    try {
+<span class="nc" id="L318">      return submitter.getWorkflowsByExperimentType(experimentType);</span>
+<span class="nc" id="L319">    } catch (Exception e) {</span>
+<span class="nc" id="L320">      e.printStackTrace();</span>
+<span class="nc" id="L321">      return new BeanItemContainer&lt;Workflow&gt;(Workflow.class);</span>
+    }
+  }
+
+
+  public BeanItemContainer&lt;DatasetBean&gt; getcontainer(String type, String id) {
+<span class="nc" id="L327">    List&lt;ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet&gt; datasets =</span>
+        new ArrayList&lt;ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet&gt;();
+
+<span class="nc bnc" id="L330" title="All 4 branches missed.">    switch (type) {</span>
+      case &quot;project&quot;:
+        // datasets = openbis.getClientDatasetsOfProjectByIdentifierWithSearchCriteria(id);
+<span class="nc" id="L333">        datasets =</span>
+<span class="nc" id="L334">            datahandler.getOpenBisClient().getDataSetsOfProjectByIdentifierWithSearchCriteria(id);</span>
+<span class="nc" id="L335">        break;</span>
+
+      case &quot;experiment&quot;:
+        // TODO
+<span class="nc" id="L339">        break;</span>
+
+      case &quot;sample&quot;:
+        // TODO
+<span class="nc" id="L343">        break;</span>
+
+      default:
+        break;
+    }
+<span class="nc" id="L348">    return (BeanItemContainer&lt;DatasetBean&gt;) fillTable(datasets, id);</span>
+  }
+
+  private void mapExperimentalProperties(String id, List&lt;String&gt; fileNames) {
+<span class="nc" id="L352">    Map&lt;String, Object&gt; params = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L353">    List&lt;String&gt; codes = new ArrayList&lt;String&gt;();</span>
+<span class="nc bnc" id="L354" title="All 2 branches missed.">    for (Sample s : datahandler.getOpenBisClient().getSamplesOfProjectBySearchService(id))</span>
+<span class="nc" id="L355">      codes.add(s.getCode());</span>
+<span class="nc" id="L356">    params.put(&quot;codes&quot;, codes);</span>
+<span class="nc" id="L357">    QueryTableModel res =</span>
+<span class="nc" id="L358">        datahandler.getOpenBisClient().getAggregationService(&quot;get-property-tsv&quot;, params);</span>
+
+<span class="nc" id="L360">    Set&lt;String&gt; factorNames = new HashSet&lt;String&gt;();</span>
+<span class="nc" id="L361">    Map&lt;String, String&gt; fileProps = new HashMap&lt;String, String&gt;();</span>
+
+<span class="nc" id="L363">    Set&lt;String&gt; secondaryNames = new HashSet&lt;String&gt;();</span>
+<span class="nc" id="L364">    Set&lt;String&gt; factorLabels = datahandler.getFactorLabels();</span>
+
+<span class="nc bnc" id="L366" title="All 2 branches missed.">    for (Serializable[] ss : res.getRows()) {</span>
+
+<span class="nc" id="L368">      String sampleCode = (String) ss[0];</span>
+<span class="nc" id="L369">      List&lt;Property&gt; properties = new ArrayList&lt;Property&gt;();</span>
+<span class="nc bnc" id="L370" title="All 2 branches missed.">      for (String label : factorLabels) {</span>
+<span class="nc" id="L371">        Property f =</span>
+<span class="nc" id="L372">            datahandler.getFactorsForLabelsAndSamples().get(new ImmutablePair&lt;&gt;(label, sampleCode));</span>
+<span class="nc bnc" id="L373" title="All 2 branches missed.">        if (f != null) {</span>
+<span class="nc" id="L374">          properties.add(f);</span>
+        }
+<span class="nc" id="L376">      }</span>
+
+<span class="nc" id="L378">      List&lt;String&gt; matches = getMatchingStrings(fileNames, sampleCode);</span>
+<span class="nc bnc" id="L379" title="All 2 branches missed.">      if (!matches.isEmpty()) {</span>
+<span class="nc bnc" id="L380" title="All 2 branches missed.">        for (String match : matches) {</span>
+<span class="nc" id="L381">          StringBuilder row = new StringBuilder();</span>
+<span class="nc" id="L382">          String extID = (String) ss[1];// how to use this if it is preferred over secondary name?</span>
+<span class="nc" id="L383">          String secondaryName = (String) ss[2];</span>
+<span class="nc bnc" id="L384" title="All 2 branches missed.">          while (secondaryNames.contains(secondaryName))</span>
+<span class="nc" id="L385">            secondaryName += &quot;1&quot;;</span>
+<span class="nc" id="L386">          secondaryNames.add(secondaryName);</span>
+<span class="nc" id="L387">          row.append(secondaryName);</span>
+<span class="nc bnc" id="L388" title="All 2 branches missed.">          for (Property f : properties) {</span>
+<span class="nc" id="L389">            factorNames.add(f.getLabel());</span>
+<span class="nc" id="L390">            String val = f.getValue();</span>
+<span class="nc bnc" id="L391" title="All 2 branches missed.">            if (f.hasUnit())</span>
+<span class="nc" id="L392">              val += f.getUnit();</span>
+<span class="nc" id="L393">            row.append(&quot;\t&quot; + val);</span>
+<span class="nc" id="L394">          }</span>
+<span class="nc" id="L395">          fileProps.put(match, row.toString());</span>
+<span class="nc" id="L396">        }</span>
+      }
+<span class="nc" id="L398">    }</span>
+<span class="nc" id="L399">    this.expProps = fileProps;</span>
+<span class="nc" id="L400">    this.expFactors = factorNames;</span>
+<span class="nc" id="L401">  }</span>
+
+  /**
+   * Finds the the matching strings in the list, e.g. sample codes in file names
+   * 
+   * @param list The list of strings to check
+   * @param substring The regular expression to use
+   * @return List of matching Strings
+   */
+  static List&lt;String&gt; getMatchingStrings(List&lt;String&gt; list, String substring) {
+<span class="nc" id="L411">    List&lt;String&gt; res = new ArrayList&lt;String&gt;();</span>
+<span class="nc bnc" id="L412" title="All 2 branches missed.">    for (String s : list) {</span>
+<span class="nc bnc" id="L413" title="All 2 branches missed.">      if (s.contains(substring)) {</span>
+<span class="nc" id="L414">        res.add(s);</span>
+      }
+<span class="nc" id="L416">    }</span>
+<span class="nc" id="L417">    return res;</span>
+  }
+
+  public Submitter getSubmitter() {
+<span class="nc" id="L421">    return submitter;</span>
+  }
+
+  public String submitAndRegisterWf(String type, String id, Workflow workflow,
+      List&lt;DatasetBean&gt; selectedDatasets)
+      throws ConnectException, IllegalArgumentException, SubmitFailedException {
+
+<span class="nc" id="L428">    SpaceAndProjectCodes spaceandproject = getSpaceAndProjects(type, id);</span>
+
+<span class="nc" id="L430">    String spaceCode = spaceandproject.space;</span>
+<span class="nc" id="L431">    String projectCode = spaceandproject.project;</span>
+
+<span class="nc" id="L433">    ParameterSet params = workflow.getParameters();</span>
+<span class="nc" id="L434">    List&lt;Property&gt; factors = new ArrayList&lt;Property&gt;();</span>
+
+<span class="nc" id="L436">    XMLParser xmlParser = new XMLParser();</span>
+
+<span class="nc bnc" id="L438" title="All 2 branches missed.">    for (Map.Entry&lt;String, Parameter&gt; entry : workflow.getData().getData().entrySet()) {</span>
+<span class="nc" id="L439">      String key = entry.getKey();</span>
+<span class="nc" id="L440">      Parameter value = entry.getValue();</span>
+
+<span class="nc bnc" id="L442" title="All 2 branches missed.">      if (key.contains(&quot;input&quot;)) {</span>
+<span class="nc" id="L443">        List&lt;String&gt; files = (List&lt;String&gt;) value.getValue();</span>
+<span class="nc" id="L444">        List&lt;String&gt; inputFiles = new ArrayList&lt;String&gt;();</span>
+
+<span class="nc bnc" id="L446" title="All 2 branches missed.">        for (String f : files) {</span>
+<span class="nc" id="L447">          String[] splitted = f.split(&quot;/&quot;);</span>
+<span class="nc" id="L448">          String fileName = splitted[splitted.length - 1];</span>
+<span class="nc" id="L449">          inputFiles.add(fileName);</span>
+<span class="nc" id="L450">        }</span>
+
+<span class="nc" id="L452">        System.out.println(inputFiles.toString());</span>
+<span class="nc" id="L453">        String concat = String.join(&quot;; &quot;, inputFiles);</span>
+<span class="nc" id="L454">        System.out.println(concat);</span>
+<span class="nc" id="L455">        Property newProperty = new Property(&quot;input_files&quot;, concat, PropertyType.Property);</span>
+<span class="nc" id="L456">        factors.add(newProperty);</span>
+<span class="nc" id="L457">      }</span>
+
+      else {
+<span class="nc" id="L460">        Property newProperty = new Property(&quot;database&quot;,</span>
+<span class="nc" id="L461">            value.getValue().toString().replace(&quot;/lustre_cfc/qbic/reference_genomes/&quot;, &quot;&quot;),</span>
+            PropertyType.Property);
+<span class="nc" id="L463">        factors.add(newProperty);</span>
+      }
+<span class="nc" id="L465">    }</span>
+
+<span class="nc bnc" id="L467" title="All 2 branches missed.">    for (String p : params.getParamNames()) {</span>
+<span class="nc" id="L468">      Parameter par = params.getParam(p);</span>
+<span class="nc" id="L469">      String[] splitted = par.getTitle().split(&quot;\\.&quot;);</span>
+<span class="nc" id="L470">      String parName = splitted[splitted.length - 1].replace(&quot; &quot;, &quot;_&quot;).toLowerCase();</span>
+
+<span class="nc" id="L472">      Property newProperty =</span>
+<span class="nc" id="L473">          new Property(parName, par.getValue().toString(), PropertyType.Property);</span>
+<span class="nc" id="L474">      factors.add(newProperty);</span>
+<span class="nc" id="L475">    }</span>
+
+<span class="nc" id="L477">    String qProperties = &quot;&quot;;</span>
+
+    try {
+<span class="nc" id="L480">      qProperties = xmlParser.toString(xmlParser.createXMLFromProperties(factors));</span>
+<span class="nc" id="L481">      System.out.println(qProperties);</span>
+<span class="nc" id="L482">    } catch (JAXBException e) {</span>
+      // TODO Auto-generated catch block
+<span class="nc" id="L484">      e.printStackTrace();</span>
+<span class="nc" id="L485">    }</span>
+
+<span class="nc" id="L487">    String experimentCode = registerWFExperiment(spaceCode, projectCode,</span>
+<span class="nc" id="L488">        workflow.getExperimentType(), workflow.getID(), workflow.getVersion(), user, qProperties);</span>
+
+<span class="nc" id="L490">    List&lt;String&gt; parents = getConnectedSamples(selectedDatasets);</span>
+<span class="nc" id="L491">    String sampleType = workflow.getSampleType();</span>
+
+<span class="nc" id="L493">    String sampleCode = registerWFSample(spaceCode, projectCode, experimentCode, sampleType,</span>
+        parents, selectedDatasets);
+
+<span class="nc" id="L496">    String openbisId =</span>
+<span class="nc" id="L497">        String.format(&quot;%s-%s-%s-%s&quot;, spaceCode, projectCode, experimentCode, sampleCode);</span>
+
+<span class="nc" id="L499">    LOG.info(&quot;User: &quot; + user + &quot; is submitting workflow &quot; + workflow.getID() + &quot; openbis id is:&quot;</span>
+        + openbisId);
+
+<span class="nc" id="L502">    String submit_id = submitter.submit(workflow, openbisId, user);</span>
+<span class="nc" id="L503">    LOG.info(&quot;Workflow has guse id: &quot; + submit_id);</span>
+
+<span class="nc" id="L505">    setWorkflowID(spaceCode, projectCode, experimentCode, submit_id);</span>
+<span class="nc" id="L506">    return openbisId;</span>
+  }
+
+  private SpaceAndProjectCodes getSpaceAndProjects(String type, String id) {
+<span class="nc" id="L510">    String[] split = id.split(&quot;/&quot;);</span>
+
+<span class="nc bnc" id="L512" title="All 2 branches missed.">    if (split.length == 0)</span>
+<span class="nc" id="L513">      return null;</span>
+<span class="nc bnc" id="L514" title="All 4 branches missed.">    switch (type) {</span>
+      case PatientView.navigateToLabel:
+      case ProjectView.navigateToLabel:
+      case ExperimentView.navigateToLabel:
+      case &quot;workflowExperimentType&quot;:
+<span class="nc" id="L519">        return new SpaceAndProjectCodes(split[1], split[2]);</span>
+      case SampleView.navigateToLabel:
+<span class="nc" id="L521">        String expId = datahandler.getOpenBisClient()</span>
+<span class="nc" id="L522">            .getSampleByIdentifier(String.format(&quot;%s/%s&quot;, split[1], split[2]))</span>
+<span class="nc" id="L523">            .getExperimentIdentifierOrNull();</span>
+<span class="nc bnc" id="L524" title="All 2 branches missed.">        if (expId == null)</span>
+<span class="nc" id="L525">          return null;</span>
+<span class="nc" id="L526">        return getSpaceAndProjects(ExperimentView.navigateToLabel, expId);</span>
+      case DatasetView.navigateToLabel:
+<span class="nc" id="L528">        throw new NotImplementedException(&quot;Dataset view is not ready for workflows!&quot;);</span>
+      default:
+<span class="nc" id="L530">        LOG.debug(String.format(&quot;Problem with id %s, type %s&quot;, id, type));</span>
+<span class="nc" id="L531">        return null;</span>
+    }
+  }
+
+  class SpaceAndProjectCodes {
+    public String space;
+    public String project;
+
+<span class="nc" id="L539">    public SpaceAndProjectCodes(String spaceCode, String projectCode) {</span>
+<span class="nc" id="L540">      this.space = spaceCode;</span>
+<span class="nc" id="L541">      this.project = projectCode;</span>
+<span class="nc" id="L542">    }</span>
+
+  }
+
+  /**
+   * get for a {@link de.uni_tuebingen.qbic.beans.DatasetBean} file or directory the path it has on
+   * the data store server.
+   * 
+   * @param bean
+   * @return full path of dataset
+   * @throws IllegalArgumentException
+   */
+  public String getDatasetsNfsPath(DatasetBean bean) throws IllegalArgumentException {
+
+    try {
+<span class="nc" id="L557">      DataSet dataset =</span>
+<span class="nc" id="L558">          datahandler.getOpenBisClient().getFacade().getDataSet(bean.getOpenbisCode());</span>
+<span class="nc" id="L559">      String path = dataset.getDataSetDss().tryGetInternalPathInDataStore();</span>
+
+<span class="nc bnc" id="L561" title="All 2 branches missed.">      if (bean.getFullPath().startsWith(&quot;original&quot;)) {</span>
+<span class="nc" id="L562">        path = Paths.get(path, bean.getFullPath()).toString();</span>
+      } else {
+<span class="nc" id="L564">        FileInfoDssDTO[] filelist = dataset.listFiles(&quot;original&quot;, false);</span>
+<span class="nc" id="L565">        path = path + &quot;/original/&quot; + filelist[0].getPathInListing();</span>
+      }
+      // TODO get rid of hardocded paths
+<span class="nc" id="L568">      path = path.replaceFirst(&quot;/mnt/&quot; + openbis_dss, &quot;/mnt/nfs/qbic&quot;);</span>
+<span class="nc" id="L569">      path = path.replaceFirst(&quot;/mnt/DSS_icgc&quot;, &quot;/mnt/glusterfs/DSS_icgc&quot;);</span>
+<span class="nc" id="L570">      path = path.replaceFirst(&quot;/beegfs/bigbio&quot;, &quot;/mnt/nfs/bigbio_temp&quot;);</span>
+<span class="nc" id="L571">      return path;</span>
+<span class="nc" id="L572">    } catch (Exception e) {</span>
+<span class="nc" id="L573">      e.printStackTrace();</span>
+<span class="nc" id="L574">      throw new IllegalArgumentException(&quot;Could not retrieve nfs path for dataset &quot; + bean);</span>
+    }
+  }
+
+  public OpenBisClient getOpenbis() {
+<span class="nc" id="L579">    return this.datahandler.getOpenBisClient();</span>
+  }
+
+
+  /**
+   * Returns experimental factor names parsed from the properties of samples in this project
+   * 
+   * @return Unique set of all experimental factors that are saved in Q_Properties of this project
+   */
+  public Set&lt;String&gt; getExperimentalFactors() {
+<span class="nc" id="L589">    return expFactors;</span>
+  }
+
+  public Map&lt;String, String&gt; getExperimentalPropsForFiles() {
+<span class="nc" id="L593">    return expProps;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

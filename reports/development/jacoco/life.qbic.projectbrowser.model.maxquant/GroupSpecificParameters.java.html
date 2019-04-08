@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GroupSpecificParameters.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.model.maxquant</a> &gt; <span class="el_source">GroupSpecificParameters.java</span></div><h1>GroupSpecificParameters.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects.
+ * Copyright (C) &quot;2016”  Christopher Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.model.maxquant;
+
+import java.io.Serializable;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import life.qbic.projectbrowser.helpers.JsonHelper;
+
+<span class="nc" id="L30">public class GroupSpecificParameters implements Serializable {</span>
+  private static final long serialVersionUID = -6075378925052182947L;
+
+<span class="nc" id="L33">  private final String defaults = &quot;default&quot;;</span>
+<span class="nc" id="L34">  private String type = &quot;&quot;;</span>
+
+<span class="nc" id="L36">  private String multiplicity = &quot;&quot;;</span>
+<span class="nc" id="L37">  private Set&lt;String&gt; variableModifications = new LinkedHashSet&lt;String&gt;();</span>
+
+  // enzymeMode
+<span class="nc" id="L40">  private DigestionMode digestionMode = new DigestionMode(0);</span>
+  // enzymes
+  private LinkedHashSet&lt;String&gt; enzymes;
+  // maxMissedCleavages
+  private int maxMissedCleavage;
+  private String matchType;
+  private boolean lfqMode;
+  private LinkedHashSet&lt;String&gt; lightLabels;
+  private LinkedHashSet&lt;String&gt; mediumLabels;
+  private LinkedHashSet&lt;String&gt; heavyLabels;
+
+
+  public String getType() {
+<span class="nc" id="L53">    return type;</span>
+  }
+
+
+
+  public void setType(String type) {
+<span class="nc" id="L59">    this.type = type;</span>
+<span class="nc" id="L60">  }</span>
+
+
+
+  public String getMultiplicity() {
+<span class="nc" id="L65">    return multiplicity;</span>
+  }
+
+
+
+  public void setMultiplicity(String multiplicity) {
+<span class="nc" id="L71">    this.multiplicity = multiplicity;</span>
+<span class="nc" id="L72">  }</span>
+
+
+
+  public Set&lt;String&gt; getVariableModifications() {
+<span class="nc" id="L77">    return variableModifications;</span>
+  }
+
+
+
+  public void setVariableModifications(Set&lt;String&gt; variableModifications) {
+<span class="nc" id="L83">    this.variableModifications = variableModifications;</span>
+<span class="nc" id="L84">  }</span>
+
+
+
+  public DigestionMode getDigestionMode() {
+<span class="nc" id="L89">    return digestionMode;</span>
+  }
+
+
+
+  public void setDigestionMode(DigestionMode digestionMode) {
+<span class="nc" id="L95">    this.digestionMode = digestionMode;</span>
+<span class="nc" id="L96">  }</span>
+
+
+
+  public LinkedHashSet&lt;String&gt; getEnzymes() {
+<span class="nc" id="L101">    return enzymes;</span>
+  }
+
+
+
+  public void setEnzymes(LinkedHashSet&lt;String&gt; enzymes) {
+<span class="nc" id="L107">    this.enzymes = enzymes;</span>
+<span class="nc" id="L108">  }</span>
+
+
+
+  public int getMaxMissedCleavage() {
+<span class="nc" id="L113">    return maxMissedCleavage;</span>
+  }
+
+
+
+  public void setMaxMissedCleavage(int maxMissedCleavage) {
+<span class="nc" id="L119">    this.maxMissedCleavage = maxMissedCleavage;</span>
+<span class="nc" id="L120">  }</span>
+
+
+
+  public String getMatchType() {
+<span class="nc" id="L125">    return matchType;</span>
+  }
+
+
+
+  public void setMatchType(String matchType) {
+<span class="nc" id="L131">    this.matchType = matchType;</span>
+<span class="nc" id="L132">  }</span>
+
+
+
+  public LinkedHashSet&lt;String&gt; getLightLabels() {
+<span class="nc" id="L137">    return lightLabels;</span>
+  }
+
+
+
+  public void setLightLabels(LinkedHashSet&lt;String&gt; lightLabels) {
+<span class="nc" id="L143">    this.lightLabels = lightLabels;</span>
+<span class="nc" id="L144">  }</span>
+
+
+
+  public LinkedHashSet&lt;String&gt; getMediumLabels() {
+<span class="nc" id="L149">    return mediumLabels;</span>
+  }
+
+
+
+  public void setMediumLabels(LinkedHashSet&lt;String&gt; mediumLabels) {
+<span class="nc" id="L155">    this.mediumLabels = mediumLabels;</span>
+<span class="nc" id="L156">  }</span>
+
+
+
+  public LinkedHashSet&lt;String&gt; getHeavyLabels() {
+<span class="nc" id="L161">    return heavyLabels;</span>
+  }
+
+
+
+  public void setHeavyLabels(LinkedHashSet&lt;String&gt; heavyLabels) {
+<span class="nc" id="L167">    this.heavyLabels = heavyLabels;</span>
+<span class="nc" id="L168">  }</span>
+
+
+
+  @Override
+  public String toString() {
+<span class="nc" id="L174">    return &quot;GroupSpecificParameters [defaults=&quot; + defaults + &quot;, type=&quot; + type + &quot;, multiplicity=&quot;</span>
+        + multiplicity + &quot;, variableModifications=&quot; + variableModifications + &quot;, digestionMode=&quot;
+        + digestionMode + &quot;, enzymes=&quot; + enzymes + &quot;, maxMissedCleavage=&quot; + maxMissedCleavage
+        + &quot;, MatchType=&quot; + matchType + &quot;, lightLabels=&quot; + lightLabels + &quot;, mediumLabels=&quot;
+        + mediumLabels + &quot;, heavyLabels=&quot; + heavyLabels + &quot;]&quot;;
+  }
+
+
+  public JSONObject toJson() throws JSONException {
+<span class="nc" id="L183">    JSONObject param = new JSONObject();</span>
+<span class="nc" id="L184">    param.put(&quot;enzymeMode&quot;, digestionMode.getValue());</span>
+<span class="nc" id="L185">    param.put(&quot;variableModifications&quot;, JsonHelper.fromSet(variableModifications));</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">    param.put(&quot;lfqMode&quot;, (lfqMode ? 1 : 0));</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">    if (multiplicity.startsWith(&quot;1&quot;)) {</span>
+<span class="nc" id="L188">      param.put(&quot;multiplicity&quot;, 1);</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">    } else if (multiplicity.startsWith(&quot;2&quot;)) {</span>
+<span class="nc" id="L190">      param.put(&quot;multiplicity&quot;, 2);</span>
+
+<span class="nc" id="L192">      JSONArray labelMods = new JSONArray();</span>
+<span class="nc" id="L193">      labelMods.put(JsonHelper.fromSet(lightLabels));</span>
+<span class="nc" id="L194">      labelMods.put(JsonHelper.fromSet(heavyLabels));</span>
+<span class="nc" id="L195">      param.put(&quot;labelMods&quot;, labelMods);</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">    } else if (multiplicity.startsWith(&quot;3&quot;)) {</span>
+<span class="nc" id="L197">      param.put(&quot;multiplicity&quot;, 3);</span>
+
+<span class="nc" id="L199">      JSONArray labelMods = new JSONArray();</span>
+<span class="nc" id="L200">      labelMods.put(JsonHelper.fromSet(lightLabels));</span>
+<span class="nc" id="L201">      labelMods.put(JsonHelper.fromSet(mediumLabels));</span>
+<span class="nc" id="L202">      labelMods.put(JsonHelper.fromSet(heavyLabels));</span>
+<span class="nc" id="L203">      param.put(&quot;labelMods&quot;, labelMods);</span>
+    }
+<span class="nc" id="L205">    param.put(&quot;maxMissedCleavages&quot;, maxMissedCleavage);</span>
+<span class="nc" id="L206">    param.put(&quot;matchType&quot;, matchType);</span>
+
+    // needed by MaxQuant?
+<span class="nc" id="L209">    param.put(&quot;defaults&quot;, &quot;default&quot;);</span>
+<span class="nc" id="L210">    return param;</span>
+  }
+
+
+
+  public boolean isLfqMode() {
+<span class="nc" id="L216">    return lfqMode;</span>
+  }
+
+
+
+  public void setLfqMode(boolean lfqMode) {
+<span class="nc" id="L222">    this.lfqMode = lfqMode;</span>
+<span class="nc" id="L223">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

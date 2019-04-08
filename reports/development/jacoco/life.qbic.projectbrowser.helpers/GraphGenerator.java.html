@@ -1,0 +1,629 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GraphGenerator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.helpers</a> &gt; <span class="el_source">GraphGenerator.java</span></div><h1>GraphGenerator.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects.
+ * Copyright (C) &quot;2016”  Christopher Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.helpers;
+
+import life.qbic.openbis.openbisclient.OpenBisClient;
+
+import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+
+import javax.imageio.ImageIO;
+import javax.swing.SwingConstants;
+
+import life.qbic.projectbrowser.model.ProjectBean;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.PropertyType;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SampleType;
+
+import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
+import com.mxgraph.util.mxCellRenderer;
+import com.mxgraph.util.mxConstants;
+import com.mxgraph.view.mxGraph;
+import com.mxgraph.view.mxStylesheet;
+
+import com.vaadin.server.StreamResource;
+import com.vaadin.server.StreamResource.StreamSource;
+
+// public class HelloWorld extends JFrame
+public class GraphGenerator {
+
+  private String url;
+  private StreamResource res;
+
+  public StreamResource getRes() {
+<span class="nc" id="L58">    return res;</span>
+  }
+
+  public void setRes(StreamResource res) {
+<span class="nc" id="L62">    this.res = res;</span>
+<span class="nc" id="L63">  }</span>
+
+  public String getUrl() {
+<span class="nc" id="L66">    return url;</span>
+  }
+
+  public void setUrl(String url) {
+<span class="nc" id="L70">    this.url = url;</span>
+<span class="nc" id="L71">  }</span>
+
+<span class="nc" id="L73">  public GraphGenerator(ProjectBean projectBean, OpenBisClient openBisClient) throws IOException {</span>
+    // super(&quot;openBIS graph&quot;);
+
+
+    // Project p = dh.openBisClient.getProjectByCode(project);
+
+    // Project p = dh.openBisClient.getProjectByIdentifier(projectBean);
+    // System.out.println(p);
+
+<span class="nc" id="L82">    mxGraph graph = new mxGraph();</span>
+<span class="nc" id="L83">    Object parent = graph.getDefaultParent();</span>
+<span class="nc" id="L84">    graph.getModel().beginUpdate();</span>
+
+<span class="nc" id="L86">    mxStylesheet stylesheet = graph.getStylesheet();</span>
+<span class="nc" id="L87">    Hashtable&lt;String, Object&gt; style = new Hashtable&lt;String, Object&gt;();</span>
+<span class="nc" id="L88">    style.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE);</span>
+<span class="nc" id="L89">    style.put(mxConstants.STYLE_OPACITY, 100);</span>
+<span class="nc" id="L90">    style.put(mxConstants.STYLE_FONTCOLOR, &quot;#ffffff&quot;);</span>
+<span class="nc" id="L91">    style.put(mxConstants.STYLE_DIRECTION, &quot;east&quot;);</span>
+<span class="nc" id="L92">    stylesheet.putCellStyle(&quot;ROUNDED&quot;, style);</span>
+
+
+<span class="nc" id="L95">    Double width = new Double(120.0);</span>
+<span class="nc" id="L96">    Double height = new Double(40.0);</span>
+
+
+
+    try {
+      // Object found_project = graph.insertVertex(parent, null, p.getIdentifier(), 20, 20, 120,
+      // height,&quot;ROUNDED;strokeColor=#005FAA;fillColor=#005FAA&quot;);
+      // Object dummy_node = graph.insertVertex(parent, null, &quot;HALLO&quot;, 50,20,120,height, &quot;ROUNDED&quot;);
+
+      // could be done more efficiently with SearchCriteria (at least I hope so)
+<span class="nc" id="L106">      Map&lt;String, Integer&gt; sample_count = new HashMap&lt;String, Integer&gt;();</span>
+
+
+      // List&lt;Sample&gt; all_project_samples = dh.openBisClient.getSamplesOfProject(p.getCode());
+      // List&lt;Sample&gt; all_project_samples = dh.project_to_samples.get(p.getId());
+
+      // List&lt;SampleBean&gt; all_project_samples = new ArrayList&lt;SampleBean&gt;();
+
+
+<span class="nc" id="L115">      List&lt;Sample&gt; all_project_samples =</span>
+<span class="nc" id="L116">          openBisClient.getSamplesWithParentsAndChildrenOfProjectBySearchService(projectBean</span>
+<span class="nc" id="L117">              .getId());</span>
+
+      /*
+       * for (Iterator i = projectBean.getExperiments().getItemIds().iterator(); i.hasNext();) { //
+       * Get the current item identifier, which is an integer. ExperimentBean exp = (ExperimentBean)
+       * i.next();
+       * 
+       * for (Iterator j = exp.getSamples().getItemIds().iterator(); j.hasNext();) { SampleBean samp
+       * = (SampleBean) j.next();
+       * 
+       * all_project_samples.add(samp); } }
+       */
+
+
+      // count the different sample types
+<span class="nc" id="L132">      Integer num_measurement_samples = new Integer(0);</span>
+
+<span class="nc" id="L134">      List&lt;Sample&gt; samps = new ArrayList&lt;Sample&gt;();</span>
+
+<span class="nc bnc" id="L136" title="All 2 branches missed.">      for (Sample s : all_project_samples) {</span>
+        // System.out.println(s);
+        // String key = s.getSampleTypeCode();
+<span class="nc" id="L139">        String key = s.getSampleTypeCode();</span>
+
+<span class="nc bnc" id="L141" title="All 2 branches missed.">        if (sample_count.containsKey(key)) {</span>
+
+<span class="nc" id="L143">          sample_count.put(key, sample_count.get(key) + 1);</span>
+        } else {
+<span class="nc" id="L145">          sample_count.put(key, 1);</span>
+        }
+
+<span class="nc bnc" id="L148" title="All 2 branches missed.">        if (key.equals(&quot;Q_TEST_SAMPLE&quot;)) {</span>
+<span class="nc" id="L149">          List&lt;Sample&gt; tmp = s.getParents();</span>
+<span class="nc" id="L150">          num_measurement_samples += tmp.size();</span>
+        }
+
+<span class="nc bnc" id="L153" title="All 2 branches missed.">        if (key.equals(&quot;Q_BIOLOGICAL_ENTITY&quot;)) {</span>
+<span class="nc" id="L154">          samps.add(s);</span>
+        }
+<span class="nc" id="L156">      }</span>
+
+<span class="nc bnc" id="L158" title="All 2 branches missed.">      if (sample_count.containsKey(&quot;Q_BIOLOGICAL_ENTITY&quot;)) {</span>
+<span class="nc" id="L159">        Object dummy_node_level1 =</span>
+<span class="nc" id="L160">            graph.insertVertex(parent, null, sample_count.get(&quot;Q_BIOLOGICAL_ENTITY&quot;) + &quot;\n&quot;</span>
+<span class="nc" id="L161">                + &quot;biological entities&quot;, 20, 20, width, height,</span>
+                &quot;NONE;strokeWidth=0;strokeColor=#FFFFFF;fillColor=#FFFFFF&quot;);
+
+
+<span class="nc bnc" id="L165" title="All 2 branches missed.">        if (sample_count.containsKey(&quot;Q_BIOLOGICAL_SAMPLE&quot;)) {</span>
+<span class="nc" id="L166">          Object dummy_node_level2 =</span>
+<span class="nc" id="L167">              graph.insertVertex(parent, null, sample_count.get(&quot;Q_BIOLOGICAL_SAMPLE&quot;) + &quot;\n&quot;</span>
+<span class="nc" id="L168">                  + &quot;biological samples&quot;, 20, 20, width + 50, height,</span>
+                  &quot;NONE;strokeWidth=0;strokeColor=#FFFFFF;fillColor=#FFFFFF&quot;);
+<span class="nc" id="L170">          graph.insertEdge(parent, null, &quot;&quot;, dummy_node_level1, dummy_node_level2,</span>
+              &quot;strokeWidth=0;strokeColor=#FFFFFF&quot;);
+
+<span class="nc bnc" id="L173" title="All 2 branches missed.">          if (sample_count.containsKey(&quot;Q_TEST_SAMPLE&quot;)) {</span>
+<span class="nc" id="L174">            Object dummy_node_level3 =</span>
+<span class="nc" id="L175">                graph.insertVertex(parent, null, sample_count.get(&quot;Q_TEST_SAMPLE&quot;) + &quot;\n&quot;</span>
+<span class="nc" id="L176">                    + &quot;test samples&quot;, 20, 20, width + 50, height,</span>
+                    &quot;NONE;strokeWidth=0;strokeColor=#FFFFFF;fillColor=#FFFFFF&quot;);
+<span class="nc" id="L178">            graph.insertEdge(parent, null, &quot;&quot;, dummy_node_level2, dummy_node_level3,</span>
+                &quot;strokeWidth=0;strokeColor=#FFFFFF&quot;);
+
+<span class="nc bnc" id="L181" title="All 2 branches missed.">            if (num_measurement_samples &gt; 0) {</span>
+<span class="nc" id="L182">              Object dummy_node_level4 =</span>
+<span class="nc" id="L183">                  graph.insertVertex(parent, null, num_measurement_samples + &quot;\n&quot;</span>
+<span class="nc" id="L184">                      + &quot;measured samples&quot;, 20, 20, width + 50, height,</span>
+                      &quot;NONE;strokeWidth=0;strokeColor=#FFFFFF;fillColor=#FFFFFF&quot;);
+
+<span class="nc" id="L187">              graph.insertEdge(parent, null, &quot;&quot;, dummy_node_level3, dummy_node_level4,</span>
+                  &quot;strokeWidth=0;strokeColor=#FFFFFF&quot;);
+
+            }
+          }
+        }
+      }
+
+<span class="nc" id="L195">      List&lt;PropertyType&gt; bioSampleProperties =</span>
+<span class="nc" id="L196">          openBisClient.listPropertiesForType(openBisClient</span>
+<span class="nc" id="L197">              .getSampleTypeByString(&quot;Q_BIOLOGICAL_SAMPLE&quot;));</span>
+<span class="nc" id="L198">      List&lt;PropertyType&gt; testSampleProperties =</span>
+<span class="nc" id="L199">          openBisClient.listPropertiesForType(openBisClient.getSampleTypeByString(&quot;Q_TEST_SAMPLE&quot;));</span>
+
+
+<span class="nc bnc" id="L202" title="All 2 branches missed.">      for (Sample s : samps) {</span>
+<span class="nc" id="L203">        String species =</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">            (s.getProperties().containsKey(&quot;Q_NCBI_ORGANISM&quot;)) ? s.getProperties().get(</span>
+                &quot;Q_NCBI_ORGANISM&quot;) : &quot;&quot;;
+
+        // old get species code
+        /*
+         * for (Map.Entry&lt;String, String&gt; entry : s.getProperties().entrySet()) { if
+         * (entry.getKey().equals(&quot;Q_NCBI_ORGANISM&quot;)) { species = entry.getValue(); } }
+         */
+
+        // TODO get Labels of properties.... for organism
+        // List&lt;PropertyType&gt; completeProperties =
+        // dh.openBisClient.listPropertiesForType(dh.openBisClient.getSampleTypeByString(s.getType()));
+
+
+<span class="nc" id="L218">        Object mother_node =</span>
+<span class="nc" id="L219">            graph.insertVertex(parent, s.getIdentifier(),</span>
+<span class="nc" id="L220">                String.format(&quot;%s\n%s&quot;, s.getCode(), species), 20, 20, width, height,</span>
+                &quot;ROUNDED;strokeColor=#ffffff;fillColor=#0365C0&quot;);
+        // subtree_vertices.add(mother_node);
+<span class="nc" id="L223">        List&lt;Sample&gt; children = new ArrayList&lt;Sample&gt;();</span>
+
+        // children.addAll(this.open_client.getFacade().listSamplesOfSample(s.getPermId()));
+        // children.addAll(dh.openBisClient.getFacade().listSamplesOfSample(s.getPermId()));
+
+<span class="nc" id="L228">        children.addAll(s.getChildren());</span>
+
+
+        // Object group_node = graph.insertVertex(parent, null, &quot;Entities&quot;, 20, 20, width, height);
+
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        for (Sample c : children) {</span>
+
+<span class="nc bnc" id="L235" title="All 2 branches missed.">          if (c.getSampleTypeCode().equals(&quot;Q_BIOLOGICAL_SAMPLE&quot;)) {</span>
+
+<span class="nc" id="L237">            String primaryTissue = &quot;&quot;;</span>
+<span class="nc" id="L238">            String secondaryName = &quot;&quot;;</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">            for (PropertyType pType : bioSampleProperties) {</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">              if (pType.getCode().equals(&quot;Q_PRIMARY_TISSUE&quot;)) {</span>
+<span class="nc" id="L241">                primaryTissue =</span>
+<span class="nc" id="L242">                    openBisClient.getCVLabelForProperty(</span>
+                        pType,
+<span class="nc" id="L244">                        openBisClient.getSampleByIdentifier(c.getIdentifier()).getProperties()</span>
+<span class="nc" id="L245">                            .get(&quot;Q_PRIMARY_TISSUE&quot;));</span>
+<span class="nc" id="L246">                String secID =</span>
+<span class="nc" id="L247">                    openBisClient.getSampleByIdentifier(c.getIdentifier()).getProperties()</span>
+<span class="nc" id="L248">                        .get(&quot;Q_SECONDARY_NAME&quot;);</span>
+<span class="nc bnc" id="L249" title="All 2 branches missed.">                if (secID != null) {</span>
+<span class="nc" id="L250">                  secondaryName = secID.replace(&quot;nan&quot;, &quot;&quot;);</span>
+                }
+              }
+<span class="nc" id="L253">            }</span>
+
+<span class="nc" id="L255">            Object daughter_node =</span>
+<span class="nc" id="L256">                graph.insertVertex(parent, c.getPermId(),</span>
+<span class="nc" id="L257">                    String.format(&quot;%s\n%s\n%s&quot;, c.getCode(), primaryTissue, secondaryName), 20, 20,</span>
+<span class="nc" id="L258">                    width + 50, height + 20, &quot;ROUNDED;strokeColor=#ffffff;fillColor=#51A7F9&quot;);</span>
+<span class="nc" id="L259">            graph.insertEdge(parent, null, &quot;&quot;, mother_node, daughter_node);</span>
+            // graph.groupCells(group_node, 1.0, new Object[] {daughter_node});
+
+<span class="nc" id="L262">            List&lt;Sample&gt; grandchildren = new ArrayList&lt;Sample&gt;();</span>
+
+            // grandchildren.addAll(this.open_client.getFacade().listSamplesOfSample(c.getPermId()));
+            // grandchildren.addAll(openBisClient.getFacade().listSamplesOfSample(c.getPermId()));
+<span class="nc" id="L266">            grandchildren.addAll(c.getChildren());</span>
+
+<span class="nc bnc" id="L268" title="All 2 branches missed.">            for (Sample gc : grandchildren) {</span>
+<span class="nc bnc" id="L269" title="All 2 branches missed.">              if (gc.getSampleTypeCode().equals(&quot;Q_TEST_SAMPLE&quot;)) {</span>
+
+<span class="nc" id="L271">                String testSampleType = &quot;&quot;;</span>
+<span class="nc" id="L272">                String testSecID = &quot;&quot;;</span>
+<span class="nc bnc" id="L273" title="All 2 branches missed.">                for (PropertyType pType : testSampleProperties) {</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">                  if (pType.getCode().equals(&quot;Q_SAMPLE_TYPE&quot;)) {</span>
+<span class="nc" id="L275">                    testSampleType =</span>
+<span class="nc" id="L276">                        openBisClient.openBIScodeToString(openBisClient.getCVLabelForProperty(</span>
+<span class="nc" id="L277">                            pType, gc.getProperties().get(&quot;Q_SAMPLE_TYPE&quot;)));</span>
+<span class="nc" id="L278">                    testSecID = gc.getProperties().get(&quot;Q_SECONDARY_NAME&quot;);</span>
+<span class="nc bnc" id="L279" title="All 2 branches missed.">                    if (testSecID != null) {</span>
+<span class="nc" id="L280">                      testSecID = testSecID.replace(&quot;nan&quot;, &quot;&quot;);</span>
+                    }
+                  }
+<span class="nc" id="L283">                }</span>
+
+<span class="nc" id="L285">                Object granddaughter_node =</span>
+<span class="nc" id="L286">                    graph.insertVertex(parent, gc.getPermId(),</span>
+<span class="nc" id="L287">                        String.format(&quot;%s\n%s\n%s&quot;, gc.getCode(), testSampleType, testSecID), 20,</span>
+<span class="nc" id="L288">                        20, width + 50, height + 20,</span>
+                        &quot;ROUNDED;strokeColor=#ffffff;fillColor=#70BF41&quot;);
+<span class="nc" id="L290">                graph.insertEdge(parent, null, &quot;&quot;, daughter_node, granddaughter_node);</span>
+
+<span class="nc" id="L292">                List&lt;Sample&gt; grandgrandchildren = new ArrayList&lt;Sample&gt;();</span>
+
+                // grandgrandchildren.addAll(this.open_client.getFacade().listSamplesOfSample(gc.getPermId()));
+                // grandgrandchildren.addAll(openBisClient.getFacade().listSamplesOfSample(
+                // gc.getPermId()));
+<span class="nc" id="L297">                grandgrandchildren.addAll(gc.getChildren());</span>
+
+<span class="nc bnc" id="L299" title="All 2 branches missed.">                for (Sample ggc : grandgrandchildren) {</span>
+
+<span class="nc" id="L301">                  String measuredSecID = &quot;&quot;;</span>
+<span class="nc" id="L302">                  measuredSecID = gc.getProperties().get(&quot;Q_SECONDARY_NAME&quot;);</span>
+<span class="nc bnc" id="L303" title="All 2 branches missed.">                  if (measuredSecID != null) {</span>
+<span class="nc" id="L304">                    measuredSecID = measuredSecID.replace(&quot;nan&quot;, &quot;&quot;);</span>
+                  }
+<span class="nc" id="L306">                  Object grandgranddaughter_node =</span>
+<span class="nc" id="L307">                      graph.insertVertex(parent, ggc.getPermId(),</span>
+<span class="nc" id="L308">                          String.format(&quot;%s\n%s\n%s&quot;, ggc.getCode(),</span>
+<span class="nc" id="L309">                              openBisClient.openBIScodeToString(ggc.getSampleTypeCode()),</span>
+<span class="nc" id="L310">                              measuredSecID), 20, 20, width + 50, height + 20,</span>
+                          &quot;ROUNDED;strokeColor=#ffffff;fillColor=#F39019&quot;);
+<span class="nc" id="L312">                  graph.insertEdge(parent, null, &quot;&quot;, granddaughter_node, grandgranddaughter_node);</span>
+
+<span class="nc" id="L314">                }</span>
+              }
+<span class="nc" id="L316">            }</span>
+          }
+<span class="nc" id="L318">        }</span>
+<span class="nc" id="L319">      }</span>
+
+<span class="nc" id="L321">      mxHierarchicalLayout layout = new mxHierarchicalLayout(graph, SwingConstants.WEST);</span>
+<span class="nc" id="L322">      layout.setDisableEdgeStyle(true);</span>
+      // layout.setInterHierarchySpacing(10);
+<span class="nc" id="L324">      layout.setInterRankCellSpacing(100);</span>
+
+
+      // mxIGraphLayout layout = new mxFastOrganicLayout(graph);
+
+<span class="nc" id="L329">      layout.execute(graph.getDefaultParent()); // Run the layout on the facade.\n</span>
+
+      // mxGraphComponent graphComponent = new mxGraphComponent(graph);
+      // getContentPane().add(graphComponent);
+
+<span class="nc" id="L334">      BufferedImage image =</span>
+<span class="nc" id="L335">          mxCellRenderer.createBufferedImage(graph, null, 1, Color.WHITE, true, null);</span>
+
+      // String url = VaadinService.getCurrent().getBaseDirectory().getAbsolutePath() +
+      // &quot;/WEB-INF/images/graph.png&quot;;
+      // this.url = url;
+<span class="nc" id="L340">      final ByteArrayOutputStream bas = new ByteArrayOutputStream();</span>
+
+<span class="nc bnc" id="L342" title="All 2 branches missed.">      if (image != null) {</span>
+<span class="nc" id="L343">        ImageIO.write(image, &quot;PNG&quot;, bas);</span>
+<span class="nc" id="L344">        this.res = showFile(projectBean.getId(), &quot;PNG&quot;, bas);</span>
+      } else {
+<span class="nc" id="L346">        this.res = null;</span>
+      }
+    }// end try
+    finally {
+<span class="nc" id="L350">      graph.getModel().endUpdate();</span>
+    }
+<span class="nc" id="L352">  }</span>
+
+
+  private StreamResource showFile(final String name, final String type,
+      final ByteArrayOutputStream bas) {
+    // resource for serving the file contents
+<span class="nc" id="L358">    final StreamSource streamSource = new StreamSource() {</span>
+      /**
+			 * 
+			 */
+      private static final long serialVersionUID = 6632340984219486654L;
+
+      @Override
+      public InputStream getStream() {
+<span class="nc bnc" id="L366" title="All 2 branches missed.">        if (bas != null) {</span>
+<span class="nc" id="L367">          final byte[] byteArray = bas.toByteArray();</span>
+<span class="nc" id="L368">          return new ByteArrayInputStream(byteArray);</span>
+        }
+<span class="nc" id="L370">        return null;</span>
+      }
+    };
+<span class="nc" id="L373">    StreamResource resource = new StreamResource(streamSource, name);</span>
+<span class="nc" id="L374">    return resource;</span>
+  }
+
+  public GraphGenerator(List&lt;Sample&gt; samples, Map&lt;String, SampleType&gt; types,
+<span class="nc" id="L378">      OpenBisClient openBisClient, String projectId) throws IOException {</span>
+    // Map&lt;String, SampleType&gt; types = openBisClient.getSampleTypes();
+    // super(&quot;openBIS graph&quot;);
+
+    // Project p = dh.openBisClient.getProjectByCode(project);
+
+    // Project p = dh.openBisClient.getProjectByIdentifier(projectBean);
+    // System.out.println(p);
+
+<span class="nc" id="L387">    mxGraph graph = new mxGraph();</span>
+<span class="nc" id="L388">    Object parent = graph.getDefaultParent();</span>
+<span class="nc" id="L389">    graph.getModel().beginUpdate();</span>
+
+<span class="nc" id="L391">    mxStylesheet stylesheet = graph.getStylesheet();</span>
+<span class="nc" id="L392">    Hashtable&lt;String, Object&gt; style = new Hashtable&lt;String, Object&gt;();</span>
+<span class="nc" id="L393">    style.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE);</span>
+<span class="nc" id="L394">    style.put(mxConstants.STYLE_OPACITY, 100);</span>
+<span class="nc" id="L395">    style.put(mxConstants.STYLE_FONTCOLOR, &quot;#ffffff&quot;);</span>
+<span class="nc" id="L396">    style.put(mxConstants.STYLE_DIRECTION, &quot;east&quot;);</span>
+<span class="nc" id="L397">    stylesheet.putCellStyle(&quot;ROUNDED&quot;, style);</span>
+
+
+<span class="nc" id="L400">    Double width = new Double(120.0);</span>
+<span class="nc" id="L401">    Double height = new Double(40.0);</span>
+
+    try {
+
+      // could be done more efficiently with SearchCriteria (at least I hope so)
+<span class="nc" id="L406">      Map&lt;String, Integer&gt; sample_count = new HashMap&lt;String, Integer&gt;();</span>
+
+
+      // count the different sample types
+<span class="nc" id="L410">      Integer num_measurement_samples = new Integer(0);</span>
+
+<span class="nc" id="L412">      List&lt;Sample&gt; samps = new ArrayList&lt;Sample&gt;();</span>
+
+<span class="nc bnc" id="L414" title="All 2 branches missed.">      for (Sample s : samples) {</span>
+        // System.out.println(s);
+        // String key = s.getSampleTypeCode();
+<span class="nc" id="L417">        String key = s.getSampleTypeCode();</span>
+
+<span class="nc bnc" id="L419" title="All 2 branches missed.">        if (sample_count.containsKey(key)) {</span>
+
+<span class="nc" id="L421">          sample_count.put(key, sample_count.get(key) + 1);</span>
+        } else {
+<span class="nc" id="L423">          sample_count.put(key, 1);</span>
+        }
+
+<span class="nc bnc" id="L426" title="All 2 branches missed.">        if (key.equals(&quot;Q_TEST_SAMPLE&quot;)) {</span>
+<span class="nc" id="L427">          List&lt;Sample&gt; tmp = s.getChildren();</span>
+<span class="nc" id="L428">          num_measurement_samples += tmp.size();</span>
+        }
+
+<span class="nc bnc" id="L431" title="All 2 branches missed.">        if (key.equals(&quot;Q_BIOLOGICAL_ENTITY&quot;)) {</span>
+<span class="nc" id="L432">          samps.add(s);</span>
+        }
+<span class="nc" id="L434">      }</span>
+
+<span class="nc bnc" id="L436" title="All 2 branches missed.">      if (sample_count.containsKey(&quot;Q_BIOLOGICAL_ENTITY&quot;)) {</span>
+<span class="nc" id="L437">        Object dummy_node_level1 =</span>
+<span class="nc" id="L438">            graph.insertVertex(parent, null, sample_count.get(&quot;Q_BIOLOGICAL_ENTITY&quot;) + &quot;\n&quot;</span>
+<span class="nc" id="L439">                + &quot;biological entities&quot;, 20, 20, width, height,</span>
+                &quot;NONE;strokeWidth=0;strokeColor=#FFFFFF;fillColor=#FFFFFF&quot;);
+
+
+<span class="nc bnc" id="L443" title="All 2 branches missed.">        if (sample_count.containsKey(&quot;Q_BIOLOGICAL_SAMPLE&quot;)) {</span>
+<span class="nc" id="L444">          Object dummy_node_level2 =</span>
+<span class="nc" id="L445">              graph.insertVertex(parent, null, sample_count.get(&quot;Q_BIOLOGICAL_SAMPLE&quot;) + &quot;\n&quot;</span>
+<span class="nc" id="L446">                  + &quot;biological samples&quot;, 20, 20, width + 75, height,</span>
+                  &quot;NONE;strokeWidth=0;strokeColor=#FFFFFF;fillColor=#FFFFFF&quot;);
+<span class="nc" id="L448">          graph.insertEdge(parent, null, &quot;&quot;, dummy_node_level1, dummy_node_level2,</span>
+              &quot;strokeWidth=0;strokeColor=#FFFFFF&quot;);
+
+<span class="nc bnc" id="L451" title="All 2 branches missed.">          if (sample_count.containsKey(&quot;Q_TEST_SAMPLE&quot;)) {</span>
+<span class="nc" id="L452">            Object dummy_node_level3 =</span>
+<span class="nc" id="L453">                graph.insertVertex(parent, null, sample_count.get(&quot;Q_TEST_SAMPLE&quot;) + &quot;\n&quot;</span>
+<span class="nc" id="L454">                    + &quot;test samples&quot;, 20, 20, width + 75, height,</span>
+                    &quot;NONE;strokeWidth=0;strokeColor=#FFFFFF;fillColor=#FFFFFF&quot;);
+<span class="nc" id="L456">            graph.insertEdge(parent, null, &quot;&quot;, dummy_node_level2, dummy_node_level3,</span>
+                &quot;strokeWidth=0;strokeColor=#FFFFFF&quot;);
+
+<span class="nc bnc" id="L459" title="All 2 branches missed.">            if (num_measurement_samples &gt; 0) {</span>
+<span class="nc" id="L460">              Object dummy_node_level4 =</span>
+<span class="nc" id="L461">                  graph.insertVertex(parent, null, num_measurement_samples + &quot;\n&quot;</span>
+<span class="nc" id="L462">                      + &quot;measured samples&quot;, 20, 20, width + 75, height,</span>
+                      &quot;NONE;strokeWidth=0;strokeColor=#FFFFFF;fillColor=#FFFFFF&quot;);
+
+<span class="nc" id="L465">              graph.insertEdge(parent, null, &quot;&quot;, dummy_node_level3, dummy_node_level4,</span>
+                  &quot;strokeWidth=0;strokeColor=#FFFFFF&quot;);
+            }
+          }
+        }
+      }
+
+<span class="nc" id="L472">      List&lt;PropertyType&gt; bioSampleProperties =</span>
+<span class="nc" id="L473">          OpenBisFunctions.listPropertiesForType(types.get(&quot;Q_BIOLOGICAL_SAMPLE&quot;));</span>
+<span class="nc" id="L474">      List&lt;PropertyType&gt; testSampleProperties =</span>
+<span class="nc" id="L475">          OpenBisFunctions.listPropertiesForType(types.get(&quot;Q_TEST_SAMPLE&quot;));</span>
+
+
+<span class="nc bnc" id="L478" title="All 2 branches missed.">      for (Sample s : samps) {</span>
+<span class="nc" id="L479">        String species =</span>
+<span class="nc bnc" id="L480" title="All 2 branches missed.">            (s.getProperties().containsKey(&quot;Q_NCBI_ORGANISM&quot;)) ? s.getProperties().get(</span>
+                &quot;Q_NCBI_ORGANISM&quot;) : &quot;&quot;;
+
+        // old get species code
+        /*
+         * for (Map.Entry&lt;String, String&gt; entry : s.getProperties().entrySet()) { if
+         * (entry.getKey().equals(&quot;Q_NCBI_ORGANISM&quot;)) { species = entry.getValue(); } }
+         */
+
+        // TODO get Labels of properties.... for organism
+        // List&lt;PropertyType&gt; completeProperties =
+        // dh.openBisClient.listPropertiesForType(dh.openBisClient.getSampleTypeByString(s.getType()));
+
+
+<span class="nc" id="L494">        Object mother_node =</span>
+<span class="nc" id="L495">            graph.insertVertex(parent, s.getIdentifier(),</span>
+<span class="nc" id="L496">                String.format(&quot;%s\n%s&quot;, s.getCode(), species), 20, 20, width, height,</span>
+                &quot;ROUNDED;strokeColor=#ffffff;fillColor=#0365C0&quot;);
+        // subtree_vertices.add(mother_node);
+<span class="nc" id="L499">        List&lt;Sample&gt; children = new ArrayList&lt;Sample&gt;();</span>
+
+        // children.addAll(this.open_client.getFacade().listSamplesOfSample(s.getPermId()));
+        // children.addAll(dh.openBisClient.getFacade().listSamplesOfSample(s.getPermId()));
+
+<span class="nc" id="L504">        children.addAll(s.getChildren());</span>
+
+
+        // Object group_node = graph.insertVertex(parent, null, &quot;Entities&quot;, 20, 20, width, height);
+
+<span class="nc bnc" id="L509" title="All 2 branches missed.">        for (Sample c : children) {</span>
+
+<span class="nc bnc" id="L511" title="All 2 branches missed.">          if (c.getSampleTypeCode().equals(&quot;Q_BIOLOGICAL_SAMPLE&quot;)) {</span>
+
+<span class="nc" id="L513">            String primaryTissue = &quot;&quot;;</span>
+<span class="nc" id="L514">            String secondaryName = &quot;&quot;;</span>
+<span class="nc bnc" id="L515" title="All 2 branches missed.">            for (PropertyType pType : bioSampleProperties) {</span>
+<span class="nc bnc" id="L516" title="All 2 branches missed.">              if (pType.getCode().equals(&quot;Q_PRIMARY_TISSUE&quot;)) {</span>
+<span class="nc" id="L517">                primaryTissue =</span>
+<span class="nc" id="L518">                    OpenBisFunctions.getCVLabelForProperty(pType,</span>
+<span class="nc" id="L519">                        c.getProperties().get(&quot;Q_PRIMARY_TISSUE&quot;));</span>
+              }
+<span class="nc" id="L521">            }</span>
+
+<span class="nc" id="L523">            String secID = c.getProperties().get(&quot;Q_SECONDARY_NAME&quot;);</span>
+<span class="nc bnc" id="L524" title="All 2 branches missed.">            if (secID != null) {</span>
+<span class="nc" id="L525">              secondaryName = secID.replace(&quot;nan&quot;, &quot;&quot;);</span>
+            }
+<span class="nc" id="L527">            Object daughter_node =</span>
+<span class="nc" id="L528">                graph.insertVertex(parent, c.getPermId(),</span>
+<span class="nc" id="L529">                    String.format(&quot;%s\n%s\n%s&quot;, c.getCode(), primaryTissue, secondaryName), 20, 20,</span>
+<span class="nc" id="L530">                    width + 75, height + 20, &quot;ROUNDED;strokeColor=#ffffff;fillColor=#51A7F9&quot;);</span>
+<span class="nc" id="L531">            graph.insertEdge(parent, null, &quot;&quot;, mother_node, daughter_node);</span>
+            // graph.groupCells(group_node, 1.0, new Object[] {daughter_node});
+
+<span class="nc" id="L534">            List&lt;Sample&gt; grandchildren = new ArrayList&lt;Sample&gt;();</span>
+
+            // grandchildren.addAll(this.open_client.getFacade().listSamplesOfSample(c.getPermId()));
+            // grandchildren.addAll(openBisClient.getFacade().listSamplesOfSample(c.getPermId()));
+
+<span class="nc" id="L539">            grandchildren.addAll(c.getChildren());</span>
+<span class="nc bnc" id="L540" title="All 2 branches missed.">            for (Sample gc : grandchildren) {</span>
+<span class="nc bnc" id="L541" title="All 2 branches missed.">              if (gc.getSampleTypeCode().equals(&quot;Q_TEST_SAMPLE&quot;)) {</span>
+
+<span class="nc" id="L543">                String testSampleType = &quot;&quot;;</span>
+<span class="nc" id="L544">                String testSecID = &quot;&quot;;</span>
+<span class="nc bnc" id="L545" title="All 2 branches missed.">                for (PropertyType pType : testSampleProperties) {</span>
+<span class="nc bnc" id="L546" title="All 2 branches missed.">                  if (pType.getCode().equals(&quot;Q_SAMPLE_TYPE&quot;)) {</span>
+<span class="nc" id="L547">                    testSampleType =</span>
+<span class="nc" id="L548">                        OpenBisFunctions.openBIScodeToString(OpenBisFunctions</span>
+<span class="nc" id="L549">                            .getCVLabelForProperty(pType, gc.getProperties().get(&quot;Q_SAMPLE_TYPE&quot;)));</span>
+                  }
+<span class="nc" id="L551">                }</span>
+<span class="nc" id="L552">                testSecID = gc.getProperties().get(&quot;Q_SECONDARY_NAME&quot;);</span>
+<span class="nc bnc" id="L553" title="All 2 branches missed.">                if (testSecID != null) {</span>
+<span class="nc" id="L554">                  testSecID = testSecID.replace(&quot;nan&quot;, &quot;&quot;);</span>
+                }
+<span class="nc" id="L556">                Object granddaughter_node =</span>
+<span class="nc" id="L557">                    graph.insertVertex(parent, gc.getPermId(),</span>
+<span class="nc" id="L558">                        String.format(&quot;%s\n%s\n%s&quot;, gc.getCode(), testSampleType, testSecID), 20,</span>
+<span class="nc" id="L559">                        20, width + 75, height + 20,</span>
+                        &quot;ROUNDED;strokeColor=#ffffff;fillColor=#70BF41&quot;);
+<span class="nc" id="L561">                graph.insertEdge(parent, null, &quot;&quot;, daughter_node, granddaughter_node);</span>
+
+<span class="nc" id="L563">                List&lt;Sample&gt; grandgrandchildren = new ArrayList&lt;Sample&gt;();</span>
+
+                // grandgrandchildren.addAll(this.open_client.getFacade().listSamplesOfSample(gc.getPermId()));
+                // grandgrandchildren.addAll(openBisClient.getFacade().listSamplesOfSample(
+                // gc.getPermId()));
+
+<span class="nc" id="L569">                grandgrandchildren.addAll(gc.getChildren());</span>
+
+<span class="nc bnc" id="L571" title="All 2 branches missed.">                for (Sample ggc : grandgrandchildren) {</span>
+
+<span class="nc" id="L573">                  String measuredSecID = &quot;&quot;;</span>
+<span class="nc" id="L574">                  String openbisSecID = ggc.getProperties().get(&quot;Q_SECONDARY_NAME&quot;);</span>
+<span class="nc bnc" id="L575" title="All 2 branches missed.">                  if (openbisSecID != null) {</span>
+<span class="nc" id="L576">                    measuredSecID = openbisSecID.replace(&quot;nan&quot;, &quot;&quot;);</span>
+                  }
+<span class="nc" id="L578">                  Object grandgranddaughter_node =</span>
+<span class="nc" id="L579">                      graph.insertVertex(parent, ggc.getPermId(), String.format(&quot;%s\n%s\n%s&quot;,</span>
+<span class="nc" id="L580">                          ggc.getCode(),</span>
+<span class="nc" id="L581">                          OpenBisFunctions.openBIScodeToString(ggc.getSampleTypeCode()),</span>
+<span class="nc" id="L582">                          measuredSecID), 20, 20, width + 75, height + 20,</span>
+                          &quot;ROUNDED;strokeColor=#ffffff;fillColor=#F39019&quot;);
+<span class="nc" id="L584">                  graph.insertEdge(parent, null, &quot;&quot;, granddaughter_node, grandgranddaughter_node);</span>
+
+<span class="nc" id="L586">                }</span>
+              }
+<span class="nc" id="L588">            }</span>
+          }
+<span class="nc" id="L590">        }</span>
+<span class="nc" id="L591">      }</span>
+
+<span class="nc" id="L593">      mxHierarchicalLayout layout = new mxHierarchicalLayout(graph, SwingConstants.WEST);</span>
+<span class="nc" id="L594">      layout.setDisableEdgeStyle(true);</span>
+      // layout.setInterHierarchySpacing(10);
+<span class="nc" id="L596">      layout.setInterRankCellSpacing(100);</span>
+
+
+      // mxIGraphLayout layout = new mxFastOrganicLayout(graph);
+
+<span class="nc" id="L601">      layout.execute(graph.getDefaultParent()); // Run the layout on the facade.\n</span>
+
+      // mxGraphComponent graphComponent = new mxGraphComponent(graph);
+      // getContentPane().add(graphComponent);
+
+<span class="nc" id="L606">      BufferedImage image =</span>
+<span class="nc" id="L607">          mxCellRenderer.createBufferedImage(graph, null, 1, Color.WHITE, true, null);</span>
+
+      // String url = VaadinService.getCurrent().getBaseDirectory().getAbsolutePath() +
+      // &quot;/WEB-INF/images/graph.png&quot;;
+      // this.url = url;
+<span class="nc" id="L612">      final ByteArrayOutputStream bas = new ByteArrayOutputStream();</span>
+
+<span class="nc bnc" id="L614" title="All 2 branches missed.">      if (image != null) {</span>
+<span class="nc" id="L615">        ImageIO.write(image, &quot;PNG&quot;, bas);</span>
+<span class="nc" id="L616">        this.res = showFile(projectId, &quot;PNG&quot;, bas);</span>
+      } else {
+<span class="nc" id="L618">        this.res = null;</span>
+      }
+    }// end try
+    finally {
+<span class="nc" id="L622">      graph.getModel().endUpdate();</span>
+    }
+<span class="nc" id="L624">  }</span>
+
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

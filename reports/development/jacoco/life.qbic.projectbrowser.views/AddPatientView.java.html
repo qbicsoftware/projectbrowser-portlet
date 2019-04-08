@@ -1,0 +1,525 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AddPatientView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.views</a> &gt; <span class="el_source">AddPatientView.java</span></div><h1>AddPatientView.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.views;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.data.Property.ValueChangeListener;
+import com.vaadin.data.util.BeanItem;
+import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.event.FieldEvents.TextChangeEvent;
+import com.vaadin.event.FieldEvents.TextChangeListener;
+import com.vaadin.event.SelectionEvent;
+import com.vaadin.event.SelectionEvent.SelectionListener;
+import com.vaadin.navigator.View;
+import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
+import com.vaadin.server.WebBrowser;
+import com.vaadin.shared.ui.MarginInfo;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.CheckBox;
+import com.vaadin.ui.ComboBox;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.TextArea;
+import com.vaadin.ui.TextField;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.themes.ValoTheme;
+
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Project;
+
+import life.qbic.portal.utils.PortalUtils;
+import life.qbic.projectbrowser.helpers.Utils;
+import life.qbic.projectbrowser.model.NewIvacSampleBean;
+import life.qbic.projectbrowser.controllers.*;
+import life.qbic.projectbrowser.components.CustomVisibilityComponent;
+import life.qbic.projectbrowser.components.GridEditForm;
+
+
+public class AddPatientView extends VerticalLayout implements View {
+
+  public final static String navigateToLabel = &quot;addivacproject&quot;;
+
+  VerticalLayout addPatientViewContent;
+
+  private String resourceUrl;
+  private DataHandler datahandler;
+  private State state;
+
+  private Button registerPatients;
+
+  private VerticalLayout buttonLayoutSection;
+
+  private CustomVisibilityComponent projects;
+<span class="nc" id="L78">  private ComboBox typingMethod = new ComboBox(&quot;Typing Method&quot;);</span>
+  private CustomVisibilityComponent numberOfPatients;
+  private CustomVisibilityComponent secondaryNames;
+  private CustomVisibilityComponent description;
+<span class="nc" id="L82">  private CheckBox registerHLAI = new CheckBox(&quot;MHC Class I&quot;);</span>
+<span class="nc" id="L83">  private CheckBox registerHLAII = new CheckBox(&quot;MHC Class II&quot;);</span>
+  private VerticalLayout hlaTypingSection;
+<span class="nc" id="L85">  private VerticalLayout expSetup = new VerticalLayout();</span>
+<span class="nc" id="L86">  private VerticalLayout optionLayout = new VerticalLayout();</span>
+<span class="nc" id="L87">  private VerticalLayout hlaLayout = new VerticalLayout();</span>
+
+<span class="nc" id="L89">  private TextArea hlaItypes = new TextArea();</span>
+<span class="nc" id="L90">  private TextArea hlaIItypes = new TextArea();</span>
+
+  private String header;
+
+
+<span class="nc" id="L95">  private BeanItemContainer sampleOptions =</span>
+      new BeanItemContainer&lt;NewIvacSampleBean&gt;(NewIvacSampleBean.class);
+
+  private VerticalLayout optionLayoutSection;
+
+  private CustomVisibilityComponent hlaInfo;
+
+  private CustomVisibilityComponent gridInfo;
+
+
+
+  public AddPatientView(DataHandler datahandler, State state, String resourceurl) {
+<span class="nc" id="L107">    this(datahandler, state);</span>
+<span class="nc" id="L108">    this.resourceUrl = resourceurl;</span>
+<span class="nc" id="L109">  }</span>
+
+<span class="nc" id="L111">  public AddPatientView(DataHandler datahandler, State state) {</span>
+<span class="nc" id="L112">    this.datahandler = datahandler;</span>
+<span class="nc" id="L113">    this.state = state;</span>
+<span class="nc" id="L114">    resourceUrl = &quot;javascript;&quot;;</span>
+<span class="nc" id="L115">    sampleOptions.addBean(new NewIvacSampleBean(&quot;Normal&quot;, 1, &quot;&quot;, false, false, false, &quot;&quot;, &quot;&quot;));</span>
+<span class="nc" id="L116">    sampleOptions.addBean(new NewIvacSampleBean(&quot;Tumor&quot;, 1, &quot;&quot;, false, false, false, &quot;&quot;, &quot;&quot;));</span>
+
+<span class="nc" id="L118">    initView();</span>
+<span class="nc" id="L119">  }</span>
+
+  public String getHeader() {
+<span class="nc" id="L122">    return header;</span>
+  }
+
+  public void setHeader(String header) {
+<span class="nc" id="L126">    this.header = header;</span>
+<span class="nc" id="L127">  }</span>
+
+  /**
+   * updates view, if height, width or the browser changes.
+   * 
+   * @param browserHeight
+   * @param browserWidth
+   * @param browser
+   */
+  public void updateView(int browserHeight, int browserWidth, WebBrowser browser) {
+<span class="nc" id="L137">    setWidth((browserWidth * 0.85f), Unit.PIXELS);</span>
+<span class="nc" id="L138">  }</span>
+
+  /**
+   * init this view. builds the layout skeleton Menubar Description and others Statisitcs Experiment
+   * Table Graph
+   */
+  void initView() {
+<span class="nc" id="L145">    header = &quot;&quot;;</span>
+
+<span class="nc" id="L147">    addPatientViewContent = new VerticalLayout();</span>
+
+<span class="nc" id="L149">    addPatientViewContent.addComponent(expSetup);</span>
+<span class="nc" id="L150">    addPatientViewContent.addComponent(optionLayout);</span>
+
+<span class="nc" id="L152">    addPatientViewContent.addComponent(hlaLayout);</span>
+
+<span class="nc" id="L154">    addPatientViewContent.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L155">    addPatientViewContent.setMargin(new MarginInfo(true, false, false, false));</span>
+<span class="nc" id="L156">    this.addComponent(addPatientViewContent);</span>
+<span class="nc" id="L157">    this.addComponent(initButtonLayout());</span>
+<span class="nc" id="L158">  }</span>
+
+  /**
+   * 
+   * @return
+   */
+  void initOptionLayout() {
+<span class="nc" id="L165">    optionLayout.removeAllComponents();</span>
+<span class="nc" id="L166">    optionLayout.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L167">    optionLayout.setVisible(false);</span>
+
+<span class="nc" id="L169">    VerticalLayout optionLayoutContent = new VerticalLayout();</span>
+
+<span class="nc" id="L171">    Button addSample = new Button(&quot;Add Sample&quot;);</span>
+<span class="nc" id="L172">    addSample.addClickListener(new ClickListener() {</span>
+
+      @Override
+      public void buttonClick(ClickEvent event) {
+<span class="nc" id="L176">        sampleOptions.addBean(new NewIvacSampleBean(&quot;&quot;, 0, &quot;&quot;, false, false, false, &quot;&quot;, &quot;&quot;));</span>
+<span class="nc" id="L177">      }</span>
+    });
+
+<span class="nc" id="L180">    optionLayoutContent.setMargin(new MarginInfo(true, false, false, false));</span>
+<span class="nc" id="L181">    optionLayoutContent.setHeight(null);</span>
+<span class="nc" id="L182">    optionLayoutContent.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L183">    optionLayoutContent.setSpacing(true);</span>
+
+
+<span class="nc" id="L186">    final Grid optionGrid = new Grid();</span>
+<span class="nc" id="L187">    optionGrid.setWidth(&quot;80%&quot;);</span>
+    // optionGrid.setCaption(&quot;Which biological samples are available for the patient(s) and which
+    // experiments will be performed?&quot;);
+
+<span class="nc" id="L191">    gridInfo = new CustomVisibilityComponent(new Label(&quot;&quot;));</span>
+<span class="nc" id="L192">    ((Label) gridInfo.getInnerComponent()).addStyleName(ValoTheme.LABEL_LARGE);</span>
+
+<span class="nc" id="L194">    Component gridInfoContent = Utils.questionize(gridInfo,</span>
+        &quot;Which biological samples are available for the patient(s) and which experiments will be performed?&quot;,
+        &quot;Extracted Samples&quot;);
+
+    // optionGrid.setSelectionMode(SelectionMode.MULTI);
+<span class="nc" id="L199">    optionGrid.setEditorEnabled(true);</span>
+
+<span class="nc" id="L201">    optionGrid.setContainerDataSource(sampleOptions);</span>
+<span class="nc" id="L202">    optionGrid.setColumnOrder(&quot;type&quot;, &quot;secondaryName&quot;, &quot;tissue&quot;, &quot;amount&quot;, &quot;dnaSeq&quot;, &quot;rnaSeq&quot;,</span>
+        &quot;deepSeq&quot;);
+
+<span class="nc" id="L205">    optionLayoutContent.addComponent(gridInfoContent);</span>
+<span class="nc" id="L206">    optionLayoutContent.addComponent(optionGrid);</span>
+<span class="nc" id="L207">    optionLayoutContent.addComponent(addSample);</span>
+
+<span class="nc" id="L209">    final GridEditForm form =</span>
+<span class="nc" id="L210">        new GridEditForm(datahandler.getOpenBisClient().getVocabCodesForVocab(&quot;Q_PRIMARY_TISSUES&quot;),</span>
+<span class="nc" id="L211">            datahandler.getOpenBisClient().getVocabCodesForVocab(&quot;Q_SEQUENCER_DEVICES&quot;));</span>
+
+<span class="nc" id="L213">    optionLayoutContent.addComponent(form);</span>
+<span class="nc" id="L214">    form.setVisible(false);</span>
+
+<span class="nc" id="L216">    optionGrid.addSelectionListener(new SelectionListener() {</span>
+
+      @Override
+      public void select(SelectionEvent event) {
+<span class="nc" id="L220">        BeanItem&lt;NewIvacSampleBean&gt; item = sampleOptions.getItem(optionGrid.getSelectedRow());</span>
+<span class="nc" id="L221">        form.fieldGroup.setItemDataSource(item);</span>
+<span class="nc" id="L222">        form.setVisible(true);</span>
+<span class="nc" id="L223">      }</span>
+    });
+
+<span class="nc" id="L226">    optionLayout.addComponent(optionLayoutContent);</span>
+<span class="nc" id="L227">  }</span>
+
+  /**
+   * 
+   * @return
+   */
+  VerticalLayout initButtonLayout() {
+<span class="nc" id="L234">    registerPatients = new Button(&quot;Register Patients&quot;);</span>
+    // registerPatients.setWidth(&quot;100%&quot;);
+<span class="nc" id="L236">    registerPatients.setStyleName(ValoTheme.BUTTON_FRIENDLY);</span>
+<span class="nc" id="L237">    registerPatients.setVisible(false);</span>
+
+<span class="nc" id="L239">    registerPatients.addClickListener(new ClickListener() {</span>
+
+      @Override
+      public void buttonClick(ClickEvent event) {
+<span class="nc" id="L243">        callPatientRegistration();</span>
+<span class="nc" id="L244">      }</span>
+    });
+
+<span class="nc" id="L247">    buttonLayoutSection = new VerticalLayout();</span>
+<span class="nc" id="L248">    HorizontalLayout buttonLayout = new HorizontalLayout();</span>
+<span class="nc" id="L249">    buttonLayout.setMargin(new MarginInfo(true, false, true, false));</span>
+<span class="nc" id="L250">    buttonLayout.setHeight(null);</span>
+<span class="nc" id="L251">    buttonLayout.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L252">    buttonLayoutSection.setWidth(&quot;100%&quot;);</span>
+
+<span class="nc" id="L254">    buttonLayoutSection.addComponent(buttonLayout);</span>
+<span class="nc" id="L255">    buttonLayout.addComponent(registerPatients);</span>
+
+<span class="nc" id="L257">    return buttonLayoutSection;</span>
+  }
+
+
+
+  /**
+   * initializes the description layout
+   * 
+   * @return
+   */
+  void initExperimentalSetupLayout() {
+<span class="nc" id="L268">    expSetup.removeAllComponents();</span>
+
+<span class="nc" id="L270">    expSetup.setWidth(&quot;100%&quot;);</span>
+
+<span class="nc" id="L272">    expSetup.setSpacing(true);</span>
+<span class="nc" id="L273">    expSetup.setMargin(new MarginInfo(true, false, false, false));</span>
+
+<span class="nc" id="L275">    Set&lt;String&gt; visibleSpaces = new LinkedHashSet&lt;&gt;();</span>
+
+    /*
+     * for (String space: datahandler.getOpenBisClient().listSpaces()) {
+     * if(space.startsWith(&quot;IVAC&quot;)) {
+     * 
+     * Set&lt;String&gt; users = datahandler.getOpenBisClient().getSpaceMembers(space);
+     * 
+     * if(users.contains(LiferayAndVaadinUtils.getUser().getScreenName())) {
+     * visibleSpaces.add(space); } } }
+     */
+
+<span class="nc bnc" id="L287" title="All 2 branches missed.">    for (Project project : datahandler.getOpenBisClient().getOpenbisInfoService()</span>
+<span class="nc" id="L288">        .listProjectsOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(),</span>
+<span class="nc" id="L289">            PortalUtils.getNonNullScreenName())) {</span>
+
+<span class="nc bnc" id="L291" title="All 2 branches missed.">      if (project.getIdentifier().contains(&quot;IVAC&quot;)) {</span>
+<span class="nc" id="L292">        visibleSpaces.add(project.getSpaceCode());</span>
+      }
+<span class="nc" id="L294">    }</span>
+
+    // for (Project project :
+    // datahandler.getOpenBisClient().getOpenbisInfoService().listProjectsOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(),
+    // LiferayAndVaadinUtils.getUser().getScreenName())) {
+    // if (project.getSpaceCode().startsWith(&quot;IVAC&quot;)) {
+    // visibleSpaces.add(project.getSpaceCode());
+    // }
+    // }
+
+<span class="nc" id="L304">    projects = new CustomVisibilityComponent(new ComboBox(&quot;Select Project&quot;, visibleSpaces));</span>
+<span class="nc" id="L305">    ((ComboBox) projects.getInnerComponent()).setImmediate(true);</span>
+
+<span class="nc" id="L307">    Component context =</span>
+<span class="nc" id="L308">        Utils.questionize(projects, &quot;Add Patient(s) to the following project&quot;, &quot;Select Project&quot;);</span>
+
+<span class="nc" id="L310">    ((ComboBox) projects.getInnerComponent()).addValueChangeListener(new ValueChangeListener() {</span>
+
+      @Override
+      public void valueChange(ValueChangeEvent event) {
+<span class="nc" id="L314">        numberOfPatients.setVisible(true);</span>
+<span class="nc" id="L315">      }</span>
+    });
+
+<span class="nc" id="L318">    expSetup.addComponent(context);</span>
+
+<span class="nc" id="L320">    numberOfPatients = new CustomVisibilityComponent(new TextField(&quot;Number of Patients&quot;));</span>
+<span class="nc" id="L321">    numberOfPatients.setVisible(false);</span>
+<span class="nc" id="L322">    ((TextField) numberOfPatients.getInnerComponent()).setImmediate(true);</span>
+
+<span class="nc" id="L324">    Component numberContext = Utils.questionize(numberOfPatients,</span>
+        &quot;How many patients with the same setup should be registered?&quot;, &quot;Number of Patients&quot;);
+
+<span class="nc" id="L327">    ((TextField) numberOfPatients.getInnerComponent())</span>
+<span class="nc" id="L328">        .addTextChangeListener(new TextChangeListener() {</span>
+
+          @Override
+          public void textChange(TextChangeEvent event) {
+<span class="nc" id="L332">            secondaryNames.setVisible(true);</span>
+<span class="nc" id="L333">          }</span>
+        });
+
+<span class="nc" id="L336">    expSetup.addComponent(numberContext);</span>
+
+<span class="nc" id="L338">    secondaryNames = new CustomVisibilityComponent(new TextField(&quot;Identifiers&quot;));</span>
+<span class="nc" id="L339">    ((TextField) secondaryNames.getInnerComponent()).setImmediate(true);</span>
+
+<span class="nc" id="L341">    secondaryNames.setVisible(false);</span>
+<span class="nc" id="L342">    Component secondaryContext = Utils.questionize(secondaryNames,</span>
+        &quot;Please provide a list of comma separated IDs.&quot;, &quot;Identifiers&quot;);
+
+<span class="nc" id="L345">    ((TextField) secondaryNames.getInnerComponent())</span>
+<span class="nc" id="L346">        .addTextChangeListener(new TextChangeListener() {</span>
+
+          @Override
+          public void textChange(TextChangeEvent event) {
+<span class="nc" id="L350">            description.setVisible(true);</span>
+<span class="nc" id="L351">          }</span>
+        });
+
+<span class="nc" id="L354">    expSetup.addComponent(secondaryContext);</span>
+
+<span class="nc" id="L356">    description = new CustomVisibilityComponent(new TextField(&quot;Description&quot;));</span>
+<span class="nc" id="L357">    ((TextField) description.getInnerComponent()).setImmediate(true);</span>
+<span class="nc" id="L358">    description.setVisible(false);</span>
+<span class="nc" id="L359">    Component descriptionContext = Utils.questionize(description,</span>
+        &quot;Please provide a general description for the new patient cases&quot;, &quot;Description&quot;);
+
+<span class="nc" id="L362">    ((TextField) description.getInnerComponent()).addTextChangeListener(new TextChangeListener() {</span>
+
+      @Override
+      public void textChange(TextChangeEvent event) {
+<span class="nc" id="L366">        optionLayout.setVisible(true);</span>
+<span class="nc" id="L367">        hlaLayout.setVisible(true);</span>
+<span class="nc" id="L368">        registerPatients.setVisible(true);</span>
+<span class="nc" id="L369">      }</span>
+    });
+<span class="nc" id="L371">    expSetup.addComponent(descriptionContext);</span>
+
+<span class="nc" id="L373">  }</span>
+
+  /**
+   * initializes the hla typing registration layout
+   * 
+   * @return
+   */
+  void hlaTypingLayout() {
+
+<span class="nc" id="L382">    hlaLayout.removeAllComponents();</span>
+<span class="nc" id="L383">    hlaLayout.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L384">    hlaLayout.setVisible(false);</span>
+
+<span class="nc" id="L386">    hlaLayout.setMargin(new MarginInfo(true, false, false, false));</span>
+<span class="nc" id="L387">    hlaLayout.setHeight(null);</span>
+<span class="nc" id="L388">    hlaLayout.setSpacing(true);</span>
+
+<span class="nc" id="L390">    hlaInfo = new CustomVisibilityComponent(new Label(&quot;HLA Typing&quot;));</span>
+<span class="nc" id="L391">    ((Label) hlaInfo.getInnerComponent()).setHeight(&quot;24px&quot;);</span>
+
+<span class="nc" id="L393">    Component hlaContext = Utils.questionize(hlaInfo,</span>
+        &quot;Register available HLA typing for this patient (one allele per line)&quot;, &quot;HLA Typing&quot;);
+
+<span class="nc" id="L396">    hlaLayout.addComponent(hlaContext);</span>
+
+<span class="nc" id="L398">    HorizontalLayout hlalayout = new HorizontalLayout();</span>
+
+<span class="nc" id="L400">    VerticalLayout hlaLayout1 = new VerticalLayout();</span>
+<span class="nc" id="L401">    hlaLayout1.addComponent(registerHLAI);</span>
+<span class="nc" id="L402">    hlaLayout1.addComponent(hlaItypes);</span>
+
+<span class="nc" id="L404">    VerticalLayout hlaLayout2 = new VerticalLayout();</span>
+<span class="nc" id="L405">    hlaLayout2.addComponent(registerHLAII);</span>
+<span class="nc" id="L406">    hlaLayout2.addComponent(hlaIItypes);</span>
+
+<span class="nc" id="L408">    hlalayout.addComponent(hlaLayout1);</span>
+<span class="nc" id="L409">    hlalayout.addComponent(hlaLayout2);</span>
+
+<span class="nc" id="L411">    hlalayout.setSpacing(true);</span>
+
+<span class="nc" id="L413">    typingMethod</span>
+<span class="nc" id="L414">        .addItems(datahandler.getOpenBisClient().getVocabCodesForVocab(&quot;Q_HLA_TYPING_METHODS&quot;));</span>
+
+<span class="nc" id="L416">    hlaLayout.addComponent(typingMethod);</span>
+<span class="nc" id="L417">    hlaLayout.addComponent(hlalayout);</span>
+<span class="nc" id="L418">  }</span>
+
+  public void callPatientRegistration() {
+
+<span class="nc" id="L422">    List&lt;String&gt; secondaryIDs = Arrays.asList(secondaryNames.getValue().split(&quot;\\s*,\\s*&quot;));</span>
+<span class="nc" id="L423">    Map&lt;String, List&lt;String&gt;&gt; hlaTyping = new HashMap&lt;String, List&lt;String&gt;&gt;();</span>
+
+<span class="nc" id="L425">    List&lt;String&gt; hlaTypingI = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L426">    List&lt;String&gt; hlaTypingII = new ArrayList&lt;String&gt;();</span>
+
+<span class="nc" id="L428">    boolean hlaIvalid = true;</span>
+<span class="nc" id="L429">    boolean hlaIIvalid = true;</span>
+
+<span class="nc bnc" id="L431" title="All 2 branches missed.">    if (registerHLAI.getValue()) {</span>
+<span class="nc bnc" id="L432" title="All 6 branches missed.">      if (hlaItypes.getValue() != null &amp; typingMethod.getValue() != null) {</span>
+<span class="nc" id="L433">        hlaTypingI.add(hlaItypes.getValue());</span>
+<span class="nc" id="L434">        hlaTypingI.add(typingMethod.getValue().toString());</span>
+<span class="nc" id="L435">        hlaTyping.put(&quot;MHC_CLASS_I&quot;, hlaTypingI);</span>
+      } else {
+<span class="nc" id="L437">        Utils.Notification(&quot;HLA Typing not fully specified for class I.&quot;,</span>
+            &quot;The HLA alleles or the method which has been used for typing have not been specified.&quot;,
+            &quot;error&quot;);
+<span class="nc" id="L440">        hlaIvalid = false;</span>
+      }
+    }
+
+<span class="nc bnc" id="L444" title="All 2 branches missed.">    if (registerHLAII.getValue()) {</span>
+
+<span class="nc bnc" id="L446" title="All 6 branches missed.">      if (hlaIItypes.getValue() != null &amp; typingMethod.getValue() != null) {</span>
+<span class="nc" id="L447">        hlaTypingII.add(hlaIItypes.getValue());</span>
+<span class="nc" id="L448">        hlaTypingII.add(typingMethod.getValue().toString());</span>
+<span class="nc" id="L449">        hlaTyping.put(&quot;MHC_CLASS_II&quot;, hlaTypingII);</span>
+      } else {
+<span class="nc" id="L451">        Utils.Notification(&quot;HLA Typing not fully specified for class II.&quot;,</span>
+            &quot;The HLA alleles or the method which has been used for typing have not been specified.&quot;,
+            &quot;error&quot;);
+<span class="nc" id="L454">        hlaIIvalid = false;</span>
+      }
+    }
+
+<span class="nc" id="L458">    Integer numberPatients = Integer.parseInt(numberOfPatients.getValue());</span>
+
+<span class="nc bnc" id="L460" title="All 2 branches missed.">    if (numberPatients.equals(secondaryIDs.size()) &amp; checkRegisteredSamplesTable() &amp; hlaIvalid</span>
+        &amp; hlaIIvalid) {
+<span class="nc" id="L462">      datahandler.registerNewPatients(numberPatients, secondaryIDs, sampleOptions,</span>
+<span class="nc" id="L463">          projects.getValue().toString(), description.getValue(), hlaTyping);</span>
+<span class="nc" id="L464">      Utils.Notification(&quot;Patients successfully registered.&quot;,</span>
+          &quot;The provided patient information has been written to the database successfully.&quot;,
+          &quot;success&quot;);
+      // sucess.show(Page.getCurrent());
+    } else {
+<span class="nc" id="L469">      Utils.Notification(&quot;Registration failed&quot;,</span>
+          &quot;Number of Patients and secondary IDs has to be the same and tissues have to be fully specified.&quot;,
+          &quot;error&quot;);
+    }
+
+<span class="nc" id="L474">  }</span>
+
+  public boolean checkRegisteredSamplesTable() {
+<span class="nc" id="L477">    boolean valid = true;</span>
+
+<span class="nc bnc" id="L479" title="All 2 branches missed.">    if (sampleOptions.size() == 0) {</span>
+<span class="nc" id="L480">      return false;</span>
+    }
+
+
+<span class="nc bnc" id="L484" title="All 2 branches missed.">    for (Iterator iter = sampleOptions.getItemIds().iterator(); iter.hasNext();) {</span>
+<span class="nc" id="L485">      boolean expsSpecified = false;</span>
+<span class="nc" id="L486">      boolean tissueSpecified = false;</span>
+<span class="nc" id="L487">      boolean instrumentSpecified = false;</span>
+
+<span class="nc" id="L489">      NewIvacSampleBean sampleBean = (NewIvacSampleBean) iter.next();</span>
+
+<span class="nc bnc" id="L491" title="All 4 branches missed.">      expsSpecified = ((sampleBean.getDeepSeq() == true) | (sampleBean.getDnaSeq() == true)</span>
+<span class="nc bnc" id="L492" title="All 2 branches missed.">          | (sampleBean.getRnaSeq() == true));</span>
+
+<span class="nc bnc" id="L494" title="All 2 branches missed.">      tissueSpecified = (!sampleBean.getTissue().equals(&quot;&quot;));</span>
+<span class="nc bnc" id="L495" title="All 2 branches missed.">      instrumentSpecified = (!sampleBean.getSeqDevice().equals(&quot;&quot;));</span>
+
+<span class="nc" id="L497">      valid = valid &amp; (expsSpecified &amp; tissueSpecified &amp; instrumentSpecified);</span>
+<span class="nc" id="L498">    }</span>
+
+<span class="nc" id="L500">    return valid;</span>
+  }
+
+  @Override
+  public void enter(ViewChangeEvent event) {
+<span class="nc" id="L505">    String currentValue = event.getParameters();</span>
+    // this.setContainerDataSource(datahandler.getProject(currentValue));
+<span class="nc" id="L507">    updateContent();</span>
+<span class="nc" id="L508">  }</span>
+
+  private void updateContent() {
+<span class="nc" id="L511">    header = &quot;Patient Registration&quot;;</span>
+<span class="nc" id="L512">    initExperimentalSetupLayout();</span>
+<span class="nc" id="L513">    initOptionLayout();</span>
+<span class="nc" id="L514">    hlaTypingLayout();</span>
+
+<span class="nc" id="L516">    registerPatients.setVisible(false);</span>
+<span class="nc" id="L517">    numberOfPatients.setVisible(false);</span>
+<span class="nc" id="L518">    secondaryNames.setVisible(false);</span>
+<span class="nc" id="L519">    description.setVisible(false);</span>
+<span class="nc" id="L520">    hlaLayout.setVisible(false);</span>
+<span class="nc" id="L521">    optionLayout.setVisible(false);</span>
+<span class="nc" id="L522">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

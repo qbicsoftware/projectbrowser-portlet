@@ -1,0 +1,718 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CustomVaadinPortlet.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.helpers</a> &gt; <span class="el_source">CustomVaadinPortlet.java</span></div><h1>CustomVaadinPortlet.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects.
+ * Copyright (C) &quot;2016”  Christopher Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.helpers;
+
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.portlet.PortletException;
+import javax.portlet.PortletSession;
+import javax.portlet.ResourceResponse;
+import javax.portlet.ResourceURL;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import life.qbic.projectbrowser.model.DatasetBean;
+import life.qbic.projectbrowser.model.ExperimentBean;
+import life.qbic.projectbrowser.model.ProjectBean;
+import life.qbic.projectbrowser.model.SampleBean;
+
+import ch.systemsx.cisd.openbis.dss.client.api.v1.DataSet;
+import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.FileInfoDssDTO;
+import ch.systemsx.cisd.openbis.plugin.query.shared.api.v1.dto.QueryTableModel;
+import life.qbic.openbis.openbisclient.OpenBisClient;
+
+import com.vaadin.server.DeploymentConfiguration;
+import com.vaadin.server.ServiceException;
+import com.vaadin.server.VaadinPortlet;
+import com.vaadin.server.VaadinPortletService;
+import com.vaadin.server.VaadinRequest;
+
+/**
+ * 
+ * copied from:
+ * https://github.com/jamesfalkner/vaadin-liferay-beacon-demo/blob/master/src/main/java/
+ * com/liferay/mavenizedbeacons/CustomVaadinPortlet.java This custom Vaadin portlet allows for
+ * serving Vaadin resources like theme or widgetset from its web context (instead of from ROOT).
+ * Usually it doesn't need any changes.
+ * 
+ */
+<span class="nc" id="L70">public class CustomVaadinPortlet extends VaadinPortlet {</span>
+  private static final long serialVersionUID = -13615405654173335L;
+
+  private class CustomVaadinPortletService extends VaadinPortletService {
+    /**
+     *
+     */
+    private static final long serialVersionUID = -6282242585931296999L;
+
+
+
+    public CustomVaadinPortletService(final VaadinPortlet portlet,
+<span class="nc" id="L82">        final DeploymentConfiguration config) throws ServiceException {</span>
+<span class="nc" id="L83">      super(portlet, config);</span>
+<span class="nc" id="L84">    }</span>
+
+
+    /**
+     * This method is used to determine the uri for Vaadin resources like theme or widgetset. It's
+     * overriden to point to this web application context, instead of ROOT context
+     */
+    @Override
+    public String getStaticFileLocation(final VaadinRequest request) {
+      // return super.getStaticFileLocation(request);
+      // self contained approach:
+<span class="nc" id="L95">      return request.getContextPath();</span>
+    }
+  }
+
+<span class="nc" id="L99">  private static final Logger LOG = LogManager.getLogger(CustomVaadinPortletService.class);</span>
+
+  public static final String RESOURCE_ID = &quot;mainPortletResourceId&quot;;
+  public static final String RESOURCE_ATTRIBUTE = &quot;resURL&quot;;
+
+  @Override
+  protected void doDispatch(javax.portlet.RenderRequest request,
+      javax.portlet.RenderResponse response) throws PortletException,
+      IOException {
+<span class="nc bnc" id="L108" title="All 2 branches missed.">    if (request.getPortletSession().getAttribute(RESOURCE_ATTRIBUTE,</span>
+        PortletSession.APPLICATION_SCOPE) == null) {
+<span class="nc" id="L110">      ResourceURL resURL = response.createResourceURL();</span>
+      // get Resource ID ?
+<span class="nc" id="L112">      resURL.setResourceID(RESOURCE_ID);</span>
+<span class="nc" id="L113">      request.getPortletSession().setAttribute(RESOURCE_ATTRIBUTE, resURL.toString(),</span>
+          PortletSession.APPLICATION_SCOPE);
+    }
+<span class="nc" id="L116">    super.doDispatch(request, response);</span>
+<span class="nc" id="L117">  }</span>
+
+  @Override
+  public void serveResource(javax.portlet.ResourceRequest request,
+      ResourceResponse response) throws PortletException, IOException {
+    // System.out.println(request.getResourceID());
+    // System.out.println(RESOURCE_ID);
+<span class="nc bnc" id="L124" title="All 2 branches missed.">    if (request.getResourceID().equals(&quot;openbisUnreachable&quot;)) {</span>
+<span class="nc" id="L125">      response.setContentType(&quot;text/plain&quot;);</span>
+<span class="nc" id="L126">      response.setProperty(ResourceResponse.HTTP_STATUS_CODE,</span>
+<span class="nc" id="L127">          String.valueOf(HttpServletResponse.SC_GATEWAY_TIMEOUT));</span>
+<span class="nc" id="L128">      response.getWriter().append(</span>
+          &quot;Internal Error.\nRetry later or contact your project manager.\n&quot; + &quot;Time: &quot;
+<span class="nc" id="L130">              + (new Date()).toString());</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">    } else if (request.getResourceID().equals(RESOURCE_ID)) {</span>
+<span class="nc" id="L132">      serveDownloadResource(request, response);</span>
+    } else {
+<span class="nc" id="L134">      super.serveResource(request, response);</span>
+    }
+<span class="nc" id="L136">  }</span>
+
+  //used!
+  public void serveDownloadResource(javax.portlet.ResourceRequest request,
+      ResourceResponse response) throws PortletException, IOException {
+<span class="nc" id="L141">    OpenBisClient openBisClient =</span>
+<span class="nc" id="L142">        (OpenBisClient) request.getPortletSession().getAttribute(&quot;openbisClient&quot;,</span>
+            PortletSession.APPLICATION_SCOPE);
+<span class="nc" id="L144">    String liferayUserId = request.getRemoteUser();</span>
+<span class="nc" id="L145">    LOG.info(String.format(&quot;Liferay User %s is downloading...&quot;, liferayUserId));</span>
+    // String attribute = null;
+    /*
+     * if(liferayUserId != null &amp;&amp; !liferayUserId.isEmpty()){ attribute = liferayUserId +
+     * &quot;_qbic_download&quot;; }else{ attribute = &quot;qbic_download&quot;; }
+     */
+<span class="nc" id="L151">    Object bean =</span>
+<span class="nc" id="L152">        (Object) request.getPortletSession().getAttribute(&quot;qbic_download&quot;,</span>
+            PortletSession.APPLICATION_SCOPE);
+<span class="nc bnc" id="L154" title="All 2 branches missed.">    if (bean instanceof ProjectBean) {</span>
+<span class="nc" id="L155">      serveProject2((ProjectBean) bean, new TarWriter(), response, openBisClient);</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">    } else if (bean instanceof ExperimentBean) {</span>
+<span class="nc" id="L157">      serveExperiment2((ExperimentBean) bean, new TarWriter(), response, openBisClient);</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">    } else if (bean instanceof SampleBean) {</span>
+<span class="nc" id="L159">      serveSample2((SampleBean) bean, new TarWriter(), response, openBisClient);</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">    } else if (bean instanceof Map&lt;?, ?&gt;) {</span>
+<span class="nc" id="L161">      HashMap&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entry = null;</span>
+      try {
+<span class="nc" id="L163">        entry = (HashMap&lt;String, SimpleEntry&lt;String, Long&gt;&gt;) bean;</span>
+<span class="nc" id="L164">      } catch (Exception e) {</span>
+<span class="nc" id="L165">        LOG.error(&quot;portlet session attribute 'qbic_download' contains wrong entry set&quot;,</span>
+<span class="nc" id="L166">            e.getStackTrace());</span>
+<span class="nc" id="L167">        response.setContentType(&quot;text/javascript&quot;);</span>
+<span class="nc" id="L168">        response.setProperty(ResourceResponse.HTTP_STATUS_CODE,</span>
+<span class="nc" id="L169">            String.valueOf(HttpServletResponse.SC_BAD_REQUEST));</span>
+<span class="nc" id="L170">        response.getWriter().append(&quot;Please select at least one dataset for download&quot;);</span>
+<span class="nc" id="L171">        return;</span>
+<span class="nc" id="L172">      }</span>
+<span class="nc" id="L173">      serveEntries(entry, new TarWriter(), response, openBisClient);</span>
+
+<span class="nc" id="L175">    } else {</span>
+<span class="nc" id="L176">      response.setContentType(&quot;text/javascript&quot;);</span>
+<span class="nc" id="L177">      response.setProperty(ResourceResponse.HTTP_STATUS_CODE,</span>
+<span class="nc" id="L178">          String.valueOf(HttpServletResponse.SC_BAD_REQUEST));</span>
+<span class="nc" id="L179">      response.getWriter().append(&quot;Please select at least one dataset for download&quot;);</span>
+<span class="nc" id="L180">      return;</span>
+    }
+
+<span class="nc" id="L183">  }</span>
+
+  /**
+   * 
+   * Note: the provided stream will be closed.
+   * 
+   * @param bean bean containing datasets.
+   * @param writer writes
+   * @param response writer writes to its outputstream
+   * @param openbisClient
+   */
+  private void serveEntries(HashMap&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entries, TarWriter writer,
+      ResourceResponse response, OpenBisClient openbisClient) {
+
+<span class="nc bnc" id="L197" title="All 2 branches missed.">    if (entries.keySet().size() &gt; 1) {</span>
+
+<span class="nc" id="L199">      String timestamp = new SimpleDateFormat(&quot;yyyyMMddhhmm&quot;).format(new Date());</span>
+
+<span class="nc" id="L201">      String filename = &quot;qbicdatasets&quot; + timestamp + &quot;.tar&quot;;</span>
+
+      // response.setContentType(writer.getContentType());
+<span class="nc" id="L204">      StringBuilder sb = new StringBuilder(&quot;attachement; filename=\&quot;&quot;);</span>
+<span class="nc" id="L205">      sb.append(filename);</span>
+<span class="nc" id="L206">      sb.append(&quot;\&quot;&quot;);</span>
+<span class="nc" id="L207">      response.setProperty(&quot;Content-Disposition&quot;, sb.toString());</span>
+
+<span class="nc" id="L209">      long tarFileLength = writer.computeTarLength2(entries);</span>
+
+<span class="nc" id="L211">      LOG.debug(&quot;tar file length: &quot;+String.valueOf(tarFileLength));</span>
+
+      // Integer fileSize = (int) (long) tarFileLength;
+
+      // For some reason setContentLength does not work
+<span class="nc" id="L216">      response.setProperty(&quot;Content-Length&quot;, String.valueOf(tarFileLength));</span>
+
+      // Seems to work with Liferay 6.2, when using setProperty some tarred files are corrupt,
+      // unexpected end of file
+      // Didn't work with Liferay 6.2 either
+      // However deactivating GzipFilter by setting
+      // com.liferay.portal.servlet.filters.gzip.GZipFilter=false seems to fix it
+      // Probably the Content Length can't be set in the header of this Filter
+      // response.setContentLength(fileSize);
+
+
+      try {
+<span class="nc" id="L228">        writer.setOutputStream(response.getPortletOutputStream());</span>
+
+<span class="nc" id="L230">      } catch (IOException e) {</span>
+        // TODO Auto-generated catch block
+<span class="nc" id="L232">        e.printStackTrace();</span>
+<span class="nc" id="L233">      }</span>
+
+<span class="nc" id="L235">      Set&lt;Entry&lt;String, SimpleEntry&lt;String, Long&gt;&gt;&gt; entrySet = entries.entrySet();</span>
+<span class="nc" id="L236">      Iterator&lt;Entry&lt;String, SimpleEntry&lt;String, Long&gt;&gt;&gt; it = entrySet.iterator();</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">      while (it.hasNext()) {</span>
+<span class="nc" id="L238">        Entry&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entry = it.next();</span>
+<span class="nc" id="L239">        String entryKey = entry.getKey().replaceFirst(entry.getValue().getKey() + &quot;/&quot;, &quot;&quot;);</span>
+<span class="nc" id="L240">        String[] splittedFilePath = entryKey.split(&quot;/&quot;);</span>
+
+<span class="nc bnc" id="L242" title="All 4 branches missed.">        if ((splittedFilePath.length == 0) || (splittedFilePath == null)) {</span>
+          // writer.writeEntry(entry.getValue().getKey() + &quot;/&quot; + entry.getKey(),
+<span class="nc" id="L244">          writer.writeEntry(entry.getKey(), openbisClient.getDatasetStream(entry.getValue()</span>
+<span class="nc" id="L245">              .getKey()), entry.getValue().getValue());</span>
+        } else {
+          // writer.writeEntry(entry.getValue().getKey() + &quot;/&quot; + entry.getKey(), openbisClient
+<span class="nc" id="L248">          writer.writeEntry(splittedFilePath[splittedFilePath.length - 1], openbisClient</span>
+<span class="nc" id="L249">              .getDatasetStream(entry.getValue().getKey(), entryKey), entry.getValue().getValue());</span>
+        }
+<span class="nc" id="L251">      }</span>
+<span class="nc" id="L252">      writer.closeStream();</span>
+
+<span class="nc" id="L254">    } else {</span>
+<span class="nc" id="L255">      Set&lt;Entry&lt;String, SimpleEntry&lt;String, Long&gt;&gt;&gt; entrySet = entries.entrySet();</span>
+<span class="nc" id="L256">      Iterator&lt;Entry&lt;String, SimpleEntry&lt;String, Long&gt;&gt;&gt; it = entrySet.iterator();</span>
+
+      // response.setContentType(writer.getContentType());
+
+<span class="nc bnc" id="L260" title="All 2 branches missed.">      while (it.hasNext()) {</span>
+<span class="nc" id="L261">        Entry&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entry = it.next();</span>
+<span class="nc" id="L262">        String entryKey = entry.getKey().replaceFirst(entry.getValue().getKey() + &quot;/&quot;, &quot;&quot;);</span>
+<span class="nc" id="L263">        String[] splittedFilePath = entryKey.split(&quot;/&quot;);</span>
+
+<span class="nc" id="L265">        InputStream datasetStream =</span>
+<span class="nc" id="L266">            openbisClient.getDatasetStream(entry.getValue().getKey(), entryKey);</span>
+
+<span class="nc" id="L268">        StringBuilder sb = new StringBuilder(&quot;attachement; filename=\&quot;&quot;);</span>
+<span class="nc" id="L269">        sb.append(splittedFilePath[splittedFilePath.length - 1]);</span>
+<span class="nc" id="L270">        sb.append(&quot;\&quot;&quot;);</span>
+<span class="nc" id="L271">        response.setProperty(&quot;Content-Disposition&quot;, sb.toString());</span>
+<span class="nc" id="L272">        response.setProperty(&quot;Content-Type&quot;,</span>
+<span class="nc" id="L273">            getPortletContext().getMimeType((splittedFilePath[splittedFilePath.length - 1])));</span>
+        // Integer fileSize = (int) (long) entry.getValue().getValue();
+
+<span class="nc" id="L276">        response.setProperty(&quot;Content-Length&quot;, String.valueOf(entry.getValue().getValue()));</span>
+
+        // response.setContentLength(fileSize);
+
+<span class="nc" id="L280">        byte[] buffer = new byte[32768];</span>
+        int bytesRead;
+        try {
+<span class="nc bnc" id="L283" title="All 2 branches missed.">          while ((bytesRead = datasetStream.read(buffer)) != -1) {</span>
+<span class="nc" id="L284">            response.getPortletOutputStream().write(buffer, 0, bytesRead);</span>
+          }
+
+<span class="nc" id="L287">        } catch (IOException e) {</span>
+          // TODO Auto-generated catch block
+<span class="nc" id="L289">          e.printStackTrace();</span>
+<span class="nc" id="L290">        }</span>
+
+<span class="nc" id="L292">      }</span>
+    }
+<span class="nc" id="L294">  }</span>
+
+  void serveProject2(ProjectBean bean, TarWriter writer, ResourceResponse response,
+      OpenBisClient openbisClient) {
+<span class="nc" id="L298">    long startTime = System.nanoTime();</span>
+
+<span class="nc" id="L300">    List&lt;DataSet&gt; datasets =</span>
+<span class="nc" id="L301">        openbisClient.getClientDatasetsOfProjectByIdentifierWithSearchCriteria(bean.getId());</span>
+<span class="nc" id="L302">    long endTime = System.nanoTime();</span>
+<span class="nc" id="L303">    LOG.debug(String.format(</span>
+        &quot;getClientDatasetsOfProjectByIdentifierWithSearchCriteria took %f s&quot;,
+<span class="nc" id="L305">        ((endTime - startTime) / 1000000000.0)));</span>
+<span class="nc" id="L306">    startTime = System.nanoTime();</span>
+<span class="nc" id="L307">    List&lt;String&gt; codes = new ArrayList&lt;String&gt;();</span>
+<span class="nc bnc" id="L308" title="All 2 branches missed.">    for (DataSet dataset : datasets) {</span>
+<span class="nc" id="L309">      codes.add(dataset.getCode());</span>
+<span class="nc" id="L310">    }</span>
+<span class="nc" id="L311">    Map&lt;String, List&lt;String&gt;&gt; params = new HashMap&lt;String, List&lt;String&gt;&gt;();</span>
+<span class="nc" id="L312">    params.put(&quot;codes&quot;, codes);</span>
+<span class="nc" id="L313">    QueryTableModel res = openbisClient.queryFileInformation(params);</span>
+<span class="nc" id="L314">    endTime = System.nanoTime();</span>
+<span class="nc" id="L315">    LOG.debug(String.format(&quot;getAggregationService took %f s&quot;,</span>
+<span class="nc" id="L316">        ((endTime - startTime) / 1000000000.0)));</span>
+<span class="nc" id="L317">    download(res, writer, response, openbisClient, bean.getCode());</span>
+<span class="nc" id="L318">  }</span>
+
+  void serveExperiment2(ExperimentBean bean, TarWriter writer, ResourceResponse response,
+      OpenBisClient openbisClient) {
+<span class="nc" id="L322">    long startTime = System.nanoTime();</span>
+
+<span class="nc" id="L324">    List&lt;ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet&gt; datasets =</span>
+<span class="nc" id="L325">        openbisClient.getDataSetsOfExperimentByCodeWithSearchCriteria(bean.getCode());</span>
+<span class="nc" id="L326">    long endTime = System.nanoTime();</span>
+<span class="nc" id="L327">    LOG.debug(String.format(&quot;getDataSetsOfExperimentByCodeWithSearchCriteria took %f s&quot;,</span>
+<span class="nc" id="L328">        ((endTime - startTime) / 1000000000.0)));</span>
+
+<span class="nc" id="L330">    startTime = System.nanoTime();</span>
+<span class="nc" id="L331">    List&lt;String&gt; codes = new ArrayList&lt;String&gt;();</span>
+<span class="nc bnc" id="L332" title="All 2 branches missed.">    for (ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet dataset : datasets) {</span>
+<span class="nc" id="L333">      codes.add(dataset.getCode());</span>
+<span class="nc" id="L334">    }</span>
+<span class="nc" id="L335">    Map&lt;String, List&lt;String&gt;&gt; params = new HashMap&lt;String, List&lt;String&gt;&gt;();</span>
+<span class="nc" id="L336">    params.put(&quot;codes&quot;, codes);</span>
+<span class="nc" id="L337">    QueryTableModel res = openbisClient.queryFileInformation(params);</span>
+<span class="nc" id="L338">    endTime = System.nanoTime();</span>
+<span class="nc" id="L339">    LOG.debug(String.format(&quot;getAggregationService took %f s&quot;,</span>
+<span class="nc" id="L340">        ((endTime - startTime) / 1000000000.0)));</span>
+
+<span class="nc" id="L342">    download(res, writer, response, openbisClient, bean.getCode());</span>
+<span class="nc" id="L343">  }</span>
+
+  void serveSample2(SampleBean bean, TarWriter writer, ResourceResponse response,
+      OpenBisClient openbisClient) {
+<span class="nc" id="L347">    long startTime = System.nanoTime();</span>
+
+<span class="nc" id="L349">    List&lt;DataSet&gt; datasets = openbisClient.getDataSetsOfSampleByIdentifier(bean.getId());</span>
+<span class="nc" id="L350">    long endTime = System.nanoTime();</span>
+<span class="nc" id="L351">    LOG.debug(String.format(&quot;getDataSetsOfProjectByIdentifier took %f s&quot;,</span>
+<span class="nc" id="L352">        ((endTime - startTime) / 1000000000.0)));</span>
+<span class="nc" id="L353">    startTime = System.nanoTime();</span>
+<span class="nc" id="L354">    List&lt;String&gt; codes = new ArrayList&lt;String&gt;();</span>
+<span class="nc bnc" id="L355" title="All 2 branches missed.">    for (DataSet dataset : datasets) {</span>
+<span class="nc" id="L356">      codes.add(dataset.getCode());</span>
+<span class="nc" id="L357">    }</span>
+<span class="nc" id="L358">    Map&lt;String, List&lt;String&gt;&gt; params = new HashMap&lt;String, List&lt;String&gt;&gt;();</span>
+<span class="nc" id="L359">    params.put(&quot;codes&quot;, codes);</span>
+<span class="nc" id="L360">    QueryTableModel res = openbisClient.queryFileInformation(params);</span>
+<span class="nc" id="L361">    endTime = System.nanoTime();</span>
+<span class="nc" id="L362">    LOG.debug(String.format(&quot;getAggregationService took %f s&quot;,</span>
+<span class="nc" id="L363">        ((endTime - startTime) / 1000000000.0)));</span>
+<span class="nc" id="L364">    download(res, writer, response, openbisClient, bean.getCode());</span>
+<span class="nc" id="L365">  }</span>
+
+
+
+  void download(QueryTableModel res, TarWriter writer, ResourceResponse response,
+      OpenBisClient openbisClient, String openbisCode) {
+<span class="nc" id="L371">    Map&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entries =</span>
+<span class="nc" id="L372">        convertQueryTabelModelToEntries(res);</span>
+<span class="nc" id="L373">    String filename = openbisCode + &quot;.tar&quot;;</span>
+<span class="nc" id="L374">    writeToClient(response, writer, filename, entries, openbisClient, openbisCode);</span>
+<span class="nc" id="L375">  }</span>
+
+
+  void writeToClient(ResourceResponse response, TarWriter writer, String filename,
+      Map&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entries, OpenBisClient openbisClient,
+      String openbisCode) {
+<span class="nc" id="L381">    response.setContentType(writer.getContentType());</span>
+<span class="nc" id="L382">    StringBuilder sb = new StringBuilder(&quot;attachement; filename=\&quot;&quot;);</span>
+<span class="nc" id="L383">    sb.append(filename);</span>
+<span class="nc" id="L384">    sb.append(&quot;\&quot;&quot;);</span>
+<span class="nc" id="L385">    response.setProperty(&quot;Content-Disposition&quot;, sb.toString());</span>
+
+<span class="nc" id="L387">    long tarFileLength = writer.computeTarLength2(entries);</span>
+<span class="nc" id="L388">    LOG.debug(String.valueOf(tarFileLength));</span>
+    // response.setContentLength((int) tarFileLength);
+    // For some reason setContentLength did not work as expected (liferay 6.1.2)
+<span class="nc" id="L391">    response.setProperty(&quot;Content-Length&quot;, String.valueOf(tarFileLength));</span>
+    try {
+<span class="nc" id="L393">      writer.setOutputStream(response.getPortletOutputStream());</span>
+<span class="nc" id="L394">    } catch (IOException e) {</span>
+      // TODO Auto-generated catch block
+<span class="nc" id="L396">      e.printStackTrace();</span>
+<span class="nc" id="L397">    }</span>
+
+<span class="nc" id="L399">    Set&lt;Entry&lt;String, SimpleEntry&lt;String, Long&gt;&gt;&gt; entrySet = entries.entrySet();</span>
+<span class="nc" id="L400">    Iterator&lt;Entry&lt;String, SimpleEntry&lt;String, Long&gt;&gt;&gt; it = entrySet.iterator();</span>
+<span class="nc bnc" id="L401" title="All 2 branches missed.">    while (it.hasNext()) {</span>
+<span class="nc" id="L402">      Entry&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entry = it.next();</span>
+<span class="nc" id="L403">      String entryKey = entry.getKey().replaceFirst(entry.getValue().getKey() + &quot;/&quot;, &quot;&quot;);</span>
+<span class="nc" id="L404">      String[] splittedFilePath = entryKey.split(&quot;/&quot;);</span>
+
+<span class="nc bnc" id="L406" title="All 4 branches missed.">      if ((splittedFilePath.length == 0) || (splittedFilePath == null)) {</span>
+<span class="nc" id="L407">        writer.writeEntry(openbisCode + &quot;/&quot; + entry.getKey(),</span>
+<span class="nc" id="L408">            openbisClient.getDatasetStream(entry.getValue().getKey()), entry.getValue().getValue());</span>
+      } else {
+<span class="nc" id="L410">        writer.writeEntry(openbisCode + &quot;/&quot; + entry.getKey(), openbisClient.getDatasetStream(entry</span>
+<span class="nc" id="L411">            .getValue().getKey(), entryKey), entry.getValue().getValue());</span>
+      }
+<span class="nc" id="L413">    }</span>
+<span class="nc" id="L414">    writer.closeStream();</span>
+<span class="nc" id="L415">  }</span>
+
+
+  private Map&lt;String, SimpleEntry&lt;String, Long&gt;&gt; convertQueryTabelModelToEntries(QueryTableModel res) {
+<span class="nc" id="L419">    Map&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entries =</span>
+        new HashMap&lt;String, SimpleEntry&lt;String, Long&gt;&gt;();
+<span class="nc bnc" id="L421" title="All 2 branches missed.">    for (Serializable[] ss : res.getRows()) {</span>
+<span class="nc" id="L422">      String filePath = (String) ss[1];</span>
+<span class="nc bnc" id="L423" title="All 2 branches missed.">      if (filePath.startsWith(&quot;original&quot;)) {</span>
+<span class="nc" id="L424">        filePath = filePath.substring(9);</span>
+      }
+<span class="nc" id="L426">      entries.put(filePath, new SimpleEntry&lt;String, Long&gt;((String) ss[0]/* code */,</span>
+          (Long) ss[3] /* filelentgth */));
+<span class="nc" id="L428">    }</span>
+<span class="nc" id="L429">    return entries;</span>
+  }
+
+  /**
+   * 
+   * Note: the provided stream will be closed.
+   * 
+   * @param bean bean containing datasets.
+   * @param writer writes
+   * @param response writer writes to its outputstream
+   * @param openbisClient
+   */
+  private void serveProject(ProjectBean bean, TarWriter writer, ResourceResponse response,
+      OpenBisClient openbisClient) {
+<span class="nc" id="L443">    String filename = bean.getCode() + &quot;.tar&quot;;</span>
+
+<span class="nc" id="L445">    response.setContentType(writer.getContentType());</span>
+<span class="nc" id="L446">    StringBuilder sb = new StringBuilder(&quot;attachement; filename=\&quot;&quot;);</span>
+<span class="nc" id="L447">    sb.append(filename);</span>
+<span class="nc" id="L448">    sb.append(&quot;\&quot;&quot;);</span>
+<span class="nc" id="L449">    response.setProperty(&quot;Content-Disposition&quot;, sb.toString());</span>
+<span class="nc" id="L450">    Map&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entries = convertBeanToEntries(bean);</span>
+
+<span class="nc" id="L452">    long tarFileLength = writer.computeTarLength2(entries);</span>
+    // response.setContentLength((int) tarFileLength);
+    // For some reason setContentLength does not work
+<span class="nc" id="L455">    response.setProperty(&quot;Content-Length&quot;, String.valueOf(tarFileLength));</span>
+    try {
+<span class="nc" id="L457">      writer.setOutputStream(response.getPortletOutputStream());</span>
+<span class="nc" id="L458">    } catch (IOException e) {</span>
+      // TODO Auto-generated catch block
+<span class="nc" id="L460">      e.printStackTrace();</span>
+<span class="nc" id="L461">    }</span>
+
+<span class="nc" id="L463">    Set&lt;Entry&lt;String, SimpleEntry&lt;String, Long&gt;&gt;&gt; entrySet = entries.entrySet();</span>
+<span class="nc" id="L464">    Iterator&lt;Entry&lt;String, SimpleEntry&lt;String, Long&gt;&gt;&gt; it = entrySet.iterator();</span>
+<span class="nc bnc" id="L465" title="All 2 branches missed.">    while (it.hasNext()) {</span>
+<span class="nc" id="L466">      Entry&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entry = it.next();</span>
+<span class="nc" id="L467">      String entryKey = entry.getKey().replaceFirst(entry.getValue().getKey() + &quot;/&quot;, &quot;&quot;);</span>
+<span class="nc" id="L468">      String[] splittedFilePath = entryKey.split(&quot;/&quot;);</span>
+
+<span class="nc bnc" id="L470" title="All 4 branches missed.">      if ((splittedFilePath.length == 0) || (splittedFilePath == null)) {</span>
+<span class="nc" id="L471">        writer.writeEntry(bean.getCode() + &quot;/&quot; + entry.getKey(),</span>
+<span class="nc" id="L472">            openbisClient.getDatasetStream(entry.getValue().getKey()), entry.getValue().getValue());</span>
+      } else {
+<span class="nc" id="L474">        writer.writeEntry(bean.getCode() + &quot;/&quot; + entry.getKey(), openbisClient.getDatasetStream(</span>
+<span class="nc" id="L475">            entry.getValue().getKey(), entryKey), entry.getValue().getValue());</span>
+      }
+<span class="nc" id="L477">    }</span>
+<span class="nc" id="L478">    writer.closeStream();</span>
+<span class="nc" id="L479">  }</span>
+
+  /**
+   * 
+   * Note: the provided stream will be closed.
+   * 
+   * @param bean bean containing datasets.
+   * @param writer writes
+   * @param response writer writes to its outputstream
+   * @param openbisClient
+   */
+  private void serveExperiment(ExperimentBean bean, TarWriter writer, ResourceResponse response,
+      OpenBisClient openbisClient) {
+<span class="nc" id="L492">    String filename = bean.getCode() + &quot;.tar&quot;;</span>
+
+<span class="nc" id="L494">    response.setContentType(writer.getContentType());</span>
+<span class="nc" id="L495">    StringBuilder sb = new StringBuilder(&quot;attachement; filename=\&quot;&quot;);</span>
+<span class="nc" id="L496">    sb.append(filename);</span>
+<span class="nc" id="L497">    sb.append(&quot;\&quot;&quot;);</span>
+<span class="nc" id="L498">    response.setProperty(&quot;Content-Disposition&quot;, sb.toString());</span>
+<span class="nc" id="L499">    Map&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entries = convertBeanToEntries(bean);</span>
+<span class="nc bnc" id="L500" title="All 2 branches missed.">    if (!entries.isEmpty()) {</span>
+<span class="nc" id="L501">      LOG.debug(entries.entrySet().iterator().next().getKey());</span>
+    }
+<span class="nc" id="L503">    long tarFileLength = writer.computeTarLength2(entries);</span>
+    // response.setContentLength((int) tarFileLength);
+    // For some reason setContentLength does not work
+<span class="nc" id="L506">    response.setProperty(&quot;Content-Length&quot;, String.valueOf(tarFileLength));</span>
+    try {
+<span class="nc" id="L508">      writer.setOutputStream(response.getPortletOutputStream());</span>
+<span class="nc" id="L509">    } catch (IOException e) {</span>
+      // TODO Auto-generated catch block
+<span class="nc" id="L511">      e.printStackTrace();</span>
+<span class="nc" id="L512">    }</span>
+
+<span class="nc" id="L514">    Set&lt;Entry&lt;String, SimpleEntry&lt;String, Long&gt;&gt;&gt; entrySet = entries.entrySet();</span>
+<span class="nc" id="L515">    Iterator&lt;Entry&lt;String, SimpleEntry&lt;String, Long&gt;&gt;&gt; it = entrySet.iterator();</span>
+<span class="nc bnc" id="L516" title="All 2 branches missed.">    while (it.hasNext()) {</span>
+<span class="nc" id="L517">      Entry&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entry = it.next();</span>
+<span class="nc" id="L518">      String entryKey = entry.getKey().replaceFirst(entry.getValue().getKey() + &quot;/&quot;, &quot;&quot;);</span>
+<span class="nc" id="L519">      String[] splittedFilePath = entryKey.split(&quot;/&quot;);</span>
+
+<span class="nc bnc" id="L521" title="All 4 branches missed.">      if ((splittedFilePath.length == 0) || (splittedFilePath == null)) {</span>
+<span class="nc" id="L522">        writer.writeEntry(bean.getCode() + &quot;/&quot; + entry.getKey(),</span>
+<span class="nc" id="L523">            openbisClient.getDatasetStream(entry.getValue().getKey()), entry.getValue().getValue());</span>
+      } else {
+<span class="nc" id="L525">        writer.writeEntry(bean.getCode() + &quot;/&quot; + entry.getKey(), openbisClient.getDatasetStream(</span>
+<span class="nc" id="L526">            entry.getValue().getKey(), entryKey), entry.getValue().getValue());</span>
+      }
+<span class="nc" id="L528">    }</span>
+<span class="nc" id="L529">    writer.closeStream();</span>
+<span class="nc" id="L530">  }</span>
+
+
+
+  /**
+   * 
+   * Note: the provided stream will be closed.
+   * 
+   * @param bean bean containing datasets.
+   * @param writer writes
+   * @param response writer writes to its outputstream
+   * @param openbisClient
+   */
+  private void serveSample(SampleBean bean, TarWriter writer, ResourceResponse response,
+      OpenBisClient openbisClient) {
+<span class="nc" id="L545">    String filename = bean.getCode() + &quot;.tar&quot;;</span>
+
+<span class="nc" id="L547">    response.setContentType(writer.getContentType());</span>
+<span class="nc" id="L548">    StringBuilder sb = new StringBuilder(&quot;attachement; filename=\&quot;&quot;);</span>
+<span class="nc" id="L549">    sb.append(filename);</span>
+<span class="nc" id="L550">    sb.append(&quot;\&quot;&quot;);</span>
+<span class="nc" id="L551">    response.setProperty(&quot;Content-Disposition&quot;, sb.toString());</span>
+<span class="nc" id="L552">    Map&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entries = convertBeanToEntries(bean);</span>
+
+<span class="nc" id="L554">    long tarFileLength = writer.computeTarLength2(entries);</span>
+    // response.setContentLength((int) tarFileLength);
+    // For some reason setContentLength does not work
+<span class="nc" id="L557">    response.setProperty(&quot;Content-Length&quot;, String.valueOf(tarFileLength));</span>
+    try {
+<span class="nc" id="L559">      writer.setOutputStream(response.getPortletOutputStream());</span>
+<span class="nc" id="L560">    } catch (IOException e) {</span>
+      // TODO Auto-generated catch block
+<span class="nc" id="L562">      e.printStackTrace();</span>
+<span class="nc" id="L563">    }</span>
+
+<span class="nc" id="L565">    Set&lt;Entry&lt;String, SimpleEntry&lt;String, Long&gt;&gt;&gt; entrySet = entries.entrySet();</span>
+<span class="nc" id="L566">    Iterator&lt;Entry&lt;String, SimpleEntry&lt;String, Long&gt;&gt;&gt; it = entrySet.iterator();</span>
+<span class="nc bnc" id="L567" title="All 2 branches missed.">    while (it.hasNext()) {</span>
+<span class="nc" id="L568">      Entry&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entry = it.next();</span>
+<span class="nc" id="L569">      String entryKey = entry.getKey().replaceFirst(entry.getValue().getKey() + &quot;/&quot;, &quot;&quot;);</span>
+<span class="nc" id="L570">      String[] splittedFilePath = entryKey.split(&quot;/&quot;);</span>
+
+<span class="nc bnc" id="L572" title="All 4 branches missed.">      if ((splittedFilePath.length == 0) || (splittedFilePath == null)) {</span>
+<span class="nc" id="L573">        writer.writeEntry(bean.getCode() + &quot;/&quot; + entry.getKey(),</span>
+<span class="nc" id="L574">            openbisClient.getDatasetStream(entry.getValue().getKey()), entry.getValue().getValue());</span>
+      } else {
+<span class="nc" id="L576">        writer.writeEntry(bean.getCode() + &quot;/&quot; + entry.getKey(), openbisClient.getDatasetStream(</span>
+<span class="nc" id="L577">            entry.getValue().getKey(), entryKey), entry.getValue().getValue());</span>
+      }
+<span class="nc" id="L579">    }</span>
+<span class="nc" id="L580">    writer.closeStream();</span>
+<span class="nc" id="L581">  }</span>
+
+
+  Map&lt;String, SimpleEntry&lt;String, Long&gt;&gt; convertDatasetsToEntries(List&lt;DataSet&gt; datasets) {
+<span class="nc" id="L585">    Map&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entries =</span>
+<span class="nc" id="L586">        new HashMap&lt;String, SimpleEntry&lt;String, Long&gt;&gt;((int) (datasets.size() * 1.3));</span>
+<span class="nc bnc" id="L587" title="All 2 branches missed.">    for (DataSet dataset : datasets) {</span>
+
+<span class="nc" id="L589">      FileInfoDssDTO[] filelist = dataset.listFiles(&quot;original&quot;, true);</span>
+<span class="nc" id="L590">      String download_link = filelist[0].getPathInDataSet();</span>
+      /*
+       * if (filelist[0].isDirectory()) { System.out.println(&quot; is a directory&quot;); FileInfoDssDTO[]
+       * subList = dataset.listFiles(download_link, false); System.out.println(subList.length);
+       * addDatasetFiles(subList, dataset, entries); }else{ System.out.println(&quot;is a file&quot;);
+       * String[] splitted_link = download_link.split(&quot;/&quot;); String fileName =
+       * splitted_link[splitted_link.length - 1]; entries.put(fileName, new
+       * AbstractMap.SimpleEntry&lt;String, Long&gt;(dataset.getCode(), filelist[0].getFileSize() )); }
+       */
+<span class="nc" id="L599">    }</span>
+<span class="nc" id="L600">    return entries;</span>
+
+  }
+
+  Map&lt;String, SimpleEntry&lt;String, Long&gt;&gt; addDatasetFiles(FileInfoDssDTO[] fileList,
+      DataSet dataset, Map&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entries) {
+<span class="nc bnc" id="L606" title="All 2 branches missed.">    for (FileInfoDssDTO dto : fileList) {</span>
+<span class="nc bnc" id="L607" title="All 2 branches missed.">      if (dto.isDirectory()) {</span>
+<span class="nc" id="L608">        String folderPath = dto.getPathInDataSet();</span>
+<span class="nc" id="L609">        FileInfoDssDTO[] subList = dataset.listFiles(folderPath, false);</span>
+<span class="nc" id="L610">        addDatasetFiles(subList, dataset, entries);</span>
+<span class="nc" id="L611">      } else {</span>
+<span class="nc" id="L612">        String download_link = dto.getPathInDataSet();</span>
+<span class="nc" id="L613">        String[] splitted_link = download_link.split(&quot;/&quot;);</span>
+<span class="nc" id="L614">        String fileName = splitted_link[splitted_link.length - 1];</span>
+<span class="nc" id="L615">        entries.put(fileName,</span>
+<span class="nc" id="L616">            new SimpleEntry&lt;String, Long&gt;(dataset.getCode(), dto.getFileSize()));</span>
+      }
+    }
+<span class="nc" id="L619">    return entries;</span>
+  }
+
+  /**
+   * if it is one of the openbis beans, then it will be converted into an entry. Used to prepare a
+   * bean for download via a writer, e.g. a {@link TarWriter}
+   * 
+   * @param bean
+   * @return
+   */
+  Map&lt;String, SimpleEntry&lt;String, Long&gt;&gt; convertBeanToEntries(Object bean) {
+<span class="nc" id="L630">    Map&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entries =</span>
+        new HashMap&lt;String, SimpleEntry&lt;String, Long&gt;&gt;();
+<span class="nc bnc" id="L632" title="All 2 branches missed.">    if (bean instanceof ProjectBean) {</span>
+<span class="nc" id="L633">      ProjectBean projectBean = (ProjectBean) bean;</span>
+<span class="nc bnc" id="L634" title="All 2 branches missed.">      for (ExperimentBean eb : projectBean.getExperiments().getItemIds()) {</span>
+<span class="nc bnc" id="L635" title="All 2 branches missed.">        for (SampleBean sb : eb.getSamples().getItemIds()) {</span>
+<span class="nc bnc" id="L636" title="All 2 branches missed.">          for (DatasetBean db : sb.getDatasets().getItemIds()) {</span>
+<span class="nc" id="L637">            addEntry(db, entries);</span>
+<span class="nc" id="L638">          }</span>
+<span class="nc" id="L639">        }</span>
+<span class="nc" id="L640">      }</span>
+<span class="nc bnc" id="L641" title="All 2 branches missed.">    } else if (bean instanceof ExperimentBean) {</span>
+<span class="nc" id="L642">      ExperimentBean experimentBean = (ExperimentBean) bean;</span>
+<span class="nc bnc" id="L643" title="All 2 branches missed.">      for (SampleBean sb : experimentBean.getSamples().getItemIds()) {</span>
+<span class="nc bnc" id="L644" title="All 2 branches missed.">        for (DatasetBean db : sb.getDatasets().getItemIds()) {</span>
+<span class="nc" id="L645">          addEntry(db, entries);</span>
+<span class="nc" id="L646">        }</span>
+<span class="nc" id="L647">      }</span>
+<span class="nc" id="L648">    }</span>
+
+<span class="nc bnc" id="L650" title="All 2 branches missed.">    else if (bean instanceof SampleBean) {</span>
+<span class="nc" id="L651">      SampleBean sampleBean = (SampleBean) bean;</span>
+<span class="nc bnc" id="L652" title="All 2 branches missed.">      for (DatasetBean db : sampleBean.getDatasets().getItemIds()) {</span>
+<span class="nc" id="L653">        addEntry(db, entries);</span>
+<span class="nc" id="L654">      }</span>
+    }
+
+<span class="nc" id="L657">    return entries;</span>
+  }
+
+
+  /**
+   * Given datasetbean (and its children) is included into the entry, which can be used for download
+   * 
+   * @param db
+   * @param entries
+   * @return
+   */
+  Map&lt;String, SimpleEntry&lt;String, Long&gt;&gt; addEntry(DatasetBean db,
+      Map&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entries) {
+<span class="nc" id="L670">    StringBuilder sb = new StringBuilder(db.getCode());</span>
+<span class="nc" id="L671">    sb.append(&quot;/&quot;);</span>
+<span class="nc" id="L672">    sb.append(db.getName());</span>
+<span class="nc bnc" id="L673" title="All 2 branches missed.">    if (db.getIsDirectory()) {</span>
+<span class="nc bnc" id="L674" title="All 2 branches missed.">      for (DatasetBean child : db.getChildren()) {</span>
+<span class="nc" id="L675">        addChildrensEntry(child, entries, sb.toString());</span>
+<span class="nc" id="L676">      }</span>
+    } else {
+<span class="nc" id="L678">      entries.put(sb.toString(),</span>
+<span class="nc" id="L679">          new SimpleEntry&lt;String, Long&gt;(db.getCode(), db.getFileSize()));</span>
+    }
+<span class="nc" id="L681">    return entries;</span>
+  }
+
+  /**
+   * Helper function of addEntry. Adds name of parent db to children.
+   * 
+   * @param db
+   * @param entries
+   * @param name
+   * @return
+   */
+  private Map&lt;String, SimpleEntry&lt;String, Long&gt;&gt; addChildrensEntry(DatasetBean db,
+      Map&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entries, String name) {
+<span class="nc" id="L694">    StringBuilder sb = new StringBuilder(name);</span>
+<span class="nc" id="L695">    sb.append(&quot;/&quot;);</span>
+<span class="nc" id="L696">    sb.append(db.getName());</span>
+<span class="nc bnc" id="L697" title="All 2 branches missed.">    if (db.getIsDirectory()) {</span>
+<span class="nc bnc" id="L698" title="All 2 branches missed.">      for (DatasetBean child : db.getChildren()) {</span>
+<span class="nc" id="L699">        addChildrensEntry(child, entries, sb.toString());</span>
+<span class="nc" id="L700">      }</span>
+    } else {
+<span class="nc" id="L702">      entries.put(sb.toString(),</span>
+<span class="nc" id="L703">          new SimpleEntry&lt;String, Long&gt;(db.getCode(), db.getFileSize()));</span>
+    }
+<span class="nc" id="L705">    return entries;</span>
+
+  }
+
+  @Override
+  protected VaadinPortletService createPortletService(
+      final DeploymentConfiguration deploymentConfiguration) throws ServiceException {
+<span class="nc" id="L712">    final CustomVaadinPortletService customVaadinPortletService =</span>
+        new CustomVaadinPortletService(this, deploymentConfiguration);
+<span class="nc" id="L714">    customVaadinPortletService.init();</span>
+<span class="nc" id="L715">    return customVaadinPortletService;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

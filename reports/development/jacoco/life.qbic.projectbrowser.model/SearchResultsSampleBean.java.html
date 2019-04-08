@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchResultsSampleBean.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.model</a> &gt; <span class="el_source">SearchResultsSampleBean.java</span></div><h1>SearchResultsSampleBean.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects.
+ * Copyright (C) &quot;2016”  Christopher Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.model;
+
+import java.io.Serializable;
+import java.io.StringReader;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
+
+public class SearchResultsSampleBean implements Comparable&lt;Object&gt;, Serializable {
+
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 4533832040355797127L;
+  private String sampleID;
+  private String sampleName;
+  private String queryString;
+  private String matchedField;
+
+
+
+<span class="nc" id="L52">  public SearchResultsSampleBean(Sample s, String query) {</span>
+<span class="nc" id="L53">    sampleID = s.getCode();</span>
+<span class="nc" id="L54">    sampleName = this.extractSampleProperty(s, &quot;Q_SECONDARY_NAME&quot;);</span>
+<span class="nc" id="L55">    queryString = query;</span>
+<span class="nc" id="L56">    matchedField = findMatchedFields(s);</span>
+<span class="nc" id="L57">  }</span>
+
+  private String findMatchedFields(Sample s) {
+
+<span class="nc" id="L61">    StringBuilder strbuild = new StringBuilder();</span>
+<span class="nc" id="L62">    List&lt;String&gt; queryComponents = Arrays.asList(queryString.trim().split(&quot;\\s+&quot;));</span>
+
+<span class="nc" id="L64">    Map&lt;String, String&gt; props = s.getProperties();</span>
+
+<span class="nc" id="L66">    String code = s.getCode();</span>
+
+<span class="nc bnc" id="L68" title="All 2 branches missed.">    for (String str : queryComponents) {</span>
+<span class="nc" id="L69">      Pattern tmpPattern = Pattern.compile(str, Pattern.CASE_INSENSITIVE + Pattern.LITERAL);</span>
+<span class="nc" id="L70">      Matcher patternMatch = tmpPattern.matcher(code);</span>
+
+<span class="nc bnc" id="L72" title="All 2 branches missed.">      if (patternMatch.find()) {</span>
+<span class="nc" id="L73">        strbuild.append(&quot;code: &quot; + code + &quot;,&quot;);</span>
+      }
+
+<span class="nc bnc" id="L76" title="All 2 branches missed.">      for (String k : props.keySet()) {</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (k.equals(&quot;Q_SECONDARY_NAME&quot;)) {</span>
+<span class="nc" id="L78">          continue;</span>
+        }
+
+<span class="nc bnc" id="L81" title="All 2 branches missed.">        if (k.equals(&quot;Q_PROPERTIES&quot;)) {</span>
+<span class="nc" id="L82">          Map&lt;String, String&gt; xmlPropsMap = new HashMap&lt;String, String&gt;();</span>
+          try {
+<span class="nc" id="L84">            xmlPropsMap = parseXMLString(props.get(k).trim());</span>
+<span class="nc" id="L85">          } catch (Exception e) {</span>
+            // TODO Auto-generated catch block
+<span class="nc" id="L87">            e.printStackTrace();</span>
+<span class="nc" id="L88">          }</span>
+
+<span class="nc bnc" id="L90" title="All 2 branches missed.">          for (String k2 : xmlPropsMap.keySet()) {</span>
+<span class="nc" id="L91">            patternMatch = tmpPattern.matcher(xmlPropsMap.get(k2).trim());</span>
+
+<span class="nc bnc" id="L93" title="All 2 branches missed.">            if (patternMatch.find()) {</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">              if (!&quot;&quot;.equals(strbuild.toString())) {</span>
+<span class="nc" id="L95">                strbuild.append(&quot;, &quot;);</span>
+              }
+<span class="nc" id="L97">              strbuild.append(k2 + &quot;: &quot; + xmlPropsMap.get(k2));</span>
+            }
+<span class="nc" id="L99">          }</span>
+<span class="nc" id="L100">        } else {</span>
+<span class="nc" id="L101">          patternMatch = tmpPattern.matcher(props.get(k));</span>
+
+<span class="nc bnc" id="L103" title="All 2 branches missed.">          if (patternMatch.find()) {</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">            if (!&quot;&quot;.equals(strbuild.toString())) {</span>
+<span class="nc" id="L105">              strbuild.append(&quot;, &quot;);</span>
+            }
+
+<span class="nc" id="L108">            strbuild.append(k + &quot;: &quot; + props.get(k));</span>
+          }
+        }
+<span class="nc" id="L111">      }</span>
+<span class="nc" id="L112">    }</span>
+
+<span class="nc" id="L114">    String result = strbuild.toString();</span>
+
+<span class="nc" id="L116">    return result;</span>
+  }
+
+  private Map&lt;String, String&gt; parseXMLString(String input) throws Exception {
+
+<span class="nc" id="L121">    Map&lt;String, String&gt; xmlProps = new HashMap&lt;String, String&gt;();</span>
+<span class="nc" id="L122">    Document xmlDoc = null;</span>
+    try {
+<span class="nc" id="L124">      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();</span>
+<span class="nc" id="L125">      DocumentBuilder builder = factory.newDocumentBuilder();</span>
+<span class="nc" id="L126">      InputSource is = new InputSource(new StringReader(input));</span>
+<span class="nc" id="L127">      xmlDoc = builder.parse(is);</span>
+
+<span class="nc" id="L129">    } catch (Exception e) {</span>
+      // TODO Auto-generated catch block
+<span class="nc" id="L131">      e.printStackTrace();</span>
+<span class="nc" id="L132">    }</span>
+
+<span class="nc bnc" id="L134" title="All 2 branches missed.">    if (xmlDoc != null) {</span>
+<span class="nc" id="L135">      NodeList nodes = xmlDoc.getElementsByTagName(&quot;qcategorical&quot;);</span>
+
+<span class="nc bnc" id="L137" title="All 2 branches missed.">      for (int i = 0; i &lt; nodes.getLength(); ++i) {</span>
+<span class="nc" id="L138">        Element element = (Element) nodes.item(i);</span>
+
+<span class="nc" id="L140">        String factorName = element.getAttribute(&quot;label&quot;);</span>
+<span class="nc" id="L141">        String factorValue = element.getAttribute(&quot;value&quot;);</span>
+        // System.out.println(&quot;Name: &quot; + factorName + &quot; &quot; + factorValue);
+<span class="nc" id="L143">        xmlProps.put(factorName, factorValue);</span>
+      }
+
+    }
+
+<span class="nc" id="L148">    return xmlProps;</span>
+  }
+
+  private String extractSampleProperty(Sample s, String propertyKey) {
+<span class="nc" id="L152">    Map&lt;String, String&gt; props = s.getProperties();</span>
+<span class="nc" id="L153">    String property = props.get(propertyKey);</span>
+
+<span class="nc" id="L155">    return property;</span>
+  }
+
+  public String getSampleID() {
+<span class="nc" id="L159">    return sampleID;</span>
+  }
+
+  public void setSampleID(String sampleID) {
+<span class="nc" id="L163">    this.sampleID = sampleID;</span>
+<span class="nc" id="L164">  }</span>
+
+  public String getSampleName() {
+<span class="nc" id="L167">    return sampleName;</span>
+  }
+
+  public void setSampleName(String sampleName) {
+<span class="nc" id="L171">    this.sampleName = sampleName;</span>
+<span class="nc" id="L172">  }</span>
+
+
+
+  public String getMatchedField() {
+<span class="nc" id="L177">    return matchedField;</span>
+  }
+
+  public void setMatchedField(String matchedField) {
+<span class="nc" id="L181">    this.matchedField = matchedField;</span>
+<span class="nc" id="L182">  }</span>
+
+  @Override
+  public int compareTo(Object o) {
+    // TODO Auto-generated method stub
+<span class="nc" id="L187">    return 0;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

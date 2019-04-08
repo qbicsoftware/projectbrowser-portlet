@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProjectBrowserPortlet.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.portal.portlet</a> &gt; <span class="el_source">ProjectBrowserPortlet.java</span></div><h1>ProjectBrowserPortlet.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.portal.portlet;
+
+import com.vaadin.annotations.Theme;
+import com.vaadin.annotations.Widgetset;
+import com.vaadin.server.VaadinRequest;
+import com.vaadin.ui.Layout;
+import com.vaadin.ui.HorizontalLayout;
+
+import life.qbic.portal.utils.PortalUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.portlet.PortletSession;
+import javax.servlet.http.HttpServletResponse;
+
+import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.theme.ThemeDisplay;
+import com.vaadin.navigator.Navigator;
+import com.vaadin.navigator.View;
+import com.vaadin.server.ExternalResource;
+import com.vaadin.server.FontAwesome;
+import com.vaadin.server.ThemeResource;
+import com.vaadin.server.VaadinService;
+import com.vaadin.server.WrappedPortletSession;
+import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.ui.Alignment;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.GridLayout;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.Link;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Window;
+import com.vaadin.ui.themes.ValoTheme;
+
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Project;
+import life.qbic.projectbrowser.controllers.*;
+import life.qbic.projectbrowser.views.*;
+import life.qbic.projectbrowser.model.DBConfig;
+import life.qbic.projectbrowser.model.DBManager;
+import life.qbic.openbis.openbisclient.OpenBisClient;
+import life.qbic.portal.utils.ConfigurationManager;
+import life.qbic.portal.utils.ConfigurationManagerFactory;
+import submitter.Submitter;
+import submitter.WorkflowSubmitterFactory;
+import submitter.WorkflowSubmitterFactory.Type;
+
+/**
+ * Entry point for portlet projectbrowser-portlet. This class derives from {@link QBiCPortletUI},
+ * which is found in the {@code portal-utils-lib} library.
+ * 
+ * @see https://github.com/qbicsoftware/portal-utils-lib
+ */
+
+@Theme(&quot;mytheme&quot;)
+@SuppressWarnings(&quot;serial&quot;)
+@Widgetset(&quot;life.qbic.portal.portlet.AppWidgetSet&quot;)
+<span class="nc" id="L80">public class ProjectBrowserPortlet extends QBiCPortletUI {</span>
+
+
+  private OpenBisClient openBisConnection;
+  private DataHandler datahandler;
+  private GridLayout mainLayout;
+  private ConfigurationManager manager;
+
+<span class="nc" id="L88">  private static final Logger LOG = LogManager.getLogger(ProjectBrowserPortlet.class);</span>
+<span class="nc" id="L89">  private String version = &quot;1.6.3&quot;;</span>
+<span class="nc" id="L90">  private String revision = &quot;da6891a&quot;;</span>
+  private String resUrl;
+  protected View currentView;
+
+  @Override
+  protected Layout getPortletContent(final VaadinRequest request) {
+<span class="nc" id="L96">    LOG.info(&quot;Generating content for {}&quot;, ProjectBrowserPortlet.class);</span>
+
+<span class="nc" id="L98">    manager = ConfigurationManagerFactory.getInstance();</span>
+    // check if we are allowed to display content to unauthenticated users
+<span class="nc bnc" id="L100" title="All 4 branches missed.">    if (PortalUtils.isLiferayPortlet() &amp;&amp; PortalUtils.getUser() == null) {</span>
+<span class="nc" id="L101">      final ConfigurationManager configurationManager = ConfigurationManagerFactory.getInstance();</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">      if (!configurationManager.isAllowUnauthenticatedAccess(&quot;projectbrowser&quot;)) {</span>
+        // display a &quot;please log in&quot; message
+<span class="nc" id="L104">        return PortalUtils.buildNotLoggedInLayout();</span>
+      }
+    }
+
+    Layout mainLayout;
+
+    // log who is connecting, when.
+<span class="nc" id="L111">    LOG.info(String.format(&quot;ProjectBrowser used by: %s&quot;, PortalUtils.getNonNullScreenName()));</span>
+    // try to init connection to openbis and write some session attributes, that can be accessed globally
+    try {
+<span class="nc" id="L114">      initConnection();</span>
+<span class="nc" id="L115">      initSessionAttributes();</span>
+<span class="nc" id="L116">    } catch (Exception e) {</span>
+      // probably the connection to openbis failed
+<span class="nc" id="L118">      buildOpenbisConnectionErrorLayout(request);</span>
+      // write an error message if failed to load openbis and is in production
+<span class="nc" id="L120">      errorMessageIfIsProduction();</span>
+<span class="nc" id="L121">    }</span>
+<span class="nc" id="L122">    this.resUrl = (String) getPortletSession().getAttribute(&quot;resURL&quot;, PortletSession.APPLICATION_SCOPE);</span>
+<span class="nc" id="L123">    mainLayout = initProgressBarAndThreading(request);</span>
+
+<span class="nc" id="L125">    return mainLayout;</span>
+  }
+
+  /**
+   *
+   */
+  void errorMessageIfIsProduction() {
+<span class="nc bnc" id="L132" title="All 2 branches missed.">    if (isInProductionMode())</span>
+      try {
+<span class="nc" id="L134">        VaadinService.getCurrentResponse().sendError(HttpServletResponse.SC_GATEWAY_TIMEOUT,</span>
+            &quot;openbis could not be accessed.&quot;);
+<span class="nc" id="L136">      } catch (IOException | IllegalArgumentException e1) {</span>
+<span class="nc" id="L137">        VaadinService.getCurrentResponse().setStatus(HttpServletResponse.SC_GATEWAY_TIMEOUT);</span>
+<span class="nc" id="L138">      }</span>
+<span class="nc" id="L139">  }</span>
+
+  /**
+   *
+   * @return
+   */
+  private boolean isInProductionMode() {
+<span class="nc" id="L146">    return VaadinService.getCurrent().getDeploymentConfiguration().isProductionMode();</span>
+  }
+
+  /**
+   * standard error layout, if connection to database failed.
+   *
+   * @param request
+   */
+  private void buildOpenbisConnectionErrorLayout(final VaadinRequest request) {
+<span class="nc" id="L155">    VerticalLayout vl = new VerticalLayout();</span>
+<span class="nc" id="L156">    this.setContent(vl);</span>
+<span class="nc" id="L157">    vl.addComponent(new Label(</span>
+        &quot;An error occured while trying to connect to the database. Please try again later or contact your project manager.&quot;));
+<span class="nc" id="L159">  }</span>
+
+  /**
+   * standard error layout, if openbis threw error on initialization despite a successful login
+   *
+   * @param request
+   */
+  private Layout buildUserUnknownError(final VaadinRequest request) {
+<span class="nc" id="L167">    VerticalLayout vl = new VerticalLayout();</span>
+<span class="nc" id="L168">    setContent(vl);</span>
+<span class="nc" id="L169">    vl.addComponent(new Label(</span>
+        &quot;An error occured while trying to load projects. Please contact your project manager to make sure your account is added to your projects.&quot;));
+<span class="nc" id="L171">    LOG.error(</span>
+        &quot;Couldn't initialize view. User is probably not added to openBIS and has been informed to contact project manager.&quot;);
+
+<span class="nc" id="L174">    return vl;</span>
+  }
+
+  /**
+   * starts the querying of openbis and initializing the view
+   *
+   * @param request
+   */
+  protected Layout initProgressBarAndThreading(VaadinRequest request) {
+<span class="nc" id="L183">    GridLayout layout = new GridLayout();</span>
+
+    try {
+<span class="nc" id="L186">      layout = buildMainLayout(datahandler, request, PortalUtils.getNonNullScreenName());</span>
+<span class="nc" id="L187">    } catch (Exception e) {</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">      if (datahandler.getOpenBisClient().loggedin()) {</span>
+<span class="nc" id="L189">        LOG.error(&quot;User not known?&quot;, e);</span>
+<span class="nc" id="L190">        buildUserUnknownError(request);</span>
+      } else {
+<span class="nc" id="L192">        LOG.error(&quot;exception thrown during initialization.&quot;, e);</span>
+      }
+<span class="nc" id="L194">    }</span>
+
+<span class="nc" id="L196">    return layout;</span>
+  }
+
+  /**
+   *
+   * @return
+   */
+  public static ProjectBrowserPortlet getCurrent() {
+<span class="nc" id="L204">    return (ProjectBrowserPortlet) UI.getCurrent();</span>
+  }
+
+  /**
+   *
+   * @param datahandler
+   * @param request
+   * @param user
+   */
+  public GridLayout buildMainLayout(DataHandler datahandler, VaadinRequest request, String user) {
+<span class="nc" id="L214">    State state = (State) UI.getCurrent().getSession().getAttribute(&quot;state&quot;);</span>
+<span class="nc" id="L215">    MultiscaleController multiscaleController =</span>
+<span class="nc" id="L216">        new MultiscaleController(datahandler.getOpenBisClient(), user);</span>
+
+<span class="nc" id="L218">    final HomeView homeView =</span>
+<span class="nc" id="L219">        new HomeView(datahandler, &quot;Your Projects&quot;, user, state, resUrl, manager.getTmpFolder());</span>
+<span class="nc" id="L220">    DatasetView datasetView = new DatasetView(datahandler, state, resUrl);</span>
+<span class="nc" id="L221">    final SampleView sampleView = new SampleView(datahandler, state, resUrl, multiscaleController);</span>
+<span class="nc" id="L222">    final ExperimentView experimentView =</span>
+        new ExperimentView(datahandler, state, resUrl, multiscaleController);
+<span class="nc" id="L224">    final AddPatientView addPatientView = new AddPatientView(datahandler, state, resUrl);</span>
+<span class="nc" id="L225">    final SearchResultsView searchResultsView =</span>
+        new SearchResultsView(datahandler, &quot;Search results&quot;, user, state, resUrl);
+
+<span class="nc" id="L228">    Submitter submitter = null;</span>
+    try {
+<span class="nc" id="L230">      submitter = WorkflowSubmitterFactory.getSubmitter(Type.guseSubmitter, manager);</span>
+<span class="nc" id="L231">    } catch (Exception e1) {</span>
+<span class="nc" id="L232">      e1.printStackTrace();</span>
+<span class="nc" id="L233">    }</span>
+
+<span class="nc" id="L235">    WorkflowViewController controller = new WorkflowViewController(submitter, datahandler, user);</span>
+
+<span class="nc" id="L237">    final ProjectView projectView =</span>
+        new ProjectView(datahandler, state, resUrl, controller, manager);
+<span class="nc" id="L239">    final PatientView patientView =</span>
+        new PatientView(datahandler, state, resUrl, controller, manager);
+
+<span class="nc" id="L242">    VerticalLayout navigatorContent = new VerticalLayout();</span>
+
+<span class="nc" id="L244">    final Navigator navigator = new Navigator(UI.getCurrent(), navigatorContent);</span>
+
+<span class="nc" id="L246">    navigator.addView(DatasetView.navigateToLabel, datasetView);</span>
+<span class="nc" id="L247">    navigator.addView(SampleView.navigateToLabel, sampleView);</span>
+<span class="nc" id="L248">    navigator.addView(&quot;&quot;, homeView);</span>
+<span class="nc" id="L249">    navigator.addView(ProjectView.navigateToLabel, projectView);</span>
+    // navigator.addView(BarcodeView.navigateToLabel, barcodeView);
+<span class="nc" id="L251">    navigator.addView(ExperimentView.navigateToLabel, experimentView);</span>
+<span class="nc" id="L252">    navigator.addView(PatientView.navigateToLabel, patientView);</span>
+<span class="nc" id="L253">    navigator.addView(AddPatientView.navigateToLabel, addPatientView);</span>
+<span class="nc" id="L254">    navigator.addView(SearchResultsView.navigateToLabel, searchResultsView);</span>
+
+<span class="nc" id="L256">    setNavigator(navigator);</span>
+
+    // Production
+    // mainLayout = new VerticalLayout();
+<span class="nc bnc" id="L260" title="All 2 branches missed.">    for (Window w : getWindows()) {</span>
+<span class="nc" id="L261">      w.setSizeFull();</span>
+<span class="nc" id="L262">    }</span>
+
+<span class="nc" id="L264">    mainLayout = new GridLayout(3, 3);</span>
+<span class="nc" id="L265">    mainLayout.setResponsive(true);</span>
+<span class="nc" id="L266">    mainLayout.setWidth(100, Unit.PERCENTAGE);</span>
+
+<span class="nc" id="L268">    mainLayout.addComponent(navigatorContent, 0, 1, 2, 1);</span>
+<span class="nc" id="L269">    mainLayout.setColumnExpandRatio(0, 0.2f);</span>
+<span class="nc" id="L270">    mainLayout.setColumnExpandRatio(1, 0.3f);</span>
+<span class="nc" id="L271">    mainLayout.setColumnExpandRatio(2, 0.5f);</span>
+
+<span class="nc" id="L273">    HorizontalLayout buttonLayout = new HorizontalLayout();</span>
+<span class="nc" id="L274">    buttonLayout.setSpacing(true);</span>
+
+<span class="nc" id="L276">    Button homeButton = new Button(&quot;Home&quot;);</span>
+<span class="nc" id="L277">    homeButton.setIcon(FontAwesome.HOME);</span>
+<span class="nc" id="L278">    homeButton.setResponsive(true);</span>
+<span class="nc" id="L279">    homeButton.setStyleName(ValoTheme.BUTTON_LARGE);</span>
+<span class="nc" id="L280">    homeButton.addClickListener(new Button.ClickListener() {</span>
+
+      @Override
+      public void buttonClick(ClickEvent event) {
+<span class="nc" id="L284">        navigator.navigateTo(&quot;&quot;);</span>
+<span class="nc" id="L285">      }</span>
+
+    });
+
+    // Production
+<span class="nc" id="L290">    buttonLayout.addComponent(homeButton);</span>
+
+<span class="nc" id="L292">    Boolean includePatientCreation = false;</span>
+
+<span class="nc" id="L294">    List&lt;Project&gt; projects = datahandler.getOpenBisClient().getOpenbisInfoService()</span>
+<span class="nc" id="L295">        .listProjectsOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(), user);</span>
+<span class="nc" id="L296">    int numberOfProjects = 0;</span>
+<span class="nc bnc" id="L297" title="All 2 branches missed.">    for (Project project : projects) {</span>
+<span class="nc bnc" id="L298" title="All 2 branches missed.">      if (project.getSpaceCode().contains(&quot;IVAC&quot;)) {</span>
+<span class="nc" id="L299">        includePatientCreation = true;</span>
+      }
+<span class="nc" id="L301">      numberOfProjects += 1;</span>
+<span class="nc" id="L302">    }</span>
+
+    // add patient button
+<span class="nc bnc" id="L305" title="All 2 branches missed.">    if (includePatientCreation) {</span>
+<span class="nc" id="L306">      Button addPatient = new Button(&quot;Add Patient&quot;);</span>
+<span class="nc" id="L307">      addPatient.setIcon(FontAwesome.PLUS);</span>
+<span class="nc" id="L308">      addPatient.setStyleName(ValoTheme.BUTTON_LARGE);</span>
+<span class="nc" id="L309">      addPatient.setResponsive(true);</span>
+
+<span class="nc" id="L311">      addPatient.addClickListener(new ClickListener() {</span>
+        @Override
+        public void buttonClick(ClickEvent event) {
+<span class="nc" id="L314">          UI.getCurrent().getNavigator().navigateTo(String.format(AddPatientView.navigateToLabel));</span>
+<span class="nc" id="L315">        }</span>
+      });
+
+      // Production
+<span class="nc" id="L319">      buttonLayout.addComponent(addPatient);</span>
+    }
+
+<span class="nc" id="L322">    mainLayout.addComponent(buttonLayout, 0, 0);</span>
+
+<span class="nc" id="L324">    Button header = new Button(String.format(&quot;Total number of projects: %s&quot;, numberOfProjects));</span>
+<span class="nc" id="L325">    header.setIcon(FontAwesome.HAND_O_RIGHT);</span>
+<span class="nc" id="L326">    header.setStyleName(ValoTheme.BUTTON_LARGE);</span>
+<span class="nc" id="L327">    header.addStyleName(ValoTheme.BUTTON_BORDERLESS);</span>
+
+<span class="nc" id="L329">    SearchEngineView searchBarView = new SearchEngineView(datahandler);</span>
+
+<span class="nc" id="L331">    mainLayout.addComponent(header, 1, 0);</span>
+<span class="nc" id="L332">    mainLayout.addComponent(searchBarView, 2, 0);</span>
+
+<span class="nc" id="L334">    mainLayout.setComponentAlignment(searchBarView, Alignment.BOTTOM_RIGHT);</span>
+
+<span class="nc" id="L336">    return mainLayout;</span>
+  }
+
+  /**
+   *
+   * @return
+   */
+  public PortletSession getPortletSession() {
+<span class="nc" id="L344">    UI.getCurrent().getSession().getService();</span>
+<span class="nc" id="L345">    VaadinRequest vaadinRequest = VaadinService.getCurrentRequest();</span>
+<span class="nc" id="L346">    WrappedPortletSession wrappedPortletSession =</span>
+<span class="nc" id="L347">        (WrappedPortletSession) vaadinRequest.getWrappedSession();</span>
+<span class="nc" id="L348">    return wrappedPortletSession.getPortletSession();</span>
+  }
+
+  /**
+   *
+   */
+  private void initSessionAttributes() {
+<span class="nc bnc" id="L355" title="All 2 branches missed.">    if (this.openBisConnection == null) {</span>
+<span class="nc" id="L356">      this.initConnection();</span>
+    }
+<span class="nc" id="L358">    UI.getCurrent().getSession().setAttribute(&quot;state&quot;, new State());</span>
+
+<span class="nc" id="L360">    PortletSession portletSession = ((ProjectBrowserPortlet) UI.getCurrent()).getPortletSession();</span>
+<span class="nc" id="L361">    portletSession.setAttribute(&quot;openbisClient&quot;, this.openBisConnection,</span>
+        PortletSession.APPLICATION_SCOPE);
+
+<span class="nc" id="L364">    portletSession.setAttribute(&quot;qbic_download&quot;,</span>
+        new HashMap&lt;String, AbstractMap.SimpleEntry&lt;String, Long&gt;&gt;(),
+        PortletSession.APPLICATION_SCOPE);
+<span class="nc" id="L367">  }</span>
+
+  /**
+   *
+   */
+  private void initConnection() {
+<span class="nc" id="L373">    this.openBisConnection = new OpenBisClient(manager.getDataSourceUser(),</span>
+<span class="nc" id="L374">        manager.getDataSourcePassword(), manager.getDataSourceUrl());</span>
+<span class="nc" id="L375">    this.openBisConnection.login();</span>
+<span class="nc" id="L376">    DBConfig mysqlConfig = new DBConfig(manager.getMysqlHost(), manager.getMysqlPort(),</span>
+<span class="nc" id="L377">        manager.getMysqlDB(), manager.getMysqlUser(), manager.getMysqlPass());</span>
+<span class="nc" id="L378">    DBManager databaseManager = new DBManager(mysqlConfig);</span>
+
+<span class="nc" id="L380">    this.datahandler = new DataHandler(openBisConnection, databaseManager);</span>
+<span class="nc" id="L381">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

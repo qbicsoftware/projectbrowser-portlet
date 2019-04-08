@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OpenBisFunctions.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.helpers</a> &gt; <span class="el_source">OpenBisFunctions.java</span></div><h1>OpenBisFunctions.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.helpers;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.lang3.text.WordUtils;
+
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.ControlledVocabularyPropertyType;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.EntityType;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.PropertyType;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.PropertyTypeGroup;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.VocabularyTerm;
+
+
+<span class="nc" id="L30">public class OpenBisFunctions {</span>
+
+  /**
+   * Returns the 4 or 5 character project prefix used for samples in openBIS.
+   * 
+   * @param sample sample ID starting with a standard project prefix.
+   * @return Project prefix of the sample
+   */
+  public static String getProjectPrefix(String sample) {
+<span class="nc bnc" id="L39" title="All 2 branches missed.">    if (Utils.isInteger(&quot;&quot; + sample.charAt(4)))</span>
+<span class="nc" id="L40">      return sample.substring(0, 4);</span>
+    else
+<span class="nc" id="L42">      return sample.substring(0, 5);</span>
+  }
+
+  public static double statusToDoubleValue(String status) {
+
+<span class="nc" id="L47">    double value = 0.0;</span>
+
+<span class="nc bnc" id="L49" title="All 4 branches missed.">    switch (status) {</span>
+      case &quot;STARTED&quot;:
+<span class="nc" id="L51">        value = 0.25;</span>
+<span class="nc" id="L52">        break;</span>
+      case &quot;RUNNING&quot;:
+<span class="nc" id="L54">        value = 0.5;</span>
+<span class="nc" id="L55">        break;</span>
+      case &quot;FINISHED&quot;:
+<span class="nc" id="L57">        value = 1.0;</span>
+        break;
+
+    }
+<span class="nc" id="L61">    return value;</span>
+  }
+
+  /**
+   * Function to list the vocabulary terms for a given property which has been added to openBIS. The
+   * property has to be a Controlled Vocabulary Property.
+   * 
+   * @param property the property type
+   * @return list of the vocabulary terms of the given property
+   */
+  public static List&lt;String&gt; listVocabularyTermsForProperty(PropertyType property) {
+<span class="nc" id="L72">    List&lt;String&gt; terms = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L73">    ControlledVocabularyPropertyType controlled_vocab = (ControlledVocabularyPropertyType) property;</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">    for (VocabularyTerm term : controlled_vocab.getTerms()) {</span>
+<span class="nc" id="L75">      terms.add(term.getLabel().toString());</span>
+<span class="nc" id="L76">    }</span>
+<span class="nc" id="L77">    return terms;</span>
+  }
+
+  /**
+   * Function to get the label of a CV item for some property
+   * 
+   * @param propertyType the property type
+   * @param propertyValue the property value
+   * @return Label of CV item
+   */
+  public static String getCVLabelForProperty(PropertyType propertyType, String propertyValue) {
+<span class="nc" id="L88">    ControlledVocabularyPropertyType controlled_vocab =</span>
+        (ControlledVocabularyPropertyType) propertyType;
+
+<span class="nc bnc" id="L91" title="All 2 branches missed.">    for (VocabularyTerm term : controlled_vocab.getTerms()) {</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">      if (term.getCode().equals(propertyValue)) {</span>
+<span class="nc" id="L93">        return term.getLabel();</span>
+      }
+<span class="nc" id="L95">    }</span>
+<span class="nc" id="L96">    throw new IllegalArgumentException();</span>
+  }
+
+  /**
+   * Function to retrieve all properties which have been assigned to a specific entity type
+   * 
+   * @param entity_type entitiy type
+   * @return list of properties which are assigned to the entity type
+   */
+  public static List&lt;PropertyType&gt; listPropertiesForType(EntityType entity_type) {
+<span class="nc" id="L106">    List&lt;PropertyType&gt; property_types = new ArrayList&lt;PropertyType&gt;();</span>
+<span class="nc" id="L107">    List&lt;PropertyTypeGroup&gt; props = entity_type.getPropertyTypeGroups();</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">    for (PropertyTypeGroup pg : props) {</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">      for (PropertyType prop_type : pg.getPropertyTypes()) {</span>
+<span class="nc" id="L110">        property_types.add(prop_type);</span>
+<span class="nc" id="L111">      }</span>
+<span class="nc" id="L112">    }</span>
+<span class="nc" id="L113">    return property_types;</span>
+  }
+
+  /**
+   * Function to transform openBIS entity type to human readable text. Performs String replacement
+   * and does not query openBIS!
+   * 
+   * @param entityCode the entity code as string
+   * @return entity code as string in human readable text
+   */
+  public static String openBIScodeToString(String entityCode) {
+<span class="nc" id="L124">    entityCode = WordUtils.capitalizeFully(entityCode.replace(&quot;_&quot;, &quot; &quot;).toLowerCase());</span>
+<span class="nc" id="L125">    String edit_string = entityCode.replace(&quot;Ngs&quot;, &quot;NGS&quot;).replace(&quot;Hla&quot;, &quot;HLA&quot;)</span>
+<span class="nc" id="L126">        .replace(&quot;Rna&quot;, &quot;RNA&quot;).replace(&quot;Dna&quot;, &quot;DNA&quot;).replace(&quot;Ms&quot;, &quot;MS&quot;);</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">    if (edit_string.startsWith(&quot;Q &quot;)) {</span>
+<span class="nc" id="L128">      edit_string = edit_string.replace(&quot;Q &quot;, &quot;&quot;);</span>
+    }
+<span class="nc" id="L130">    return edit_string;</span>
+  }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

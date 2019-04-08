@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DatasetViewFilterDecorator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.helpers</a> &gt; <span class="el_source">DatasetViewFilterDecorator.java</span></div><h1>DatasetViewFilterDecorator.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects.
+ * Copyright (C) &quot;2016”  Christopher Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.helpers;
+
+import java.io.Serializable;
+import java.text.DateFormat;
+import java.util.Locale;
+
+import org.tepi.filtertable.FilterDecorator;
+// import org.tepi.filtertable.demo.FilterTableDemoUI.State;
+import org.tepi.filtertable.numberfilter.NumberFilterPopupConfig;
+
+import com.vaadin.server.Resource;
+import com.vaadin.server.ThemeResource;
+import com.vaadin.shared.ui.datefield.Resolution;
+
+@SuppressWarnings(&quot;serial&quot;)
+<span class="nc" id="L33">public class DatasetViewFilterDecorator implements FilterDecorator, Serializable {</span>
+
+  @Override
+  public String getEnumFilterDisplayName(Object propertyId, Object value) {
+    /*
+     * if (&quot;state&quot;.equals(propertyId)) { State state = (State) value; switch (state) { case CREATED:
+     * return &quot;Order has been created&quot;; case PROCESSING: return &quot;Order is being processed&quot;; case
+     * PROCESSED: return &quot;Order has been processed&quot;; case FINISHED: return &quot;Order is delivered&quot;; } }
+     */
+    // returning null will output default value
+<span class="nc" id="L43">    return null;</span>
+  }
+
+  @Override
+  public Resource getEnumFilterIcon(Object propertyId, Object value) {
+    /*
+     * if (&quot;state&quot;.equals(propertyId)) { State state = (State) value; switch (state) { case CREATED:
+     * return new ThemeResource(&quot;../runo/icons/16/document.png&quot;); case PROCESSING: return new
+     * ThemeResource(&quot;../runo/icons/16/reload.png&quot;); case PROCESSED: return new
+     * ThemeResource(&quot;../runo/icons/16/ok.png&quot;); case FINISHED: return new
+     * ThemeResource(&quot;../runo/icons/16/globe.png&quot;); } }
+     */
+<span class="nc" id="L55">    return null;</span>
+  }
+
+  @Override
+  public String getBooleanFilterDisplayName(Object propertyId, boolean value) {
+<span class="nc bnc" id="L60" title="All 2 branches missed.">    if (&quot;validated&quot;.equals(propertyId)) {</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">      return value ? &quot;Validated&quot; : &quot;Not validated&quot;;</span>
+    }
+    // returning null will output default value
+<span class="nc" id="L64">    return null;</span>
+  }
+
+  @Override
+  public Resource getBooleanFilterIcon(Object propertyId, boolean value) {
+<span class="nc bnc" id="L69" title="All 2 branches missed.">    if (&quot;validated&quot;.equals(propertyId)) {</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">      return value ? new ThemeResource(&quot;../runo/icons/16/ok.png&quot;) : new ThemeResource(</span>
+          &quot;../runo/icons/16/cancel.png&quot;);
+    }
+<span class="nc" id="L73">    return null;</span>
+  }
+
+  @Override
+  public String getFromCaption() {
+<span class="nc" id="L78">    return &quot;Start date:&quot;;</span>
+  }
+
+  @Override
+  public String getToCaption() {
+<span class="nc" id="L83">    return &quot;End date:&quot;;</span>
+  }
+
+  @Override
+  public String getSetCaption() {
+    // use default caption
+<span class="nc" id="L89">    return null;</span>
+  }
+
+  @Override
+  public String getClearCaption() {
+    // use default caption
+<span class="nc" id="L95">    return null;</span>
+  }
+
+  @Override
+  public boolean isTextFilterImmediate(Object propertyId) {
+    // use text change events for all the text fields
+<span class="nc" id="L101">    return true;</span>
+  }
+
+  @Override
+  public int getTextChangeTimeout(Object propertyId) {
+    // use the same timeout for all the text fields
+<span class="nc" id="L107">    return 500;</span>
+  }
+
+  @Override
+  public String getAllItemsVisibleString() {
+<span class="nc" id="L112">    return &quot;Search&quot;;</span>
+  }
+
+  @Override
+  public Resolution getDateFieldResolution(Object propertyId) {
+<span class="nc" id="L117">    return Resolution.DAY;</span>
+  }
+
+  public DateFormat getDateFormat(Object propertyId) {
+<span class="nc" id="L121">    return DateFormat.getDateInstance(DateFormat.SHORT, new Locale(&quot;fi&quot;, &quot;FI&quot;));</span>
+  }
+
+  @Override
+  public boolean usePopupForNumericProperty(Object propertyId) {
+    // TODO Auto-generated method stub
+<span class="nc" id="L127">    return true;</span>
+  }
+
+  @Override
+  public String getDateFormatPattern(Object propertyId) {
+    // TODO Auto-generated method stub
+<span class="nc" id="L133">    return null;</span>
+  }
+
+  @Override
+  public Locale getLocale() {
+    // TODO Auto-generated method stub
+<span class="nc" id="L139">    return null;</span>
+  }
+
+  @Override
+  public NumberFilterPopupConfig getNumberFilterPopupConfig() {
+    // TODO Auto-generated method stub
+<span class="nc" id="L145">    return null;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

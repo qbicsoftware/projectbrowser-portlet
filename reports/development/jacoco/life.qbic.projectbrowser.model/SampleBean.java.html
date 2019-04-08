@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SampleBean.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.model</a> &gt; <span class="el_source">SampleBean.java</span></div><h1>SampleBean.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.model;
+
+import life.qbic.projectbrowser.helpers.UglyToPrettyNameMapper;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+
+import life.qbic.xml.properties.Property;
+// import life.qbic.xml.manager.XMLParser;
+import life.qbic.xml.properties.Qproperties;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
+
+import com.vaadin.data.util.BeanItemContainer;
+
+public class SampleBean implements Comparable&lt;Object&gt;, Serializable {
+
+  /**
+   * 
+   */
+  private static final long serialVersionUID = -61486023394904818L;
+  private String id;
+  private String code;
+  private String type;
+  private String prettyType;
+  // Map containing parents of the sample and the corresponding sample types
+  // private Map&lt;String, String&gt; parents;
+  private List&lt;Sample&gt; parents;
+  private List&lt;Sample&gt; children;
+  private BeanItemContainer&lt;DatasetBean&gt; datasets;
+  private Date lastChangedDataset;
+  private Map&lt;String, String&gt; properties;
+  private Map&lt;String, String&gt; typeLabels;
+
+<span class="nc" id="L56">  private UglyToPrettyNameMapper prettyNameMapper = new UglyToPrettyNameMapper();</span>
+  private List&lt;Property&gt; xmlProperties;
+
+
+  public SampleBean(String id, String code, String type, List&lt;Sample&gt; parents,
+      BeanItemContainer&lt;DatasetBean&gt; datasets, Date lastChangedDataset,
+      Map&lt;String, String&gt; properties, Map&lt;String, String&gt; typeLabels, List&lt;Sample&gt; children) {
+<span class="nc" id="L63">    super();</span>
+<span class="nc" id="L64">    this.id = id;</span>
+<span class="nc" id="L65">    this.code = code;</span>
+<span class="nc" id="L66">    this.type = type;</span>
+<span class="nc" id="L67">    this.prettyType = prettyNameMapper.getPrettyName(type);</span>
+<span class="nc" id="L68">    this.parents = parents;</span>
+<span class="nc" id="L69">    this.datasets = datasets;</span>
+<span class="nc" id="L70">    this.lastChangedDataset = lastChangedDataset;</span>
+<span class="nc" id="L71">    this.properties = properties;</span>
+<span class="nc" id="L72">    this.typeLabels = typeLabels;</span>
+<span class="nc" id="L73">    this.children = children;</span>
+<span class="nc" id="L74">  }</span>
+
+<span class="nc" id="L76">  public SampleBean() {</span>
+
+<span class="nc" id="L78">  }</span>
+
+
+
+  public String getId() {
+<span class="nc" id="L83">    return id;</span>
+  }
+
+
+
+  public void setId(String id) {
+<span class="nc" id="L89">    this.id = id;</span>
+<span class="nc" id="L90">  }</span>
+
+
+
+  public String getCode() {
+<span class="nc" id="L95">    return code;</span>
+  }
+
+
+
+  public void setCode(String code) {
+<span class="nc" id="L101">    this.code = code;</span>
+<span class="nc" id="L102">  }</span>
+
+
+
+  public String getType() {
+<span class="nc" id="L107">    return type;</span>
+  }
+
+
+
+  public void setType(String type) {
+<span class="nc" id="L113">    this.type = type;</span>
+<span class="nc" id="L114">    this.prettyType = prettyNameMapper.getPrettyName(type);</span>
+<span class="nc" id="L115">  }</span>
+
+
+
+  public List&lt;Sample&gt; getParents() {
+<span class="nc" id="L120">    return parents;</span>
+  }
+
+
+
+  public void setParents(List&lt;Sample&gt; parents) {
+<span class="nc" id="L126">    this.parents = parents;</span>
+<span class="nc" id="L127">  }</span>
+
+
+
+  public BeanItemContainer&lt;DatasetBean&gt; getDatasets() {
+<span class="nc" id="L132">    return datasets;</span>
+  }
+
+
+
+  public void setDatasets(BeanItemContainer&lt;DatasetBean&gt; datasets) {
+<span class="nc" id="L138">    this.datasets = datasets;</span>
+<span class="nc" id="L139">  }</span>
+
+
+
+  public Date getLastChangedDataset() {
+<span class="nc" id="L144">    return lastChangedDataset;</span>
+  }
+
+
+
+  public void setLastChangedDataset(Date lastChangedDataset) {
+<span class="nc" id="L150">    this.lastChangedDataset = lastChangedDataset;</span>
+<span class="nc" id="L151">  }</span>
+
+
+
+  public Map&lt;String, String&gt; getProperties() {
+<span class="nc" id="L156">    return properties;</span>
+  }
+
+
+
+  public void setProperties(Map&lt;String, String&gt; properties) {
+<span class="nc" id="L162">    this.properties = properties;</span>
+<span class="nc" id="L163">  }</span>
+
+  public Map&lt;String, String&gt; getTypeLabels() {
+<span class="nc" id="L166">    return typeLabels;</span>
+  }
+
+  public void setTypeLabels(Map&lt;String, String&gt; typeLabels) {
+<span class="nc" id="L170">    this.typeLabels = typeLabels;</span>
+<span class="nc" id="L171">  }</span>
+
+
+
+  @Override
+  public int compareTo(Object o) {
+<span class="nc" id="L177">    return id.compareTo(((SampleBean) o).getId());</span>
+  }
+
+  @Override
+  public boolean equals(Object o) {
+<span class="nc bnc" id="L182" title="All 2 branches missed.">    if (o instanceof SampleBean) {</span>
+<span class="nc" id="L183">      SampleBean b = (SampleBean) o;</span>
+<span class="nc" id="L184">      return id.equals(b.getId());</span>
+    } else
+<span class="nc" id="L186">      return false;</span>
+  }
+
+  @Override
+  public int hashCode() {
+<span class="nc" id="L191">    return id.hashCode();</span>
+  }
+
+  public String getParentsFormattedString() {
+<span class="nc" id="L195">    String parentsHeader = &quot;This sample has been derived from &quot;;</span>
+<span class="nc" id="L196">    String parentsBottom = &quot;&lt;ul&gt;&quot;;</span>
+
+<span class="nc bnc" id="L198" title="All 4 branches missed.">    if (this.getParents() == null || this.getParents().isEmpty()) {</span>
+<span class="nc" id="L199">      return parentsHeader += &quot;None&quot;;</span>
+    } else {
+<span class="nc bnc" id="L201" title="All 2 branches missed.">      for (Sample sample : this.getParents()) {</span>
+<span class="nc" id="L202">        parentsBottom += &quot;&lt;li&gt;&lt;b&gt;&quot; + sample.getCode() + &quot;&lt;/b&gt; (&quot;</span>
+<span class="nc" id="L203">            + prettyNameMapper.getPrettyName(sample.getSampleTypeCode()) + &quot;) &lt;/li&gt;&quot;;</span>
+<span class="nc" id="L204">      }</span>
+<span class="nc" id="L205">      parentsBottom += &quot;&lt;/ul&gt;&quot;;</span>
+
+<span class="nc" id="L207">      return parentsHeader + parentsBottom;</span>
+    }
+  }
+
+  public String generatePropertiesFormattedString() {
+<span class="nc" id="L212">    String propertiesBottom = &quot;&lt;ul&gt; &quot;;</span>
+
+<span class="nc" id="L214">    Iterator&lt;Entry&lt;String, String&gt;&gt; it = this.getProperties().entrySet().iterator();</span>
+<span class="nc bnc" id="L215" title="All 2 branches missed.">    while (it.hasNext()) {</span>
+<span class="nc" id="L216">      Entry pairs = it.next();</span>
+<span class="nc bnc" id="L217" title="All 4 branches missed.">      if (pairs.getKey().equals(&quot;Q_PROPERTIES&quot;) || pairs.getKey().equals(&quot;Q_NOTES&quot;)) {</span>
+<span class="nc" id="L218">        continue;</span>
+      } else {
+<span class="nc" id="L220">        propertiesBottom +=</span>
+<span class="nc" id="L221">            &quot;&lt;li&gt;&lt;b&gt;&quot; + (typeLabels.get(pairs.getKey()) + &quot;:&lt;/b&gt; &quot; + pairs.getValue() + &quot;&lt;/li&gt;&quot;);</span>
+      }
+<span class="nc" id="L223">    }</span>
+<span class="nc" id="L224">    propertiesBottom += &quot;&lt;/ul&gt;&quot;;</span>
+
+<span class="nc" id="L226">    return propertiesBottom;</span>
+  }
+
+  public String generateXMLPropertiesFormattedString() throws JAXBException {
+
+
+<span class="nc" id="L232">    String xmlPropertiesString = &quot;&lt;ul&gt; &quot;;</span>
+
+<span class="nc bnc" id="L234" title="All 2 branches missed.">    for (Property p : xmlProperties) {</span>
+<span class="nc" id="L235">      xmlPropertiesString += &quot;&lt;li&gt;&lt;b&gt;&quot; + p.getLabel() + &quot;:&lt;/b&gt; &quot; + p.getValue();</span>
+<span class="nc bnc" id="L236" title="All 2 branches missed.">      if (p.hasUnit()) {</span>
+<span class="nc" id="L237">        xmlPropertiesString += &quot; &quot; + p.getUnit();</span>
+      }
+<span class="nc" id="L239">      xmlPropertiesString += &quot;&lt;/li&gt;&quot;;</span>
+<span class="nc" id="L240">    }</span>
+<span class="nc" id="L241">    return xmlPropertiesString;</span>
+
+    // String xmlPropertiesBottom = &quot;&lt;ul&gt; &quot;;
+    //
+    // Iterator&lt;Entry&lt;String, String&gt;&gt; it = this.getProperties().entrySet().iterator();
+    // while (it.hasNext()) {
+    // Entry pairs = it.next();
+    // if (pairs.getKey().equals(&quot;Q_PROPERTIES&quot;)) {
+    // XMLParser xmlParser = new XMLParser();
+    // JAXBElement&lt;Qproperties&gt; xmlProperties =
+    // xmlParser.parseXMLString(pairs.getValue().toString());
+    // Map&lt;String, String&gt; xmlPropertiesMap = xmlParser.getMapOfProperties(xmlProperties);
+    //
+    // for (Object o : xmlPropertiesMap.entrySet()) {
+    // Entry pairsProperties = (Entry) o;
+    //
+    // xmlPropertiesBottom += &quot;&lt;li&gt;&lt;b&gt;&quot;
+    // // + (typeLabels.get(pairsProperties.getKey()) + &quot;:&lt;/b&gt; &quot;
+    // + (pairsProperties.getKey() + &quot;:&lt;/b&gt; &quot; + pairsProperties.getValue() + &quot;&lt;/li&gt;&quot;);
+    // }
+    // break;
+    // }
+    // }
+    // return xmlPropertiesBottom;
+  }
+
+  public List&lt;Sample&gt; getChildren() {
+<span class="nc" id="L268">    return children;</span>
+  }
+
+  public void setChildren(List&lt;Sample&gt; children) {
+<span class="nc" id="L272">    this.children = children;</span>
+<span class="nc" id="L273">  }</span>
+
+  public String getPrettyType() {
+<span class="nc" id="L276">    return prettyType;</span>
+  }
+
+  public void setPrettyType(String prettyType) {
+<span class="nc" id="L280">    this.prettyType = prettyType;</span>
+<span class="nc" id="L281">  }</span>
+
+  public void setComplexProperties(List&lt;Property&gt; complexProps) {
+<span class="nc" id="L284">    xmlProperties = complexProps;</span>
+<span class="nc" id="L285">  }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

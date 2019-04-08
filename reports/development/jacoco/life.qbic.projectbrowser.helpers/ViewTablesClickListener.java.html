@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ViewTablesClickListener.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.helpers</a> &gt; <span class="el_source">ViewTablesClickListener.java</span></div><h1>ViewTablesClickListener.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects.
+ * Copyright (C) &quot;2016”  Christopher Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.helpers;
+
+import java.util.ArrayList;
+
+import org.tepi.filtertable.FilterTable;
+
+import com.vaadin.data.Property;
+import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.ui.UI;
+
+import life.qbic.projectbrowser.controllers.State;
+
+/**
+ * This Class communicates clicks on the tables in the View classes to the state object, which in
+ * turn notifys the TreeViews and a change in the Navigator. e.g. In SpaceView the user clicks on a
+ * project in the table --&gt; notify state --&gt; notify TreeView --&gt; TreeView notifies Navigator to
+ * navigate to clicked project. Important: If the viewTable and the type are not set, valueChange
+ * will through Errors or behave unexpectedly.
+ * 
+ * @author wojnar
+ * 
+ */
+public class ViewTablesClickListener implements Property.ValueChangeListener {
+
+
+<span class="nc" id="L43">  public ViewTablesClickListener(FilterTable table, String type) {</span>
+<span class="nc" id="L44">    this.viewTable = table;</span>
+<span class="nc" id="L45">    this.type = type;</span>
+<span class="nc" id="L46">  }</span>
+
+<span class="nc" id="L48">  public ViewTablesClickListener() {</span>
+<span class="nc" id="L49">    this.viewTable = null;</span>
+<span class="nc" id="L50">    this.type = null;</span>
+<span class="nc" id="L51">  }</span>
+
+  /**
+	 * 
+	 */
+  private static final long serialVersionUID = -2654127722351401378L;
+
+  /**
+	 * 
+	 */
+  private FilterTable viewTable;
+
+
+
+  /**
+   * returns the table that the listener is listening to.
+   * 
+   * @return
+   */
+  public FilterTable getViewTable() {
+<span class="nc" id="L71">    return viewTable;</span>
+  }
+
+  /**
+   * sets the table that this listener is listening to.
+   * 
+   * @param viewTable
+   */
+  public void setViewTable(FilterTable viewTable) {
+<span class="nc" id="L80">    this.viewTable = viewTable;</span>
+<span class="nc" id="L81">  }</span>
+
+  /**
+   * Get the type of View that the table belongs to. e.g. Space, Project, Experiment.
+   * 
+   * @return
+   */
+  public String getType() {
+<span class="nc" id="L89">    return type;</span>
+  }
+
+  /**
+   * Sets the type of View that the table belongs to. e.g. Space, Project, Experiment.
+   * 
+   * @return
+   */
+  public void setType(String type) {
+<span class="nc" id="L98">    this.type = type;</span>
+<span class="nc" id="L99">  }</span>
+
+  private String type;
+
+  @Override
+  public void valueChange(ValueChangeEvent event) {
+    // TODO Auto-generated method stub
+<span class="nc" id="L106">    Object property = event.getProperty().getValue();</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">    if (property == null) {</span>
+<span class="nc" id="L108">      return;</span>
+    }
+    // String experiment = (String)
+    // this.viewTable.getItem(property).getItemProperty(this.type).getValue();
+<span class="nc" id="L112">    String entity = (String) this.viewTable.getItem(property).getItemProperty(&quot;id&quot;).getValue();</span>
+<span class="nc" id="L113">    State state = (State) UI.getCurrent().getSession().getAttribute(&quot;state&quot;);</span>
+<span class="nc" id="L114">    ArrayList&lt;String&gt; message = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L115">    message.add(&quot;clicked&quot;);</span>
+<span class="nc" id="L116">    message.add(entity);</span>
+<span class="nc" id="L117">    message.add(this.type);</span>
+<span class="nc" id="L118">    state.notifyObservers(message);</span>
+<span class="nc" id="L119">  }</span>
+
+  /**
+   * checks whether the table and the type are set.
+   * 
+   * @return
+   */
+  public boolean isInitialized() {
+<span class="nc bnc" id="L127" title="All 4 branches missed.">    return viewTable == null || type == null;</span>
+  }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>
