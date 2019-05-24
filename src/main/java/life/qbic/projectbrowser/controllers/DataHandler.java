@@ -1747,84 +1747,84 @@ public class DataHandler implements Serializable {
    * 
    * return dataset_container; }
    */
-
-  public void registerDatasetInTable(DataSet d, FileInfoDssDTO[] filelist,
-      HierarchicalContainer dataset_container, String project, String sample, Timestamp ts,
-      String sampleType, Object parent) {
-    if (filelist[0].isDirectory()) {
-
-      Object new_ds = dataset_container.addItem();
-
-      String folderPath = filelist[0].getPathInDataSet();
-      FileInfoDssDTO[] subList = d.listFiles(folderPath, false);
-
-      dataset_container.setChildrenAllowed(new_ds, true);
-      String download_link = filelist[0].getPathInDataSet();
-      String[] splitted_link = download_link.split("/");
-      String file_name = download_link.split("/")[splitted_link.length - 1];
-
-      dataset_container.getContainerProperty(new_ds, "Select").setValue(new CheckBox());
-
-      dataset_container.getContainerProperty(new_ds, "Project").setValue(project);
-      dataset_container.getContainerProperty(new_ds, "Sample").setValue(sample);
-      dataset_container.getContainerProperty(new_ds, "Sample Type")
-          .setValue(this.getOpenBisClient().getSampleByIdentifier(sample).getSampleTypeCode());
-      dataset_container.getContainerProperty(new_ds, "File Name").setValue(file_name);
-      dataset_container.getContainerProperty(new_ds, "File Type").setValue("Folder");
-      dataset_container.getContainerProperty(new_ds, "Dataset Type").setValue("-");
-      dataset_container.getContainerProperty(new_ds, "Registration Date").setValue(ts);
-      dataset_container.getContainerProperty(new_ds, "Validated").setValue(true);
-      dataset_container.getContainerProperty(new_ds, "dl_link").setValue(
-          d.getDataSetDss().tryGetInternalPathInDataStore() + "/" + filelist[0].getPathInDataSet());
-      dataset_container.getContainerProperty(new_ds, "CODE").setValue(d.getCode());
-      dataset_container.getContainerProperty(new_ds, "file_size_bytes")
-          .setValue(filelist[0].getFileSize());
-
-      // System.out.println("Now it should be a folder: " + filelist[0].getPathInDataSet());
-
-      if (parent != null) {
-        dataset_container.setParent(new_ds, parent);
-      }
-
-      for (FileInfoDssDTO file : subList) {
-        FileInfoDssDTO[] childList = {file};
-        registerDatasetInTable(d, childList, dataset_container, project, sample, ts, sampleType,
-            new_ds);
-      }
-
-    } else {
-      // System.out.println("Now it should be a file: " + filelist[0].getPathInDataSet());
-
-      Object new_file = dataset_container.addItem();
-      dataset_container.setChildrenAllowed(new_file, false);
-      String download_link = filelist[0].getPathInDataSet();
-      String[] splitted_link = download_link.split("/");
-      String file_name = download_link.split("/")[splitted_link.length - 1];
-      // String file_name = download_link.split("/")[1];
-      String fileSize = PortalUtils.humanReadableByteCount(filelist[0].getFileSize(), true);
-
-      dataset_container.getContainerProperty(new_file, "Select").setValue(new CheckBox());
-      dataset_container.getContainerProperty(new_file, "Project").setValue(project);
-      dataset_container.getContainerProperty(new_file, "Sample").setValue(sample);
-      dataset_container.getContainerProperty(new_file, "Sample Type").setValue(sampleType);
-      dataset_container.getContainerProperty(new_file, "File Name").setValue(file_name);
-      dataset_container.getContainerProperty(new_file, "File Type")
-          .setValue(d.getDataSetTypeCode());
-      dataset_container.getContainerProperty(new_file, "Dataset Type")
-          .setValue(d.getDataSetTypeCode());
-      dataset_container.getContainerProperty(new_file, "Registration Date").setValue(ts);
-      dataset_container.getContainerProperty(new_file, "Validated").setValue(true);
-      dataset_container.getContainerProperty(new_file, "File Size").setValue(fileSize);
-      dataset_container.getContainerProperty(new_file, "dl_link").setValue(
-          d.getDataSetDss().tryGetInternalPathInDataStore() + "/" + filelist[0].getPathInDataSet());
-      dataset_container.getContainerProperty(new_file, "CODE").setValue(d.getCode());
-      dataset_container.getContainerProperty(new_file, "file_size_bytes")
-          .setValue(filelist[0].getFileSize());
-      if (parent != null) {
-        dataset_container.setParent(new_file, parent);
-      }
-    }
-  }
+//
+//  public void registerDatasetInTable(DataSet d, FileInfoDssDTO[] filelist,
+//      HierarchicalContainer dataset_container, String project, String sample, Timestamp ts,
+//      String sampleType, Object parent) {
+//    if (filelist[0].isDirectory()) {
+//
+//      Object new_ds = dataset_container.addItem();
+//
+//      String folderPath = filelist[0].getPathInDataSet();
+//      FileInfoDssDTO[] subList = d.listFiles(folderPath, false);
+//
+//      dataset_container.setChildrenAllowed(new_ds, true);
+//      String download_link = filelist[0].getPathInDataSet();
+//      String[] splitted_link = download_link.split("/");
+//      String file_name = download_link.split("/")[splitted_link.length - 1];
+//
+//      dataset_container.getContainerProperty(new_ds, "Select").setValue(new CheckBox());
+//
+//      dataset_container.getContainerProperty(new_ds, "Project").setValue(project);
+//      dataset_container.getContainerProperty(new_ds, "Sample").setValue(sample);
+//      dataset_container.getContainerProperty(new_ds, "Sample Type")
+//          .setValue(this.getOpenBisClient().getSampleByIdentifier(sample).getSampleTypeCode());
+//      dataset_container.getContainerProperty(new_ds, "File Name").setValue(file_name);
+//      dataset_container.getContainerProperty(new_ds, "File Type").setValue("Folder");
+//      dataset_container.getContainerProperty(new_ds, "Dataset Type").setValue("-");
+//      dataset_container.getContainerProperty(new_ds, "Registration Date").setValue(ts);
+//      dataset_container.getContainerProperty(new_ds, "Validated").setValue(true);
+//      dataset_container.getContainerProperty(new_ds, "dl_link").setValue(
+//          d.getDataSetDss().tryGetInternalPathInDataStore() + "/" + filelist[0].getPathInDataSet());
+//      dataset_container.getContainerProperty(new_ds, "CODE").setValue(d.getCode());
+//      dataset_container.getContainerProperty(new_ds, "file_size_bytes")
+//          .setValue(filelist[0].getFileSize());
+//
+//      // System.out.println("Now it should be a folder: " + filelist[0].getPathInDataSet());
+//
+//      if (parent != null) {
+//        dataset_container.setParent(new_ds, parent);
+//      }
+//
+//      for (FileInfoDssDTO file : subList) {
+//        FileInfoDssDTO[] childList = {file};
+//        registerDatasetInTable(d, childList, dataset_container, project, sample, ts, sampleType,
+//            new_ds);
+//      }
+//
+//    } else {
+//      // System.out.println("Now it should be a file: " + filelist[0].getPathInDataSet());
+//
+//      Object new_file = dataset_container.addItem();
+//      dataset_container.setChildrenAllowed(new_file, false);
+//      String download_link = filelist[0].getPathInDataSet();
+//      String[] splitted_link = download_link.split("/");
+//      String file_name = download_link.split("/")[splitted_link.length - 1];
+//      // String file_name = download_link.split("/")[1];
+//      String fileSize = PortalUtils.humanReadableByteCount(filelist[0].getFileSize(), true);
+//
+//      dataset_container.getContainerProperty(new_file, "Select").setValue(new CheckBox());
+//      dataset_container.getContainerProperty(new_file, "Project").setValue(project);
+//      dataset_container.getContainerProperty(new_file, "Sample").setValue(sample);
+//      dataset_container.getContainerProperty(new_file, "Sample Type").setValue(sampleType);
+//      dataset_container.getContainerProperty(new_file, "File Name").setValue(file_name);
+//      dataset_container.getContainerProperty(new_file, "File Type")
+//          .setValue(d.getDataSetTypeCode());
+//      dataset_container.getContainerProperty(new_file, "Dataset Type")
+//          .setValue(d.getDataSetTypeCode());
+//      dataset_container.getContainerProperty(new_file, "Registration Date").setValue(ts);
+//      dataset_container.getContainerProperty(new_file, "Validated").setValue(true);
+//      dataset_container.getContainerProperty(new_file, "File Size").setValue(fileSize);
+//      dataset_container.getContainerProperty(new_file, "dl_link").setValue(
+//          d.getDataSetDss().tryGetInternalPathInDataStore() + "/" + filelist[0].getPathInDataSet());
+//      dataset_container.getContainerProperty(new_file, "CODE").setValue(d.getCode());
+//      dataset_container.getContainerProperty(new_file, "file_size_bytes")
+//          .setValue(filelist[0].getFileSize());
+//      if (parent != null) {
+//        dataset_container.setParent(new_file, parent);
+//      }
+//    }
+//  }
 
   /**
    * Function to fill tree container and collect statistical information of spaces. Should replace

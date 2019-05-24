@@ -15,6 +15,9 @@
  *******************************************************************************/
 package life.qbic.projectbrowser.helpers;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.vaadin.data.Container.Filter;
 import com.vaadin.data.util.GeneratedPropertyContainer;
 import com.vaadin.data.util.filter.SimpleStringFilter;
@@ -23,14 +26,17 @@ import com.vaadin.event.FieldEvents.TextChangeListener;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.HeaderCell;
 import com.vaadin.ui.Grid.HeaderRow;
+
 import com.vaadin.ui.TextField;
 
 public class GridFunctions {
   // Set up a filter for all columns
 
+  private static final Logger LOGGER = LogManager.getLogger(GridFunctions.class);
+
   public static void addColumnFilters(Grid grid, final GeneratedPropertyContainer gpcBio) {
     HeaderRow filterRow = grid.appendHeaderRow();
-
+    
     for (final Object pid : grid.getContainerDataSource().getContainerPropertyIds()) {
       HeaderCell cell = filterRow.getCell(pid);
 
