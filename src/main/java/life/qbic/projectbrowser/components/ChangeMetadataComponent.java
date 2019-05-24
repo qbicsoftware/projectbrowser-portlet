@@ -91,7 +91,7 @@ public class ChangeMetadataComponent extends CustomComponent {
         }
 
         HashMap<String, Object> parameters = new HashMap<String, Object>();
-        parameters.put("user", PortalUtils.getUser().getScreenName());
+        parameters.put("user", PortalUtils.getNonNullScreenName());
         parameters.put("identifier", currentBean.getId());
         parameters.put("properties", properties);
 

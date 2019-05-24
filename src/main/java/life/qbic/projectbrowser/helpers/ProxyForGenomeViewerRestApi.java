@@ -53,7 +53,7 @@ public class ProxyForGenomeViewerRestApi implements RequestHandler {
   public ProxyForGenomeViewerRestApi() {
     Random rand = new Random();
     rand.setSeed(
-        System.nanoTime() + Long.parseLong(PortalUtils.getUser().getScreenName(), 36));
+        System.nanoTime() + Long.parseLong(PortalUtils.getNonNullScreenName(), 36));
     session = rand.nextLong();
     UI.getCurrent().getSession().setAttribute("gv-restapi-session", session);
   }

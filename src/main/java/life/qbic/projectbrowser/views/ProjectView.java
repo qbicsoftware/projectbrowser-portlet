@@ -345,22 +345,11 @@ public class ProjectView extends VerticalLayout implements View {
 
     projDescription.setCaption("");
 
-    // String desc = currentBean.getDescription();
-    // if (!desc.isEmpty()) {
-    // descContent.setValue(desc);
-    // }
     descContent = new Label("");
-    // contact.setValue("<a
-    // href=\"mailto:info@qbic.uni-tuebingen.de?subject=Question%20concerning%20project%20"
-    // + currentBean.getId()
-    // + "\" style=\"color: #0068AA; text-decoration: none\">Send question regarding project "
-    // + currentBean.getId() + "</a>");
     contact = new Label("", ContentMode.HTML);
     projDescriptionContent.addComponent(descContent);
     projDescriptionContent.addComponent(contact);
     projDescriptionContent.setMargin(new MarginInfo(true, false, true, true));
-    // projDescriptionContent.setCaption("Description");
-    // projDescriptionContent.setIcon(FontAwesome.FILE_TEXT_O);
 
     projDescription.addComponent(projDescriptionContent);
     projDescriptionContent.setSpacing(true);
@@ -399,7 +388,7 @@ public class ProjectView extends VerticalLayout implements View {
   void updateContentDescription() {
     projDescriptionContent.removeAllComponents();
     contact.setValue(
-        "<a href=\"mailto:info@qbic.uni-tuebingen.de?subject=Question%20concerning%20project%20"
+        "<a href=\"mailto:support@qbic.zendesk.com?subject=Question%20concerning%20project%20"
             + currentBean.getId()
             + "\" style=\"color: #0068AA; text-decoration: none\">Send question regarding project "
             + currentBean.getId() + "</a>");
@@ -781,8 +770,7 @@ public class ProjectView extends VerticalLayout implements View {
         String webId = PropsUtil.get(PropsKeys.COMPANY_DEFAULT_WEB_ID);
         company = CompanyLocalServiceUtil.getCompanyByWebId(webId);
         companyId = company.getCompanyId();
-        // LOG.debug(String.format("Using webId %s and companyId %d to get Portal User", webId,
-        // companyId));
+
       } catch (PortalException | SystemException e) {
         LOG.error("liferay error, could not retrieve companyId. Trying default companyId, which is "
             + companyId, e.getStackTrace());
@@ -791,8 +779,6 @@ public class ProjectView extends VerticalLayout implements View {
           datahandler.getOpenBisClient().getSpaceMembers(currentBean.getId().split("/")[1]));
       members = new TreeMap<String, String>();
       memberLetters = new HashMap<String, String>();
-
-      // LOG.debug(list.toString());
 
       if (list != null) {
         memberString = new StringBuilder();
@@ -830,11 +816,6 @@ public class ProjectView extends VerticalLayout implements View {
               members.put(user.getFirstName(), userString);
             }
 
-            // memberString.append("<a href=\"mailto:");
-            // memberString.append(email);
-            // memberString.append("\" style=\"color: #0068AA; text-decoration: none\">");
-            // memberString.append(fullname);
-            // memberString.append("</a>");
           }
         }
         synchronized (UI.getCurrent()) {
@@ -907,7 +888,7 @@ public class ProjectView extends VerticalLayout implements View {
 
     OpenBisClient oc = datahandler.getOpenBisClient();
     List<Project> userProjects = oc.getOpenbisInfoService().listProjectsOnBehalfOfUser(
-        oc.getSessionToken(), PortalUtils.getUser().getScreenName().toString());
+        oc.getSessionToken(), PortalUtils.getNonNullScreenName());
 
     List<String> projectIDs = new ArrayList<String>();
 
@@ -930,11 +911,10 @@ public class ProjectView extends VerticalLayout implements View {
     } else {
       Utils.Notification("Unable to load project",
           String.format(
-              "The requested project %s could not be loaded. You probably don't have access to the requested project. Please contact the corresponding project manager or write an email to info@qbic.uni-tuebingen.de.",
+              "The requested project %s could not be loaded. You probably don't have access to the requested project. Please contact the corresponding project manager or write an email to support@qbic.zendesk.com.",
               currentValue),
           "error");
     }
-    // projectview_tab.setSelectedTab(0);
   }
 
 
@@ -946,9 +926,6 @@ public class ProjectView extends VerticalLayout implements View {
   public void setEnabled(boolean enabled) {
     this.export.setEnabled(enabled);
     this.table.setEnabled(enabled);
-    // this.createBarcodesMenuItem.getParent().setEnabled(false);
-    // this.downloadCompleteProjectMenuItem.getParent().setEnabled(false);
-    // this.toolbar.setEnabled(enabled);
   }
 
   /**

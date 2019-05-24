@@ -150,16 +150,30 @@ public class DataHandler implements Serializable {
     return sampleResults;
   }
 
-
   public void setSampleResults(List<Sample> sampleResults) {
+    Set<String> projects = new HashSet<String>();
+
+    // we have to initialize the projects in order to get the experimental design for the navigation from the searchbar view
+    for (Sample s: sampleResults) {
+      String expID = s.getExperimentIdentifierOrNull();
+      String spaceCode = s.getSpaceCode();
+      String projectId = String.format("/%s/%s", spaceCode, expID.split("/")[2]);
+
+      if(!projects.contains(projectId)) {
+        projects.add(projectId);
+      }
+    }
+
+    for (String p: projects) {
+      this.getProject2(p);
+    }
+
     this.sampleResults = sampleResults;
   }
-
 
   public List<Experiment> getExpResults() {
     return expResults;
   }
-
 
   public void setExpResults(List<Experiment> expResults) {
     this.expResults = expResults;
@@ -689,7 +703,7 @@ public class DataHandler implements Serializable {
         break;
       }
     }
-    String user = PortalUtils.getUser().getScreenName();
+    String user = PortalUtils.getNonNullScreenName();
 
     if (designExperiment == null) {
       LOG.info("design experiment null, creating new one.");
@@ -2212,7 +2226,7 @@ public class DataHandler implements Serializable {
       projectMap.put("code", newProjectCode);
       projectMap.put("space", space);
       projectMap.put("desc", description + " [" + secondaryNames.get(i) + "]");
-      projectMap.put("user", PortalUtils.getUser().getScreenName());
+      projectMap.put("user", PortalUtils.getNonNullScreenName());
 
       // call of ingestion service to register project
       this.getOpenBisClient().triggerIngestionService("register-proj", projectMap);
@@ -2244,7 +2258,7 @@ public class DataHandler implements Serializable {
       firstLevel.put("experimentalDesign", newExperimentalDesignID);
       firstLevel.put("secondaryName", secondaryNames.get(i));
       firstLevel.put("biologicalEntity", newBiologicalEntitiyID);
-      firstLevel.put("user", PortalUtils.getUser().getScreenName());
+      firstLevel.put("user", PortalUtils.getNonNullScreenName());
 
       this.getOpenBisClient().triggerIngestionService("register-ivac-lvl", firstLevel);
 
@@ -2317,7 +2331,7 @@ public class DataHandler implements Serializable {
           secondLevel.put("parent", newBiologicalEntitiyID);
           secondLevel.put("primaryTissue", primaryTissues);
           secondLevel.put("detailedTissue", detailedTissue);
-          secondLevel.put("user", PortalUtils.getUser().getScreenName());
+          secondLevel.put("user", PortalUtils.getNonNullScreenName());
 
           this.getOpenBisClient().triggerIngestionService("register-ivac-lvl", secondLevel);
           // helpers.Utils.printMapContent(secondLevel);
@@ -2428,7 +2442,7 @@ public class DataHandler implements Serializable {
           thirdLevel.put("experiments", newSamplePreparationIDs);
           thirdLevel.put("samples", newTestSampleIDs);
           thirdLevel.put("types", testTypes);
-          thirdLevel.put("user", PortalUtils.getUser().getScreenName());
+          thirdLevel.put("user", PortalUtils.getNonNullScreenName());
 
           fourthLevel.put("lvl", "4");
           fourthLevel.put("experiments", newNGSMeasurementIDs);
@@ -2437,7 +2451,7 @@ public class DataHandler implements Serializable {
           fourthLevel.put("types", testTypes);
           fourthLevel.put("info", additionalInfo);
           fourthLevel.put("device", sequencerDevice);
-          fourthLevel.put("user", PortalUtils.getUser().getScreenName());
+          fourthLevel.put("user", PortalUtils.getNonNullScreenName());
 
           // TODO additional level for HLA typing
 

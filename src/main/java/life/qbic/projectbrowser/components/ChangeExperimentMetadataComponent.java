@@ -142,7 +142,7 @@ public class ChangeExperimentMetadataComponent extends CustomComponent {
 
 
         HashMap<String, Object> parameters = new HashMap<String, Object>();
-        parameters.put("user", PortalUtils.getUser().getScreenName());
+        parameters.put("user", PortalUtils.getNonNullScreenName());
         parameters.put("identifier", id);
         parameters.put("properties", props);
 

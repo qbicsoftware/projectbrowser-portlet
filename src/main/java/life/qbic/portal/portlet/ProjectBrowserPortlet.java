@@ -95,31 +95,33 @@ public class ProjectBrowserPortlet extends QBiCPortletUI {
   protected Layout getPortletContent(final VaadinRequest request) {
     LOG.info("Generating content for {}", ProjectBrowserPortlet.class);
 
-    Layout mainLayout;
-
-    if (PortalUtils.getUser() == null) {
-      mainLayout = buildNotLoggedinLayout();
-    } else {
-      manager = ConfigurationManagerFactory.getInstance();
-      // log who is connecting, when.
-      LOG.info(String.format("ProjectBrowser used by: %s", PortalUtils.getUser().getScreenName()));
-      // try to init connection to openbis and write some session attributes, that can be accessed
-      // globally
-      try {
-        initConnection();
-        initSessionAttributes();
-      } catch (Exception e) {
-        // probably the connection to openbis failed
-        buildOpenbisConnectionErrorLayout(request);
-        // write an error message if failed to load openbis and is in production
-        errorMessageIfIsProduction();
+    manager = ConfigurationManagerFactory.getInstance();
+    // check if we are allowed to display content to unauthenticated users
+    if (PortalUtils.isLiferayPortlet() && PortalUtils.getUser() == null) {
+      final ConfigurationManager configurationManager = ConfigurationManagerFactory.getInstance();
+      if (!configurationManager.isAllowUnauthenticatedAccess("projectbrowser")) {
+        // display a "please log in" message
+        return PortalUtils.buildNotLoggedInLayout();
       }
-      this.resUrl =
-          (String) getPortletSession().getAttribute("resURL", PortletSession.APPLICATION_SCOPE);
-      mainLayout = initProgressBarAndThreading(request);
     }
 
-    setContent(mainLayout);
+    Layout mainLayout;
+
+    // log who is connecting, when.
+    LOG.info(String.format("ProjectBrowser used by: %s", PortalUtils.getNonNullScreenName()));
+    // try to init connection to openbis and write some session attributes, that can be accessed globally
+    try {
+      initConnection();
+      initSessionAttributes();
+    } catch (Exception e) {
+      // probably the connection to openbis failed
+      buildOpenbisConnectionErrorLayout(request);
+      // write an error message if failed to load openbis and is in production
+      errorMessageIfIsProduction();
+    }
+    this.resUrl = (String) getPortletSession().getAttribute("resURL", PortletSession.APPLICATION_SCOPE);
+    mainLayout = initProgressBarAndThreading(request);
+
     return mainLayout;
   }
 
@@ -173,82 +175,21 @@ public class ProjectBrowserPortlet extends QBiCPortletUI {
   }
 
   /**
-   * builds page if user is not logged in
-   */
-  private Layout buildNotLoggedinLayout() {
-    // Mail to qbic
-    ExternalResource resource = new ExternalResource("mailto:info@qbic.uni-tuebingen.de");
-    Link mailToQbicLink = new Link("", resource);
-    mailToQbicLink.setIcon(new ThemeResource("mail9.png"));
-
-
-    ThemeDisplay themedisplay =
-        (ThemeDisplay) VaadinService.getCurrentRequest().getAttribute(WebKeys.THEME_DISPLAY);
-
-    // redirect to liferay login page
-    Link loginPortalLink = new Link("", new ExternalResource(themedisplay.getURLSignIn()));
-    loginPortalLink.setIcon(new ThemeResource("lock12.png"));
-
-    // left part of the page
-    VerticalLayout signIn = new VerticalLayout();
-    signIn.addComponent(new Label("<h3>Sign in to manage your projects and access your data:</h3>",
-        ContentMode.HTML));
-    signIn.addComponent(loginPortalLink);
-    signIn.setStyleName("no-user-login");
-    // right part of the page
-    VerticalLayout contact = new VerticalLayout();
-    contact.addComponent(new Label(
-        "<h3>If you are interested in doing projects get in contact:</h3>", ContentMode.HTML));
-    contact.addComponent(mailToQbicLink);
-    contact.setStyleName("no-user-login");
-
-    // build final layout, with some gaps between
-    HorizontalLayout notSignedInLayout = new HorizontalLayout();
-    Label expandingGap1 = new Label();
-    expandingGap1.setWidth("100%");
-    notSignedInLayout.addComponent(expandingGap1);
-    notSignedInLayout.addComponent(signIn);
-
-    notSignedInLayout.addComponent(contact);
-    notSignedInLayout.setExpandRatio(expandingGap1, 0.16f);
-    notSignedInLayout.setExpandRatio(signIn, 0.36f);
-
-    notSignedInLayout.setExpandRatio(contact, 0.36f);
-
-    notSignedInLayout.setWidth("100%");
-    notSignedInLayout.setSpacing(true);
-
-    return notSignedInLayout;
-  }
-
-  /**
    * starts the querying of openbis and initializing the view
    *
    * @param request
    */
   protected Layout initProgressBarAndThreading(VaadinRequest request) {
     GridLayout layout = new GridLayout();
-    // setContent(layout);
-
-    // TODO so this function uses the same error as above, but doesn't call
-    // OpenbisConnectionErrorLayout...we might want to change that
-    // final Label status = new Label("Connecting to database.");
-    // status.addStyleName(ValoTheme.LABEL_HUGE);
-    // status.addStyleName(ValoTheme.LABEL_LIGHT);
-    // layout.addComponent(status);
-    // layout.setComponentAlignment(status, Alignment.MIDDLE_RIGHT);
 
     try {
-      layout = buildMainLayout(datahandler, request, PortalUtils.getUser().getScreenName());
+      layout = buildMainLayout(datahandler, request, PortalUtils.getNonNullScreenName());
     } catch (Exception e) {
       if (datahandler.getOpenBisClient().loggedin()) {
         LOG.error("User not known?", e);
         buildUserUnknownError(request);
       } else {
         LOG.error("exception thrown during initialization.", e);
-        // status.setValue(
-        // "An error occured, while trying to connect to the database. Please try again later, or
-        // contact your project manager.");
       }
     }
 
@@ -390,20 +331,6 @@ public class ProjectBrowserPortlet extends QBiCPortletUI {
     mainLayout.addComponent(header, 1, 0);
     mainLayout.addComponent(searchBarView, 2, 0);
 
-    /*
-     * VerticalLayout versionLayout = new VerticalLayout(); versionLayout.setWidth(100,
-     * Unit.PERCENTAGE); Label versionLabel = new Label(String.format("version: %s", version));
-     * Label revisionLabel = new Label(String.format("rev: %s", revision));
-     * revisionLabel.setWidth(null); versionLabel.setWidth(null);
-     * 
-     * versionLayout.addComponent(versionLabel); if (!isInProductionMode()) {
-     * versionLayout.addComponent(revisionLabel); versionLayout.setComponentAlignment(revisionLabel,
-     * Alignment.BOTTOM_RIGHT); }
-     * 
-     * mainLayout.addComponent(versionLayout, 0, 2, 2, 2); mainLayout.setRowExpandRatio(2, 1.0f);
-     * 
-     * versionLayout.setComponentAlignment(versionLabel, Alignment.MIDDLE_RIGHT);
-     */
     mainLayout.setComponentAlignment(searchBarView, Alignment.BOTTOM_RIGHT);
 
     return mainLayout;

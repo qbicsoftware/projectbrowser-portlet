@@ -609,7 +609,6 @@ public class SampleView extends VerticalLayout implements View {
     // TODO updateContent only if currentExperiment is not equal to newExperiment
     // this.table.unselect(this.table.getValue());
     // this.setContainerDataSource(datahandler.getSample(currentValue));
-
     this.currentBean = datahandler.getSample(currentValue);
     updateContent();
     sampview_tab.setSelectedTab(0);

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.vaadin.shared.ui.label.ContentMode;
 import org.tepi.filtertable.FilterTable;
 
 import com.vaadin.data.util.BeanItemContainer;
@@ -88,6 +89,7 @@ public class SearchResultsView extends VerticalLayout implements View {
   State state;
   String resourceUrl;
   String header;
+  private final Label headerLabel;
 
   public String getHeader() {
     return header;
@@ -110,7 +112,9 @@ public class SearchResultsView extends VerticalLayout implements View {
     this.table = buildFilterTable();
     this.datahandler = datahandler;
 
-    this.state = state;
+      headerLabel = new Label("", ContentMode.HTML);
+
+      this.state = state;
     this.resourceUrl = resUrl;
 
     this.user = user;
@@ -241,8 +245,8 @@ public class SearchResultsView extends VerticalLayout implements View {
     // searchResultsLayout.setSpacing(true);
 
     searchResultsLayout.setCaption("Search results for query '" + queryString + "'");
-    // Label header = new Label("Search results for query '" + queryString + "':");
-    // searchResultsLayout.addComponent(header);
+
+    headerLabel.setValue("If you want to navigate to one of the given search results, please click on the corresponding field in the ID column of the respective table.");
 
     // updateView(browserWidth, browserWidth, browser);
 
@@ -250,6 +254,7 @@ public class SearchResultsView extends VerticalLayout implements View {
     viewContent.setWidth("100%");
     viewContent.setSpacing(true);
     viewContent.setMargin(new MarginInfo(true, false, false, false));
+    viewContent.addComponent(headerLabel);
 
     List<String> showOptions = datahandler.getShowOptions();
 
