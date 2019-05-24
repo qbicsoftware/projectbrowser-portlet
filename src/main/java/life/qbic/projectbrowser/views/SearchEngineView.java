@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.*;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.validator.NullValidator;
@@ -43,12 +44,6 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Experiment;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Project;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SampleFetchOption;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SampleType;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria.MatchClause;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria.MatchClauseAttribute;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentFetchOption;
@@ -210,27 +205,41 @@ public class SearchEngineView extends CustomComponent {
         } else {
 
           try {
-            /**
-             * Sample foundSample = datahandler.getOpenBisClient() .getSampleByIdentifier(
-             * matcher.group(0).toString());
-             */
 
-            datahandler.setSampleResults(querySamples(queryString));
-            datahandler.setExpResults(queryExperiments(queryString));
-            datahandler.setProjResults(queryProjects(queryString));
+            switch ((String) navsel.getValue()) {
+              case "Whole DB":
+                datahandler.setSampleResults(querySamples(queryString));
+                datahandler.setExpResults(queryExperiments(queryString));
+                datahandler.setProjResults(queryProjects(queryString));
+                break;
+              case "Projects Only":
+                datahandler.setProjResults(queryProjects(queryString));
+                break;
+              case "Experiments Only":
+                datahandler.setExpResults(queryExperiments(queryString));
+                break;
+              case "Samples Only":
+                datahandler.setSampleResults(querySamples(queryString));
+                break;
+              default:
+                datahandler.setSampleResults(querySamples(queryString));
+                datahandler.setExpResults(queryExperiments(queryString));
+                datahandler.setProjResults(queryProjects(queryString));
+                break;
+            }
+
             datahandler.setLastQueryString(queryString);
-
 
             State state = (State) UI.getCurrent().getSession().getAttribute("state");
             ArrayList<String> message = new ArrayList<String>();
             message.add("clicked");
-            message.add("view" + queryString);
+            message.add("view" + queryString + navsel.getValue().toString().replace(" ", ""));
             message.add("searchresults");
             state.notifyObservers(message);
 
           } catch (Exception e) {
             LOG.error("after query: ", e);
-            Notification.show("No Sample found for given barcode.", Type.WARNING_MESSAGE);
+            Notification.show("No entities found for given term.", Type.WARNING_MESSAGE);
           }
         }
 
@@ -272,64 +281,31 @@ public class SearchEngineView extends CustomComponent {
 
   public List<Sample> querySamples(String queryString) {
     EnumSet<SampleFetchOption> fetchOptions = EnumSet.of(SampleFetchOption.PROPERTIES,
-        SampleFetchOption.BASIC, SampleFetchOption.CONTAINED, SampleFetchOption.DESCENDANTS,
-        SampleFetchOption.PARENTS, SampleFetchOption.CHILDREN, SampleFetchOption.ANCESTORS);
+            SampleFetchOption.BASIC);
 
-    SearchCriteria sc2 = new SearchCriteria();
-    sc2.addMatchClause(MatchClause.createAnyFieldMatch(queryString));
+            //, SampleFetchOption.CONTAINED, SampleFetchOption.DESCENDANTS,
+            //SampleFetchOption.PARENTS, SampleFetchOption.CHILDREN, SampleFetchOption.ANCESTORS);
 
-    // List<Sample> samples2 = datahandler.getOpenBisClient().getOpenbisInfoService()
-    // .searchForSamplesOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(), sc2,
-    // fetchOptions, LiferayAndVaadinUtils.getUser().getScreenName());
-    List<Sample> samples2 = datahandler.getOpenBisClient().getOpenbisInfoService()
-        .searchForSamples(datahandler.getOpenBisClient().getSessionToken(), sc2, fetchOptions);
+    SearchCriteria sc = new SearchCriteria();
+    sc.addMatchClause(MatchClause.createAnyFieldMatch("*" + queryString + "*"));
 
-    return samples2;
+    List<Sample> samples = datahandler.getOpenBisClient().getOpenbisInfoService().searchForSamplesOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(), sc, fetchOptions, PortalUtils.getNonNullScreenName());
+
+    return samples;
   }
-
-  /*
-   * public List<DataSet> queryDatasets(String queryString) { // EnumSet<SampleFetchOption>
-   * fetchOptions = EnumSet.of(DatasetF.PROPERTIES, // SampleFetchOption.BASIC,
-   * SampleFetchOption.CONTAINED, SampleFetchOption.DESCENDANTS, // SampleFetchOption.PARENTS,
-   * SampleFetchOption.CHILDREN, SampleFetchOption.ANCESTORS);
-   * 
-   * SearchCriteria sc2 = new SearchCriteria();
-   * sc2.addMatchClause(MatchClause.createAnyFieldMatch(queryString));
-   * 
-   * // List<Sample> samples2 = datahandler.getOpenBisClient().getOpenbisInfoService() //
-   * .searchForSamplesOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(), sc2, //
-   * fetchOptions, LiferayAndVaadinUtils.getUser().getScreenName());
-   * List<ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet> datasets =
-   * datahandler.getOpenBisClient().getOpenbisInfoService()
-   * .searchForDataSets(datahandler.getOpenBisClient().getSessionToken(), sc2);
-   * 
-   * return datasets; }
-   */
-
 
 
   public List<Experiment> queryExperiments(String queryString) {
     EnumSet<ExperimentFetchOption> fetchOptions =
         EnumSet.of(ExperimentFetchOption.PROPERTIES, ExperimentFetchOption.BASIC);
-    // SearchCriteria sc1 = new SearchCriteria();
-    // sc1.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.CODE, queryString));
 
-    SearchCriteria sc2 = new SearchCriteria();
-    sc2.addMatchClause(MatchClause.createAnyFieldMatch(queryString));
+    SearchCriteria sc = new SearchCriteria();
+    sc.addMatchClause(MatchClause.createAnyFieldMatch("*" + queryString + "*"));
 
-    // List<Sample> samples1 =
-    // datahandler.getOpenBisClient().getOpenbisInfoService().searchForSamplesOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(),
-    // sc1, fetchOptions,LiferayAndVaadinUtils.getUser().getScreenName());
-
-    // List<Sample> samples2 =
-    // datahandler.getOpenBisClient().getOpenbisInfoService().searchForSamplesOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(),
-    // sc2, fetchOptions,LiferayAndVaadinUtils.getUser().getScreenName());
     List<Experiment> exps = datahandler.getOpenBisClient().getOpenbisInfoService()
-        .searchForExperiments(datahandler.getOpenBisClient().getSessionToken(), sc2);
-
+        .searchForExperiments(datahandler.getOpenBisClient().getSessionToken(), sc);
 
     List<Experiment> expFilteredByUser = new ArrayList<Experiment>();
-
 
     for (Experiment e : exps) {
       String[] splitstr = e.getIdentifier().split("/");
@@ -339,8 +315,6 @@ public class SearchEngineView extends CustomComponent {
         expFilteredByUser.add(e);
       }
     }
-
-    // LOG.info("hits: " + samples1.size() + " " + samples2.size());
 
     return expFilteredByUser;
   }
@@ -357,18 +331,12 @@ public class SearchEngineView extends CustomComponent {
       String projectDesc = p.getDescription();
 
       // sometimes there is no description available (check for null entry)
-      if (projectDesc == null) {
-        continue;
-
-      } else {
-        projectDesc = projectDesc.toLowerCase();
-
-        if (projectDesc.contains(queryString.toLowerCase())) {
-          result.add(p);
-        }
+      if (projectDesc != null && projectDesc.contains(queryString.toLowerCase())) {
+        result.add(p);
+      } else if (p.getCode().contains(queryString)) {
+        result.add(p);
       }
     }
-
     return result;
   }
 

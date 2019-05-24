@@ -149,16 +149,30 @@ public class DataHandler implements Serializable {
     return sampleResults;
   }
 
-
   public void setSampleResults(List<Sample> sampleResults) {
+    Set<String> projects = new HashSet<String>();
+
+    // we have to initialize the projects in order to get the experimental design for the navigation from the searchbar view
+    for (Sample s: sampleResults) {
+      String expID = s.getExperimentIdentifierOrNull();
+      String spaceCode = s.getSpaceCode();
+      String projectId = String.format("/%s/%s", spaceCode, expID.split("/")[2]);
+
+      if(!projects.contains(projectId)) {
+        projects.add(projectId);
+      }
+    }
+
+    for (String p: projects) {
+      this.getProject2(p);
+    }
+
     this.sampleResults = sampleResults;
   }
-
 
   public List<Experiment> getExpResults() {
     return expResults;
   }
-
 
   public void setExpResults(List<Experiment> expResults) {
     this.expResults = expResults;

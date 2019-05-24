@@ -50,7 +50,8 @@ public class SearchResultsSampleBean implements Comparable<Object>, Serializable
 
 
   public SearchResultsSampleBean(Sample s, String query) {
-    sampleID = s.getCode();
+    //sampleID = s.getCode();
+    sampleID = s.getIdentifier();
     sampleName = this.extractSampleProperty(s, "Q_SECONDARY_NAME");
     queryString = query;
     matchedField = findMatchedFields(s);
