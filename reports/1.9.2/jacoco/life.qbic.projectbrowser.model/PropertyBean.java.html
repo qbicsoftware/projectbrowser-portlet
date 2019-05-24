@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PropertyBean.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.model</a> &gt; <span class="el_source">PropertyBean.java</span></div><h1>PropertyBean.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects.
+ * Copyright (C) &quot;2016”  Christopher Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+
+package life.qbic.projectbrowser.model;
+
+import java.io.Serializable;
+import java.util.List;
+
+public class PropertyBean implements Serializable {
+	
+	private String label;
+	private String code;
+	private String type;
+	private String description;
+	private Object value;
+	private List&lt;String&gt; vocabularyValues;
+	
+<span class="nc" id="L33">	public PropertyBean(String label, String code, String description, Object value) {</span>
+<span class="nc" id="L34">		this.label = label;</span>
+<span class="nc" id="L35">		this.code = code;</span>
+<span class="nc" id="L36">		this.description = description;</span>
+<span class="nc" id="L37">		this.setValue(value);</span>
+<span class="nc" id="L38">	}</span>
+
+<span class="nc" id="L40">	public PropertyBean() {</span>
+		/* TODO Auto-generated constructor stub */
+<span class="nc" id="L42">	}</span>
+
+	public String getLabel() {
+<span class="nc" id="L45">		return label;</span>
+	}
+
+	public void setLabel(String label) {
+<span class="nc" id="L49">		this.label = label;</span>
+<span class="nc" id="L50">	}</span>
+
+	public String getCode() {
+<span class="nc" id="L53">		return code;</span>
+	}
+
+	public void setCode(String code) {
+<span class="nc" id="L57">		this.code = code;</span>
+<span class="nc" id="L58">	}</span>
+
+	public String getType() {
+<span class="nc" id="L61">		return type;</span>
+	}
+
+	public void setType(String type) {
+<span class="nc" id="L65">		this.type = type;</span>
+<span class="nc" id="L66">	}</span>
+
+	public String getDescription() {
+<span class="nc" id="L69">		return description;</span>
+	}
+
+	public void setDescription(String description) {
+<span class="nc" id="L73">		this.description = description;</span>
+<span class="nc" id="L74">	}</span>
+
+	public Object getValue() {
+<span class="nc" id="L77">		return value;</span>
+	}
+
+	public void setValue(Object value) {
+<span class="nc" id="L81">		this.value = value;</span>
+<span class="nc" id="L82">	}</span>
+
+	public List&lt;String&gt; getVocabularyValues() {
+<span class="nc" id="L85">		return vocabularyValues;</span>
+	}
+
+	public void setVocabularyValues(List&lt;String&gt; vocabularyValues) {
+<span class="nc" id="L89">		this.vocabularyValues = vocabularyValues;</span>
+<span class="nc" id="L90">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

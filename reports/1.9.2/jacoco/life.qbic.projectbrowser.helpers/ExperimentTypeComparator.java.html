@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExperimentTypeComparator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.helpers</a> &gt; <span class="el_source">ExperimentTypeComparator.java</span></div><h1>ExperimentTypeComparator.java</h1><pre class="source lang-java linenums">package life.qbic.projectbrowser.helpers;
+
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Experiment;
+import life.qbic.projectbrowser.helpers.BarcodeFunctions;
+
+/**
+ * Compares Experiments by their type, meaning that types can be sorted by experimental design
+ * hierarchy
+ * 
+ * @author Andreas Friedrich
+ *
+ */
+public class ExperimentTypeComparator implements Comparator&lt;Experiment&gt; {
+
+<span class="nc" id="L21">  private static final ExperimentTypeComparator instance = new ExperimentTypeComparator();</span>
+
+  public static ExperimentTypeComparator getInstance() {
+<span class="nc" id="L24">    return instance;</span>
+  }
+
+<span class="nc" id="L27">  private ExperimentTypeComparator() {}</span>
+
+<span class="nc" id="L29">  private final Map&lt;String, Integer&gt; hierarchy = new HashMap&lt;String, Integer&gt;() {</span>
+    {
+      // basics
+<span class="nc" id="L32">      put(&quot;Q_EXPERIMENTAL_DESIGN&quot;, 1);</span>
+<span class="nc" id="L33">      put(&quot;Q_SAMPLE_EXTRACTION&quot;, 2);</span>
+<span class="nc" id="L34">      put(&quot;Q_SAMPLE_PREPARATION&quot;, 3);</span>
+<span class="nc" id="L35">      put(&quot;Q_MHC_LIGAND_EXTRACTION&quot;, 4);</span>
+
+      // measurements
+<span class="nc" id="L38">      put(&quot;Q_NGS_FLOWCELL_RUN&quot;, 10);</span>
+<span class="nc" id="L39">      put(&quot;Q_NGS_SINGLE_SAMPLE_RUN&quot;, 11);</span>
+<span class="nc" id="L40">      put(&quot;Q_NGS_MEASUREMENT&quot;, 12);</span>
+<span class="nc" id="L41">      put(&quot;Q_MICROARRAY_MEASUREMENT&quot;, 13);</span>
+<span class="nc" id="L42">      put(&quot;Q_MS_MEASUREMENT&quot;, 14);</span>
+
+      // external QC
+<span class="nc" id="L45">      put(&quot;Q_EXT_MS_QUALITYCONTROL&quot;, 20);</span>
+<span class="nc" id="L46">      put(&quot;Q_EXT_NGS_QUALITYCONTROL&quot;, 21);</span>
+
+      // QC at QBiC
+<span class="nc" id="L49">      put(&quot;Q_WF_MA_QUALITYCONTROL&quot;, 30);</span>
+<span class="nc" id="L50">      put(&quot;Q_WF_MS_QUALITYCONTROL&quot;, 31);</span>
+<span class="nc" id="L51">      put(&quot;Q_WF_NGS_QUALITYCONTROL&quot;, 32);</span>
+
+      // actually doing something with the data
+<span class="nc" id="L54">      put(&quot;Q_NGS_MAPPING&quot;, 40);</span>
+<span class="nc" id="L55">      put(&quot;Q_NGS_VARIANT_CALLING&quot;, 41);</span>
+<span class="nc" id="L56">      put(&quot;Q_NGS_HLATYPING&quot;, 42);</span>
+<span class="nc" id="L57">      put(&quot;Q_NGS_EPITOPE_PREDICTION&quot;, 43);</span>
+<span class="nc" id="L58">      put(&quot;Q_NGS_IMMUNE_MONITORING&quot;, 44);</span>
+<span class="nc" id="L59">      put(&quot;Q_WF_MS_LIGANDOMICS_ID&quot;, 45);</span>
+<span class="nc" id="L60">      put(&quot;Q_WF_MS_LIGANDOMICS_QC&quot;, 46);</span>
+
+      // doing something with the data using QBiC workflows
+<span class="nc" id="L63">      put(&quot;Q_WF_NGS_MERGE&quot;, 50);</span>
+<span class="nc" id="L64">      put(&quot;Q_WF_MS_MAXQUANT&quot;, 51);</span>
+<span class="nc" id="L65">      put(&quot;Q_WF_MS_PEPTIDEID&quot;, 52);</span>
+<span class="nc" id="L66">      put(&quot;Q_WF_NGS_EPITOPE_PREDICTION&quot;, 53);</span>
+<span class="nc" id="L67">      put(&quot;Q_WF_NGS_HLATYPING&quot;, 54);</span>
+<span class="nc" id="L68">      put(&quot;Q_WF_NGS_RNA_EXPRESSION_ANALYSIS&quot;, 55);</span>
+<span class="nc" id="L69">      put(&quot;Q_WF_NGS_VARIANT_ANNOTATION&quot;, 56);</span>
+<span class="nc" id="L70">      put(&quot;Q_WF_NGS_VARIANT_CALLING&quot;, 57);</span>
+<span class="nc" id="L71">      put(&quot;Q_WF_NGS_MAPPING&quot;, 58);</span>
+<span class="nc" id="L72">      put(&quot;Q_WF_MS_INDIVIDUALIZED_PROTEOME&quot;, 59);</span>
+<span class="nc" id="L73">    };</span>
+  };
+
+  @Override
+  public int compare(Experiment o1, Experiment o2) {
+<span class="nc" id="L78">    String t1 = o1.getExperimentTypeCode();</span>
+<span class="nc" id="L79">    String t2 = o2.getExperimentTypeCode();</span>
+<span class="nc" id="L80">    int i1 = Integer.MAX_VALUE;</span>
+<span class="nc" id="L81">    int i2 = Integer.MAX_VALUE;</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">    if (hierarchy.containsKey(t1))</span>
+<span class="nc" id="L83">      i1 = hierarchy.get(t1);</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">    if (hierarchy.containsKey(t2))</span>
+<span class="nc" id="L85">      i2 = hierarchy.get(t2);</span>
+<span class="nc" id="L86">    int base = i1 - i2;</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">    if (base == 0)</span>
+<span class="nc" id="L88">      return compareNatural(o1.getCode(), o2.getCode());</span>
+    else
+<span class="nc" id="L90">      return base;</span>
+  }
+
+  public static int compareCodeByNumberSuffix(String a, String b) {
+<span class="nc bnc" id="L94" title="All 4 branches missed.">    if (BarcodeFunctions.isExperimentCode(a) &amp;&amp; BarcodeFunctions.isExperimentCode(b)) {</span>
+<span class="nc" id="L95">      int aNum = Integer.parseInt(a.substring(6));</span>
+<span class="nc" id="L96">      int bNum = Integer.parseInt(b.substring(6));</span>
+<span class="nc" id="L97">      return aNum - bNum;</span>
+    } else
+<span class="nc" id="L99">      return compareNatural(a, b);</span>
+  }
+
+  public static int compareNatural(String a, String b) {
+<span class="nc" id="L103">    int la = a.length();</span>
+<span class="nc" id="L104">    int lb = b.length();</span>
+<span class="nc" id="L105">    int ka = 0;</span>
+<span class="nc" id="L106">    int kb = 0;</span>
+    while (true) {
+<span class="nc bnc" id="L108" title="All 2 branches missed.">      if (ka == la)</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">        return kb == lb ? 0 : -1;</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">      if (kb == lb)</span>
+<span class="nc" id="L111">        return 1;</span>
+<span class="nc bnc" id="L112" title="All 6 branches missed.">      if (a.charAt(ka) &gt;= '0' &amp;&amp; a.charAt(ka) &lt;= '9' &amp;&amp; b.charAt(kb) &gt;= '0'</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">          &amp;&amp; b.charAt(kb) &lt;= '9') {</span>
+<span class="nc" id="L114">        int na = 0;</span>
+<span class="nc" id="L115">        int nb = 0;</span>
+<span class="nc bnc" id="L116" title="All 4 branches missed.">        while (ka &lt; la &amp;&amp; a.charAt(ka) == '0')</span>
+<span class="nc" id="L117">          ka++;</span>
+<span class="nc bnc" id="L118" title="All 6 branches missed.">        while (ka + na &lt; la &amp;&amp; a.charAt(ka + na) &gt;= '0' &amp;&amp; a.charAt(ka + na) &lt;= '9')</span>
+<span class="nc" id="L119">          na++;</span>
+<span class="nc bnc" id="L120" title="All 4 branches missed.">        while (kb &lt; lb &amp;&amp; b.charAt(kb) == '0')</span>
+<span class="nc" id="L121">          kb++;</span>
+<span class="nc bnc" id="L122" title="All 6 branches missed.">        while (kb + nb &lt; lb &amp;&amp; b.charAt(kb + nb) &gt;= '0' &amp;&amp; b.charAt(kb + nb) &lt;= '9')</span>
+<span class="nc" id="L123">          nb++;</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        if (na &gt; nb)</span>
+<span class="nc" id="L125">          return 1;</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        if (nb &gt; na)</span>
+<span class="nc" id="L127">          return -1;</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        if (ka == la)</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">          return kb == lb ? 0 : -1;</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        if (kb == lb)</span>
+<span class="nc" id="L131">          return 1;</span>
+
+      }
+<span class="nc bnc" id="L134" title="All 2 branches missed.">      if (a.charAt(ka) != b.charAt(kb))</span>
+<span class="nc" id="L135">        return a.charAt(ka) - b.charAt(kb);</span>
+<span class="nc" id="L136">      ka++;</span>
+<span class="nc" id="L137">      kb++;</span>
+    }
+  }
+
+  public int compareAlphanumerical(String object1, String object2) {
+<span class="nc" id="L142">    final Pattern p = Pattern.compile(&quot;^\\d+&quot;);</span>
+
+<span class="nc" id="L144">    Matcher m = p.matcher(object1);</span>
+<span class="nc" id="L145">    Integer number1 = null;</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">    if (!m.find()) {</span>
+<span class="nc" id="L147">      return object1.compareTo(object2);</span>
+    } else {
+<span class="nc" id="L149">      Integer number2 = null;</span>
+<span class="nc" id="L150">      number1 = Integer.parseInt(m.group());</span>
+<span class="nc" id="L151">      m = p.matcher(object2);</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">      if (!m.find()) {</span>
+<span class="nc" id="L153">        return object1.compareTo(object2);</span>
+      } else {
+<span class="nc" id="L155">        number2 = Integer.parseInt(m.group());</span>
+<span class="nc" id="L156">        int comparison = number1.compareTo(number2);</span>
+<span class="nc bnc" id="L157" title="All 2 branches missed.">        if (comparison != 0) {</span>
+<span class="nc" id="L158">          return comparison;</span>
+        } else {
+<span class="nc" id="L160">          return object1.compareTo(object2);</span>
+        }
+      }
+    }
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

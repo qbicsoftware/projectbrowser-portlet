@@ -1,0 +1,588 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>BiologicalSamplesComponent xref</title>
+<link type="text/css" rel="stylesheet" href="../../../../stylesheet.css" />
+</head>
+<body>
+<div id="overview"><a href="../../../../../apidocs/life/qbic/projectbrowser/components/BiologicalSamplesComponent.html">View Javadoc</a></div><pre>
+<a class="jxr_linenumber" name="L1" href="#L1">1</a>   <em class="jxr_javadoccomment">/*******************************************************************************</em>
+<a class="jxr_linenumber" name="L2" href="#L2">2</a>   <em class="jxr_javadoccomment"> * QBiC Project qNavigator enables users to manage their projects. Copyright (C) "2016” Christopher</em>
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <em class="jxr_javadoccomment"> * Mohr, David Wojnar, Andreas Friedrich</em>
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <em class="jxr_javadoccomment"> * </em>
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <em class="jxr_javadoccomment"> * This program is free software: you can redistribute it and/or modify it under the terms of the</em>
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <em class="jxr_javadoccomment"> * GNU General Public License as published by the Free Software Foundation, either version 3 of the</em>
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <em class="jxr_javadoccomment"> * License, or (at your option) any later version.</em>
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <em class="jxr_javadoccomment"> * </em>
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <em class="jxr_javadoccomment"> * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without</em>
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <em class="jxr_javadoccomment"> * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU</em>
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <em class="jxr_javadoccomment"> * General Public License for more details.</em>
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <em class="jxr_javadoccomment"> * </em>
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <em class="jxr_javadoccomment"> * You should have received a copy of the GNU General Public License along with this program. If</em>
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <em class="jxr_javadoccomment"> * not, see &lt;<a href="http://www.gnu.org/licenses/&gt;." target="alexandria_uri">http://www.gnu.org/licenses/&gt;.</a></em>
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <em class="jxr_javadoccomment"> *******************************************************************************/</em>
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <strong class="jxr_keyword">package</strong> life.qbic.projectbrowser.components;
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>  
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <strong class="jxr_keyword">import</strong> java.util.ArrayList;
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <strong class="jxr_keyword">import</strong> java.util.HashMap;
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <strong class="jxr_keyword">import</strong> java.util.List;
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>  <strong class="jxr_keyword">import</strong> java.util.Map;
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <strong class="jxr_keyword">import</strong> java.util.Set;
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>  
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">import</strong> com.vaadin.data.Item;
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> com.vaadin.data.util.BeanItem;
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <strong class="jxr_keyword">import</strong> com.vaadin.data.util.BeanItemContainer;
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <strong class="jxr_keyword">import</strong> com.vaadin.data.util.GeneratedPropertyContainer;
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <strong class="jxr_keyword">import</strong> com.vaadin.data.util.PropertyValueGenerator;
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> com.vaadin.event.ItemClickEvent;
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>  <strong class="jxr_keyword">import</strong> com.vaadin.event.ItemClickEvent.ItemClickListener;
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>  <strong class="jxr_keyword">import</strong> com.vaadin.event.SelectionEvent;
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>  <strong class="jxr_keyword">import</strong> com.vaadin.event.SelectionEvent.SelectionListener;
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>  <strong class="jxr_keyword">import</strong> com.vaadin.server.FileDownloader;
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>  <strong class="jxr_keyword">import</strong> com.vaadin.server.FontAwesome;
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>  <strong class="jxr_keyword">import</strong> com.vaadin.server.StreamResource;
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>  <strong class="jxr_keyword">import</strong> com.vaadin.shared.ui.MarginInfo;
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>  <strong class="jxr_keyword">import</strong> com.vaadin.shared.ui.label.ContentMode;
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>  <strong class="jxr_keyword">import</strong> com.vaadin.ui.Button;
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>  <strong class="jxr_keyword">import</strong> com.vaadin.ui.CustomComponent;
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>  <strong class="jxr_keyword">import</strong> com.vaadin.ui.Grid;
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>  <strong class="jxr_keyword">import</strong> com.vaadin.ui.HorizontalLayout;
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>  <strong class="jxr_keyword">import</strong> com.vaadin.ui.Label;
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>  <strong class="jxr_keyword">import</strong> com.vaadin.ui.TextField;
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>  <strong class="jxr_keyword">import</strong> com.vaadin.ui.UI;
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>  <strong class="jxr_keyword">import</strong> com.vaadin.ui.VerticalLayout;
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>  <strong class="jxr_keyword">import</strong> com.vaadin.ui.Window;
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>  <strong class="jxr_keyword">import</strong> com.vaadin.ui.Window.CloseEvent;
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>  <strong class="jxr_keyword">import</strong> com.vaadin.ui.Window.CloseListener;
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>  <strong class="jxr_keyword">import</strong> com.vaadin.ui.renderers.ButtonRenderer;
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>  <strong class="jxr_keyword">import</strong> com.vaadin.ui.renderers.ClickableRenderer.RendererClickEvent;
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>  <strong class="jxr_keyword">import</strong> com.vaadin.ui.renderers.ClickableRenderer.RendererClickListener;
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>  <strong class="jxr_keyword">import</strong> com.vaadin.ui.renderers.HtmlRenderer;
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>  
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>  <strong class="jxr_keyword">import</strong> life.qbic.portal.portlet.ProjectBrowserPortlet;
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>  
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>  <strong class="jxr_keyword">import</strong> org.apache.commons.lang3.tuple.ImmutablePair;
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>  <strong class="jxr_keyword">import</strong> org.apache.commons.lang3.tuple.Pair;
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>  <strong class="jxr_keyword">import</strong> org.apache.logging.log4j.LogManager;
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>  <strong class="jxr_keyword">import</strong> org.apache.logging.log4j.Logger;
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>  
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>  <strong class="jxr_keyword">import</strong> ch.systemsx.cisd.openbis.<strong class="jxr_keyword">generic</strong>.shared.api.v1.dto.Sample;
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>  <strong class="jxr_keyword">import</strong> ch.systemsx.cisd.openbis.<strong class="jxr_keyword">generic</strong>.shared.api.v1.dto.Vocabulary;
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>  <strong class="jxr_keyword">import</strong> ch.systemsx.cisd.openbis.<strong class="jxr_keyword">generic</strong>.shared.api.v1.dto.VocabularyTerm;
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>  
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>  <strong class="jxr_keyword">import</strong> life.qbic.projectbrowser.helpers.*;
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>  <strong class="jxr_keyword">import</strong> life.qbic.projectbrowser.controllers.*;
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>  <strong class="jxr_keyword">import</strong> life.qbic.projectbrowser.model.BiologicalEntitySampleBean;
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>  <strong class="jxr_keyword">import</strong> life.qbic.projectbrowser.model.BiologicalSampleBean;
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>  <strong class="jxr_keyword">import</strong> life.qbic.xml.manager.StudyXMLParser;
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>  <strong class="jxr_keyword">import</strong> life.qbic.xml.properties.Property;
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>  
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>  
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="BiologicalSamplesComponent" href="../../../../life/qbic/projectbrowser/components/BiologicalSamplesComponent.html#BiologicalSamplesComponent">BiologicalSamplesComponent</a> <strong class="jxr_keyword">extends</strong> CustomComponent {
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>  
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>    <strong class="jxr_keyword">private</strong> enum sampleTypes {
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>      Q_BIOLOGICAL_ENTITY, Q_BIOLOGICAL_SAMPLE
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>    };
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>  
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>    <strong class="jxr_keyword">private</strong> enum propertyTypes {
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>      Q_ADDIIONAL_INFO, Q_EXTERNALDB_ID, Q_SECONDARY_NAME, Q_NCBI_ORGANISM
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>    };
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>  
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> serialVersionUID = 8672873911284888801L;
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>    <strong class="jxr_keyword">private</strong> VerticalLayout mainLayout;
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Logger LOG = LogManager.getLogger(BiologicalSamplesComponent.<strong class="jxr_keyword">class</strong>);
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>    <strong class="jxr_keyword">private</strong> Grid sampleBioGrid;
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>    <strong class="jxr_keyword">private</strong> Grid sampleEntityGrid;
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>    <strong class="jxr_keyword">private</strong> <a name="ChangeSampleMetadataComponent" href="../../../../life/qbic/projectbrowser/components/ChangeSampleMetadataComponent.html#ChangeSampleMetadataComponent">ChangeSampleMetadataComponent</a> changeMetadata;
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>    <strong class="jxr_keyword">private</strong> VerticalLayout vert;
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>    <strong class="jxr_keyword">private</strong> <a name="DataHandler" href="../../../../life/qbic/projectbrowser/controllers/DataHandler.html#DataHandler">DataHandler</a> datahandler;
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>    <strong class="jxr_keyword">private</strong> <a name="State" href="../../../../life/qbic/projectbrowser/controllers/State.html#State">State</a> state;
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>    <strong class="jxr_keyword">private</strong> String resourceUrl;
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> numberOfBioSamples;
+<a class="jxr_linenumber" name="L94" href="#L94">94</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> numberOfEntitySamples;
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>    <strong class="jxr_keyword">private</strong> BeanItemContainer&lt;BiologicalSampleBean&gt; samplesBio;
+<a class="jxr_linenumber" name="L96" href="#L96">96</a>    <strong class="jxr_keyword">private</strong> BeanItemContainer&lt;BiologicalEntitySampleBean&gt; samplesEntity;
+<a class="jxr_linenumber" name="L97" href="#L97">97</a>    <strong class="jxr_keyword">private</strong> String currentID;
+<a class="jxr_linenumber" name="L98" href="#L98">98</a>    <strong class="jxr_keyword">private</strong> Button exportSources = <strong class="jxr_keyword">new</strong> Button(<span class="jxr_string">"Export as TSV"</span>);
+<a class="jxr_linenumber" name="L99" href="#L99">99</a>    <strong class="jxr_keyword">private</strong> Button exportSamples = <strong class="jxr_keyword">new</strong> Button(<span class="jxr_string">"Export as TSV"</span>);
+<a class="jxr_linenumber" name="L100" href="#L100">100</a>   <strong class="jxr_keyword">private</strong> FileDownloader fileDownloaderSources;
+<a class="jxr_linenumber" name="L101" href="#L101">101</a>   <strong class="jxr_keyword">private</strong> FileDownloader fileDownloaderSamples;
+<a class="jxr_linenumber" name="L102" href="#L102">102</a> 
+<a class="jxr_linenumber" name="L103" href="#L103">103</a> 
+<a class="jxr_linenumber" name="L104" href="#L104">104</a> 
+<a class="jxr_linenumber" name="L105" href="#L105">105</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L106" href="#L106">106</a> <em class="jxr_javadoccomment">   * </em>
+<a class="jxr_linenumber" name="L107" href="#L107">107</a> <em class="jxr_javadoccomment">   * @param dh</em>
+<a class="jxr_linenumber" name="L108" href="#L108">108</a> <em class="jxr_javadoccomment">   * @param state</em>
+<a class="jxr_linenumber" name="L109" href="#L109">109</a> <em class="jxr_javadoccomment">   * @param resourceurl</em>
+<a class="jxr_linenumber" name="L110" href="#L110">110</a> <em class="jxr_javadoccomment">   * @param caption</em>
+<a class="jxr_linenumber" name="L111" href="#L111">111</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L112" href="#L112">112</a>   <strong class="jxr_keyword">public</strong> <a name="BiologicalSamplesComponent" href="../../../../life/qbic/projectbrowser/components/BiologicalSamplesComponent.html#BiologicalSamplesComponent">BiologicalSamplesComponent</a>(<a name="DataHandler" href="../../../../life/qbic/projectbrowser/controllers/DataHandler.html#DataHandler">DataHandler</a> dh, <a name="State" href="../../../../life/qbic/projectbrowser/controllers/State.html#State">State</a> state, String resourceurl,
+<a class="jxr_linenumber" name="L113" href="#L113">113</a>       String caption) {
+<a class="jxr_linenumber" name="L114" href="#L114">114</a>     <strong class="jxr_keyword">this</strong>.datahandler = dh;
+<a class="jxr_linenumber" name="L115" href="#L115">115</a>     <strong class="jxr_keyword">this</strong>.resourceUrl = resourceurl;
+<a class="jxr_linenumber" name="L116" href="#L116">116</a>     <strong class="jxr_keyword">this</strong>.state = state;
+<a class="jxr_linenumber" name="L117" href="#L117">117</a>     changeMetadata = <strong class="jxr_keyword">new</strong> <a name="ChangeSampleMetadataComponent" href="../../../../life/qbic/projectbrowser/components/ChangeSampleMetadataComponent.html#ChangeSampleMetadataComponent">ChangeSampleMetadataComponent</a>(dh, state, resourceurl);
+<a class="jxr_linenumber" name="L118" href="#L118">118</a> 
+<a class="jxr_linenumber" name="L119" href="#L119">119</a>     <strong class="jxr_keyword">this</strong>.setCaption(caption);
+<a class="jxr_linenumber" name="L120" href="#L120">120</a> 
+<a class="jxr_linenumber" name="L121" href="#L121">121</a>     <strong class="jxr_keyword">this</strong>.initUI();
+<a class="jxr_linenumber" name="L122" href="#L122">122</a>   }
+<a class="jxr_linenumber" name="L123" href="#L123">123</a> 
+<a class="jxr_linenumber" name="L124" href="#L124">124</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L125" href="#L125">125</a> <em class="jxr_javadoccomment">   * </em>
+<a class="jxr_linenumber" name="L126" href="#L126">126</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L127" href="#L127">127</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> initUI() {
+<a class="jxr_linenumber" name="L128" href="#L128">128</a>     vert = <strong class="jxr_keyword">new</strong> VerticalLayout();
+<a class="jxr_linenumber" name="L129" href="#L129">129</a>     sampleBioGrid = <strong class="jxr_keyword">new</strong> Grid();
+<a class="jxr_linenumber" name="L130" href="#L130">130</a>     sampleEntityGrid = <strong class="jxr_keyword">new</strong> Grid();
+<a class="jxr_linenumber" name="L131" href="#L131">131</a> 
+<a class="jxr_linenumber" name="L132" href="#L132">132</a>     vert.setMargin(<strong class="jxr_keyword">new</strong> MarginInfo(false, <strong class="jxr_keyword">true</strong>, false, false));
+<a class="jxr_linenumber" name="L133" href="#L133">133</a> 
+<a class="jxr_linenumber" name="L134" href="#L134">134</a>     sampleEntityGrid.addSelectionListener(<strong class="jxr_keyword">new</strong> SelectionListener() {
+<a class="jxr_linenumber" name="L135" href="#L135">135</a> 
+<a class="jxr_linenumber" name="L136" href="#L136">136</a>       @Override
+<a class="jxr_linenumber" name="L137" href="#L137">137</a>       <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> select(SelectionEvent event) {
+<a class="jxr_linenumber" name="L138" href="#L138">138</a>         BeanItem&lt;BiologicalEntitySampleBean&gt; selectedBean =
+<a class="jxr_linenumber" name="L139" href="#L139">139</a>             samplesEntity.getItem(sampleEntityGrid.getSelectedRow());
+<a class="jxr_linenumber" name="L140" href="#L140">140</a> 
+<a class="jxr_linenumber" name="L141" href="#L141">141</a>         <strong class="jxr_keyword">if</strong> (selectedBean == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L142" href="#L142">142</a>           TextField filterField =
+<a class="jxr_linenumber" name="L143" href="#L143">143</a>               (TextField) sampleBioGrid.getHeaderRow(1).getCell(<span class="jxr_string">"biologicalEntity"</span>).getComponent();
+<a class="jxr_linenumber" name="L144" href="#L144">144</a>           filterField.setValue(<span class="jxr_string">""</span>);
+<a class="jxr_linenumber" name="L145" href="#L145">145</a>         } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L146" href="#L146">146</a>           TextField filterField =
+<a class="jxr_linenumber" name="L147" href="#L147">147</a>               (TextField) sampleBioGrid.getHeaderRow(1).getCell(<span class="jxr_string">"biologicalEntity"</span>).getComponent();
+<a class="jxr_linenumber" name="L148" href="#L148">148</a>           filterField.setValue(selectedBean.getBean().getCode());
+<a class="jxr_linenumber" name="L149" href="#L149">149</a>           <em class="jxr_comment">// samplesBio.addContainerFilter("biologicalEntity",</em>
+<a class="jxr_linenumber" name="L150" href="#L150">150</a>           <em class="jxr_comment">// selectedBean.getBean().getSecondaryName(), false, false);</em>
+<a class="jxr_linenumber" name="L151" href="#L151">151</a>         }
+<a class="jxr_linenumber" name="L152" href="#L152">152</a>       }
+<a class="jxr_linenumber" name="L153" href="#L153">153</a> 
+<a class="jxr_linenumber" name="L154" href="#L154">154</a>     });
+<a class="jxr_linenumber" name="L155" href="#L155">155</a> 
+<a class="jxr_linenumber" name="L156" href="#L156">156</a>     mainLayout = <strong class="jxr_keyword">new</strong> VerticalLayout(vert);
+<a class="jxr_linenumber" name="L157" href="#L157">157</a>     mainLayout.setResponsive(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L158" href="#L158">158</a>     setResponsive(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L159" href="#L159">159</a> 
+<a class="jxr_linenumber" name="L160" href="#L160">160</a>     exportSources.setIcon(FontAwesome.DOWNLOAD);
+<a class="jxr_linenumber" name="L161" href="#L161">161</a>     exportSamples.setIcon(FontAwesome.DOWNLOAD);
+<a class="jxr_linenumber" name="L162" href="#L162">162</a> 
+<a class="jxr_linenumber" name="L163" href="#L163">163</a>     <em class="jxr_comment">// this.setWidth(Page.getCurrent().getBrowserWindowWidth() * 0.8f, Unit.PIXELS);</em>
+<a class="jxr_linenumber" name="L164" href="#L164">164</a>     <strong class="jxr_keyword">this</strong>.setCompositionRoot(mainLayout);
+<a class="jxr_linenumber" name="L165" href="#L165">165</a>   }
+<a class="jxr_linenumber" name="L166" href="#L166">166</a> 
+<a class="jxr_linenumber" name="L167" href="#L167">167</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L168" href="#L168">168</a> <em class="jxr_javadoccomment">   * </em>
+<a class="jxr_linenumber" name="L169" href="#L169">169</a> <em class="jxr_javadoccomment">   * @param id</em>
+<a class="jxr_linenumber" name="L170" href="#L170">170</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L171" href="#L171">171</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> updateUI(String id) {
+<a class="jxr_linenumber" name="L172" href="#L172">172</a> 
+<a class="jxr_linenumber" name="L173" href="#L173">173</a>     currentID = id;
+<a class="jxr_linenumber" name="L174" href="#L174">174</a>     sampleBioGrid = <strong class="jxr_keyword">new</strong> Grid();
+<a class="jxr_linenumber" name="L175" href="#L175">175</a>     sampleEntityGrid = <strong class="jxr_keyword">new</strong> Grid();
+<a class="jxr_linenumber" name="L176" href="#L176">176</a> 
+<a class="jxr_linenumber" name="L177" href="#L177">177</a>     sampleEntityGrid.addSelectionListener(<strong class="jxr_keyword">new</strong> SelectionListener() {
+<a class="jxr_linenumber" name="L178" href="#L178">178</a> 
+<a class="jxr_linenumber" name="L179" href="#L179">179</a>       @Override
+<a class="jxr_linenumber" name="L180" href="#L180">180</a>       <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> select(SelectionEvent event) {
+<a class="jxr_linenumber" name="L181" href="#L181">181</a>         BeanItem&lt;BiologicalEntitySampleBean&gt; selectedBean =
+<a class="jxr_linenumber" name="L182" href="#L182">182</a>             samplesEntity.getItem(sampleEntityGrid.getSelectedRow());
+<a class="jxr_linenumber" name="L183" href="#L183">183</a> 
+<a class="jxr_linenumber" name="L184" href="#L184">184</a>         <strong class="jxr_keyword">if</strong> (selectedBean == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L185" href="#L185">185</a>           TextField filterField =
+<a class="jxr_linenumber" name="L186" href="#L186">186</a>               (TextField) sampleBioGrid.getHeaderRow(1).getCell(<span class="jxr_string">"biologicalEntity"</span>).getComponent();
+<a class="jxr_linenumber" name="L187" href="#L187">187</a>           filterField.setValue(<span class="jxr_string">""</span>);
+<a class="jxr_linenumber" name="L188" href="#L188">188</a>         } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L189" href="#L189">189</a>           TextField filterField =
+<a class="jxr_linenumber" name="L190" href="#L190">190</a>               (TextField) sampleBioGrid.getHeaderRow(1).getCell(<span class="jxr_string">"biologicalEntity"</span>).getComponent();
+<a class="jxr_linenumber" name="L191" href="#L191">191</a>           filterField.setValue(selectedBean.getBean().getCode());
+<a class="jxr_linenumber" name="L192" href="#L192">192</a>           <em class="jxr_comment">// samplesBio.addContainerFilter("biologicalEntity",</em>
+<a class="jxr_linenumber" name="L193" href="#L193">193</a>           <em class="jxr_comment">// selectedBean.getBean().getSecondaryName(), false, false);</em>
+<a class="jxr_linenumber" name="L194" href="#L194">194</a>         }
+<a class="jxr_linenumber" name="L195" href="#L195">195</a>       }
+<a class="jxr_linenumber" name="L196" href="#L196">196</a> 
+<a class="jxr_linenumber" name="L197" href="#L197">197</a>     });
+<a class="jxr_linenumber" name="L198" href="#L198">198</a> 
+<a class="jxr_linenumber" name="L199" href="#L199">199</a>     <strong class="jxr_keyword">if</strong> (id == <strong class="jxr_keyword">null</strong>)
+<a class="jxr_linenumber" name="L200" href="#L200">200</a>       <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L201" href="#L201">201</a> 
+<a class="jxr_linenumber" name="L202" href="#L202">202</a> 
+<a class="jxr_linenumber" name="L203" href="#L203">203</a>     BeanItemContainer&lt;BiologicalSampleBean&gt; samplesBioContainer =
+<a class="jxr_linenumber" name="L204" href="#L204">204</a>         <strong class="jxr_keyword">new</strong> BeanItemContainer&lt;BiologicalSampleBean&gt;(BiologicalSampleBean.<strong class="jxr_keyword">class</strong>);
+<a class="jxr_linenumber" name="L205" href="#L205">205</a>     BeanItemContainer&lt;BiologicalEntitySampleBean&gt; samplesEntityContainer =
+<a class="jxr_linenumber" name="L206" href="#L206">206</a>         <strong class="jxr_keyword">new</strong> BeanItemContainer&lt;BiologicalEntitySampleBean&gt;(BiologicalEntitySampleBean.<strong class="jxr_keyword">class</strong>);
+<a class="jxr_linenumber" name="L207" href="#L207">207</a> 
+<a class="jxr_linenumber" name="L208" href="#L208">208</a>     List&lt;Sample&gt; allSamples =
+<a class="jxr_linenumber" name="L209" href="#L209">209</a>         datahandler.getOpenBisClient().getSamplesWithParentsAndChildrenOfProjectBySearchService(id);
+<a class="jxr_linenumber" name="L210" href="#L210">210</a> 
+<a class="jxr_linenumber" name="L211" href="#L211">211</a>     List&lt;VocabularyTerm&gt; terms = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L212" href="#L212">212</a>     Map&lt;String, String&gt; termsMap = <strong class="jxr_keyword">new</strong> HashMap&lt;String, String&gt;();
+<a class="jxr_linenumber" name="L213" href="#L213">213</a>     
+<a class="jxr_linenumber" name="L214" href="#L214">214</a>     StudyXMLParser xmlParser = <strong class="jxr_keyword">new</strong> StudyXMLParser();
+<a class="jxr_linenumber" name="L215" href="#L215">215</a> 
+<a class="jxr_linenumber" name="L216" href="#L216">216</a>     <strong class="jxr_keyword">for</strong> (Sample sample : allSamples) {
+<a class="jxr_linenumber" name="L217" href="#L217">217</a> 
+<a class="jxr_linenumber" name="L218" href="#L218">218</a>       <strong class="jxr_keyword">if</strong> (sample.getSampleTypeCode().equals(sampleTypes.Q_BIOLOGICAL_ENTITY.toString())) {
+<a class="jxr_linenumber" name="L219" href="#L219">219</a> 
+<a class="jxr_linenumber" name="L220" href="#L220">220</a>         Map&lt;String, String&gt; sampleProperties = sample.getProperties();
+<a class="jxr_linenumber" name="L221" href="#L221">221</a> 
+<a class="jxr_linenumber" name="L222" href="#L222">222</a>         <a name="BiologicalEntitySampleBean" href="../../../../life/qbic/projectbrowser/mode<a name="BiologicalEntitySampleBean" href="../../../../life/qbic/projectbrowser/model/BiologicalEntitySampleBean.html#BiologicalEntitySampleBean">BiologicalEntitySampleBean</a>an.html#BiologicalEntitySampleBean">BiologicalEntitySampleBean</a> newEntityBean = <strong class="jxr_keyword">new</strong> <a name="BiologicalEntitySampleBean" href="../../../../life/qbic/projectbrowser/model/BiologicalEntitySampleBean.html#BiologicalEntitySampleBean">BiologicalEntitySampleBean</a>();
+<a class="jxr_linenumber" name="L223" href="#L223">223</a>         newEntityBean.setCode(sample.getCode());
+<a class="jxr_linenumber" name="L224" href="#L224">224</a>         newEntityBean.setId(sample.getIdentifier());
+<a class="jxr_linenumber" name="L225" href="#L225">225</a>         newEntityBean.setType(sample.getSampleTypeCode());
+<a class="jxr_linenumber" name="L226" href="#L226">226</a>         newEntityBean.setAdditionalInfo(sampleProperties.get(<span class="jxr_string">"Q_ADDITIONAL_INFO"</span>));
+<a class="jxr_linenumber" name="L227" href="#L227">227</a>         newEntityBean.setExternalDB(sampleProperties.get(<span class="jxr_string">"Q_EXTERNALDB_ID"</span>));
+<a class="jxr_linenumber" name="L228" href="#L228">228</a>         newEntityBean.setSecondaryName(sampleProperties.get(<span class="jxr_string">"Q_SECONDARY_NAME"</span>));
+<a class="jxr_linenumber" name="L229" href="#L229">229</a> 
+<a class="jxr_linenumber" name="L230" href="#L230">230</a>         String organismID = sampleProperties.get(<span class="jxr_string">"Q_NCBI_ORGANISM"</span>);
+<a class="jxr_linenumber" name="L231" href="#L231">231</a>         newEntityBean.setOrganism(organismID);
+<a class="jxr_linenumber" name="L232" href="#L232">232</a> 
+<a class="jxr_linenumber" name="L233" href="#L233">233</a>         <strong class="jxr_keyword">if</strong> (terms != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L234" href="#L234">234</a>           <strong class="jxr_keyword">if</strong> (termsMap.containsKey(organismID)) {
+<a class="jxr_linenumber" name="L235" href="#L235">235</a>             newEntityBean.setOrganismName(termsMap.get(organismID));
+<a class="jxr_linenumber" name="L236" href="#L236">236</a>           } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L237" href="#L237">237</a>             <strong class="jxr_keyword">for</strong> (VocabularyTerm term : terms) {
+<a class="jxr_linenumber" name="L238" href="#L238">238</a>               <strong class="jxr_keyword">if</strong> (term.getCode().equals(organismID)) {
+<a class="jxr_linenumber" name="L239" href="#L239">239</a>                 newEntityBean.setOrganismName(term.getLabel());
+<a class="jxr_linenumber" name="L240" href="#L240">240</a>                 <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L241" href="#L241">241</a>               }
+<a class="jxr_linenumber" name="L242" href="#L242">242</a>             }
+<a class="jxr_linenumber" name="L243" href="#L243">243</a>           }
+<a class="jxr_linenumber" name="L244" href="#L244">244</a>         } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L245" href="#L245">245</a>           <strong class="jxr_keyword">for</strong> (Vocabulary vocab : datahandler.getOpenBisClient().getFacade().listVocabularies()) {
+<a class="jxr_linenumber" name="L246" href="#L246">246</a>             <strong class="jxr_keyword">if</strong> (vocab.getCode().equals(<span class="jxr_string">"Q_NCBI_TAXONOMY"</span>)) {
+<a class="jxr_linenumber" name="L247" href="#L247">247</a>               terms = vocab.getTerms();
+<a class="jxr_linenumber" name="L248" href="#L248">248</a>               <strong class="jxr_keyword">for</strong> (VocabularyTerm term : vocab.getTerms()) {
+<a class="jxr_linenumber" name="L249" href="#L249">249</a>                 <strong class="jxr_keyword">if</strong> (term.getCode().equals(organismID)) {
+<a class="jxr_linenumber" name="L250" href="#L250">250</a>                   newEntityBean.setOrganismName(term.getLabel());
+<a class="jxr_linenumber" name="L251" href="#L251">251</a>                   termsMap.put(organismID, term.getLabel());
+<a class="jxr_linenumber" name="L252" href="#L252">252</a>                   <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L253" href="#L253">253</a>                 }
+<a class="jxr_linenumber" name="L254" href="#L254">254</a>               }
+<a class="jxr_linenumber" name="L255" href="#L255">255</a>               <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L256" href="#L256">256</a>             }
+<a class="jxr_linenumber" name="L257" href="#L257">257</a>           }
+<a class="jxr_linenumber" name="L258" href="#L258">258</a>         }
+<a class="jxr_linenumber" name="L259" href="#L259">259</a> 
+<a class="jxr_linenumber" name="L260" href="#L260">260</a>         <em class="jxr_comment">// data for complex xml properties</em>
+<a class="jxr_linenumber" name="L261" href="#L261">261</a>         Map&lt;String, List&lt;Property&gt;&gt; propertiesForSamples = datahandler.getPropertiesForSamples();
+<a class="jxr_linenumber" name="L262" href="#L262">262</a>         Set&lt;String&gt; factorLabels = datahandler.getFactorLabels();
+<a class="jxr_linenumber" name="L263" href="#L263">263</a>         Map&lt;Pair&lt;String, String&gt;, Property&gt; factorsForSamples =
+<a class="jxr_linenumber" name="L264" href="#L264">264</a>             datahandler.getFactorsForLabelsAndSamples();
+<a class="jxr_linenumber" name="L265" href="#L265">265</a> 
+<a class="jxr_linenumber" name="L266" href="#L266">266</a>         List&lt;Property&gt; complexProps = xmlParser.getFactorsAndPropertiesForSampleCode(datahandler.getExperimentalSetup(), sample.getCode());
+<a class="jxr_linenumber" name="L267" href="#L267">267</a>         newEntityBean.setProperties(sampleProperties, complexProps);
+<a class="jxr_linenumber" name="L268" href="#L268">268</a> 
+<a class="jxr_linenumber" name="L269" href="#L269">269</a>         newEntityBean.setGender(sampleProperties.get(<span class="jxr_string">"Q_GENDER"</span>));
+<a class="jxr_linenumber" name="L270" href="#L270">270</a>         samplesEntityContainer.addBean(newEntityBean);
+<a class="jxr_linenumber" name="L271" href="#L271">271</a> 
+<a class="jxr_linenumber" name="L272" href="#L272">272</a>         <em class="jxr_comment">// for (Sample child : datahandler.getOpenBisClient().getChildrenSamples(sample)) {</em>
+<a class="jxr_linenumber" name="L273" href="#L273">273</a>         <strong class="jxr_keyword">for</strong> (Sample realChild : sample.getChildren()) {
+<a class="jxr_linenumber" name="L274" href="#L274">274</a>           <strong class="jxr_keyword">if</strong> (realChild.getSampleTypeCode().equals(sampleTypes.Q_BIOLOGICAL_SAMPLE.toString())) {
+<a class="jxr_linenumber" name="L275" href="#L275">275</a>             <em class="jxr_comment">// Sample realChild =</em>
+<a class="jxr_linenumber" name="L276" href="#L276">276</a>             <em class="jxr_comment">// datahandler.getOpenBisClient().getSampleByIdentifier(child.getIdentifier());</em>
+<a class="jxr_linenumber" name="L277" href="#L277">277</a> 
+<a class="jxr_linenumber" name="L278" href="#L278">278</a>             Map&lt;String, String&gt; sampleBioProperties = realChild.getProperties();
+<a class="jxr_linenumber" name="L279" href="#L279">279</a> 
+<a class="jxr_linenumber" name="L280" href="#L280">280</a>             <a name="BiologicalSampleBean" href="../../../../life/qbic/projectbrowse<a name="BiologicalSampleBean" href="../../../../life/qbic/projectbrowser/model/BiologicalSampleBean.html#BiologicalSampleBean">BiologicalSampleBean</a>mpleBean.html#BiologicalSampleBean">BiologicalSampleBean</a> newBean = <strong class="jxr_keyword">new</strong> <a name="BiologicalSampleBean" href="../../../../life/qbic/projectbrowser/model/BiologicalSampleBean.html#BiologicalSampleBean">BiologicalSampleBean</a>();
+<a class="jxr_linenumber" name="L281" href="#L281">281</a>             newBean.setCode(realChild.getCode());
+<a class="jxr_linenumber" name="L282" href="#L282">282</a>             newBean.setId(realChild.getIdentifier());
+<a class="jxr_linenumber" name="L283" href="#L283">283</a>             newBean.setType(realChild.getSampleTypeCode());
+<a class="jxr_linenumber" name="L284" href="#L284">284</a>             newBean.setPrimaryTissue(sampleBioProperties.get(<span class="jxr_string">"Q_PRIMARY_TISSUE"</span>));
+<a class="jxr_linenumber" name="L285" href="#L285">285</a>             newBean.setTissueDetailed(sampleBioProperties.get(<span class="jxr_string">"Q_TISSUE_DETAILED"</span>));
+<a class="jxr_linenumber" name="L286" href="#L286">286</a>             newBean.setBiologicalEntity(sample.getCode());
+<a class="jxr_linenumber" name="L287" href="#L287">287</a> 
+<a class="jxr_linenumber" name="L288" href="#L288">288</a>             newBean.setAdditionalInfo(sampleBioProperties.get(<span class="jxr_string">"Q_ADDITIONAL_INFO"</span>));
+<a class="jxr_linenumber" name="L289" href="#L289">289</a>             newBean.setExternalDB(sampleBioProperties.get(<span class="jxr_string">"Q_EXTERNALDB_ID"</span>));
+<a class="jxr_linenumber" name="L290" href="#L290">290</a>             newBean.setSecondaryName(sampleBioProperties.get(<span class="jxr_string">"Q_SECONDARY_NAME"</span>));
+<a class="jxr_linenumber" name="L291" href="#L291">291</a> 
+<a class="jxr_linenumber" name="L292" href="#L292">292</a>             complexProps = xmlParser.getFactorsAndPropertiesForSampleCode(datahandler.getExperimentalSetup(), realChild.getCode());
+<a class="jxr_linenumber" name="L293" href="#L293">293</a> 
+<a class="jxr_linenumber" name="L294" href="#L294">294</a>             newBean.setProperties(sampleBioProperties, complexProps);
+<a class="jxr_linenumber" name="L295" href="#L295">295</a> 
+<a class="jxr_linenumber" name="L296" href="#L296">296</a>             samplesBioContainer.addBean(newBean);
+<a class="jxr_linenumber" name="L297" href="#L297">297</a>           }
+<a class="jxr_linenumber" name="L298" href="#L298">298</a>         }
+<a class="jxr_linenumber" name="L299" href="#L299">299</a>       }
+<a class="jxr_linenumber" name="L300" href="#L300">300</a>     }
+<a class="jxr_linenumber" name="L301" href="#L301">301</a> 
+<a class="jxr_linenumber" name="L302" href="#L302">302</a>     numberOfBioSamples = samplesBioContainer.size();
+<a class="jxr_linenumber" name="L303" href="#L303">303</a>     numberOfEntitySamples = samplesEntityContainer.size();
+<a class="jxr_linenumber" name="L304" href="#L304">304</a> 
+<a class="jxr_linenumber" name="L305" href="#L305">305</a>     samplesBio = samplesBioContainer;
+<a class="jxr_linenumber" name="L306" href="#L306">306</a>     samplesEntity = samplesEntityContainer;
+<a class="jxr_linenumber" name="L307" href="#L307">307</a> 
+<a class="jxr_linenumber" name="L308" href="#L308">308</a>     sampleEntityGrid.removeAllColumns();
+<a class="jxr_linenumber" name="L309" href="#L309">309</a> 
+<a class="jxr_linenumber" name="L310" href="#L310">310</a>     <strong class="jxr_keyword">final</strong> GeneratedPropertyContainer gpcEntity = <strong class="jxr_keyword">new</strong> GeneratedPropertyContainer(samplesEntity);
+<a class="jxr_linenumber" name="L311" href="#L311">311</a>     gpcEntity.removeContainerProperty(<span class="jxr_string">"id"</span>);
+<a class="jxr_linenumber" name="L312" href="#L312">312</a>     gpcEntity.removeContainerProperty(<span class="jxr_string">"type"</span>);
+<a class="jxr_linenumber" name="L313" href="#L313">313</a>     gpcEntity.removeContainerProperty(<span class="jxr_string">"organismName"</span>);
+<a class="jxr_linenumber" name="L314" href="#L314">314</a>     gpcEntity.removeContainerProperty(<span class="jxr_string">"organism"</span>);
+<a class="jxr_linenumber" name="L315" href="#L315">315</a> 
+<a class="jxr_linenumber" name="L316" href="#L316">316</a>     sampleEntityGrid.setContainerDataSource(gpcEntity);
+<a class="jxr_linenumber" name="L317" href="#L317">317</a>     sampleEntityGrid.setColumnReorderingAllowed(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L318" href="#L318">318</a> 
+<a class="jxr_linenumber" name="L319" href="#L319">319</a>     gpcEntity.addGeneratedProperty(<span class="jxr_string">"Organism"</span>, <strong class="jxr_keyword">new</strong> PropertyValueGenerator&lt;String&gt;() {
+<a class="jxr_linenumber" name="L320" href="#L320">320</a> 
+<a class="jxr_linenumber" name="L321" href="#L321">321</a>       @Override
+<a class="jxr_linenumber" name="L322" href="#L322">322</a>       <strong class="jxr_keyword">public</strong> Class&lt;String&gt; getType() {
+<a class="jxr_linenumber" name="L323" href="#L323">323</a>         <strong class="jxr_keyword">return</strong> String.<strong class="jxr_keyword">class</strong>;
+<a class="jxr_linenumber" name="L324" href="#L324">324</a>       }
+<a class="jxr_linenumber" name="L325" href="#L325">325</a> 
+<a class="jxr_linenumber" name="L326" href="#L326">326</a>       @Override
+<a class="jxr_linenumber" name="L327" href="#L327">327</a>       <strong class="jxr_keyword">public</strong> String getValue(Item item, Object itemId, Object propertyId) {
+<a class="jxr_linenumber" name="L328" href="#L328">328</a>         String ncbi = String.format(
+<a class="jxr_linenumber" name="L329" href="#L329">329</a>             <span class="jxr_string">"http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Undef&amp;name=%s&amp;lvl=0&amp;srchmode=1&amp;keep=1&amp;unlock' target='_blank'&gt;%s&lt;/a&gt;"</span>,
+<a class="jxr_linenumber" name="L330" href="#L330">330</a>             item.getItemProperty(<span class="jxr_string">"organism"</span>).getValue(),
+<a class="jxr_linenumber" name="L331" href="#L331">331</a>             item.getItemProperty(<span class="jxr_string">"organismName"</span>).getValue());
+<a class="jxr_linenumber" name="L332" href="#L332">332</a>         String link = String.format(<span class="jxr_string">"&lt;a href='%s"</span>, ncbi);
+<a class="jxr_linenumber" name="L333" href="#L333">333</a> 
+<a class="jxr_linenumber" name="L334" href="#L334">334</a>         <strong class="jxr_keyword">return</strong> link;
+<a class="jxr_linenumber" name="L335" href="#L335">335</a>       }
+<a class="jxr_linenumber" name="L336" href="#L336">336</a>     });
+<a class="jxr_linenumber" name="L337" href="#L337">337</a> 
+<a class="jxr_linenumber" name="L338" href="#L338">338</a>     sampleEntityGrid.getColumn(<span class="jxr_string">"Organism"</span>).setRenderer(<strong class="jxr_keyword">new</strong> HtmlRenderer());
+<a class="jxr_linenumber" name="L339" href="#L339">339</a> 
+<a class="jxr_linenumber" name="L340" href="#L340">340</a>     <strong class="jxr_keyword">final</strong> GeneratedPropertyContainer gpcBio = <strong class="jxr_keyword">new</strong> GeneratedPropertyContainer(samplesBio);
+<a class="jxr_linenumber" name="L341" href="#L341">341</a>     gpcBio.removeContainerProperty(<span class="jxr_string">"id"</span>);
+<a class="jxr_linenumber" name="L342" href="#L342">342</a>     gpcBio.removeContainerProperty(<span class="jxr_string">"type"</span>);
+<a class="jxr_linenumber" name="L343" href="#L343">343</a> 
+<a class="jxr_linenumber" name="L344" href="#L344">344</a>     sampleBioGrid.setContainerDataSource(gpcBio);
+<a class="jxr_linenumber" name="L345" href="#L345">345</a>     sampleBioGrid.setColumnReorderingAllowed(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L346" href="#L346">346</a>     sampleBioGrid.setColumnOrder(<span class="jxr_string">"secondaryName"</span>, <span class="jxr_string">"code"</span>);
+<a class="jxr_linenumber" name="L347" href="#L347">347</a> 
+<a class="jxr_linenumber" name="L348" href="#L348">348</a>     gpcEntity.addGeneratedProperty(<span class="jxr_string">"edit"</span>, <strong class="jxr_keyword">new</strong> PropertyValueGenerator&lt;String&gt;() {
+<a class="jxr_linenumber" name="L349" href="#L349">349</a>       @Override
+<a class="jxr_linenumber" name="L350" href="#L350">350</a>       <strong class="jxr_keyword">public</strong> String getValue(Item item, Object itemId, Object propertyId) {
+<a class="jxr_linenumber" name="L351" href="#L351">351</a>         <strong class="jxr_keyword">return</strong> <span class="jxr_string">"Edit"</span>;
+<a class="jxr_linenumber" name="L352" href="#L352">352</a>       }
+<a class="jxr_linenumber" name="L353" href="#L353">353</a> 
+<a class="jxr_linenumber" name="L354" href="#L354">354</a>       @Override
+<a class="jxr_linenumber" name="L355" href="#L355">355</a>       <strong class="jxr_keyword">public</strong> Class&lt;String&gt; getType() {
+<a class="jxr_linenumber" name="L356" href="#L356">356</a>         <strong class="jxr_keyword">return</strong> String.<strong class="jxr_keyword">class</strong>;
+<a class="jxr_linenumber" name="L357" href="#L357">357</a>       }
+<a class="jxr_linenumber" name="L358" href="#L358">358</a>     });
+<a class="jxr_linenumber" name="L359" href="#L359">359</a> 
+<a class="jxr_linenumber" name="L360" href="#L360">360</a>     gpcBio.addGeneratedProperty(<span class="jxr_string">"edit"</span>, <strong class="jxr_keyword">new</strong> PropertyValueGenerator&lt;String&gt;() {
+<a class="jxr_linenumber" name="L361" href="#L361">361</a>       @Override
+<a class="jxr_linenumber" name="L362" href="#L362">362</a>       <strong class="jxr_keyword">public</strong> String getValue(Item item, Object itemId, Object propertyId) {
+<a class="jxr_linenumber" name="L363" href="#L363">363</a>         <strong class="jxr_keyword">return</strong> <span class="jxr_string">"Edit"</span>;
+<a class="jxr_linenumber" name="L364" href="#L364">364</a>       }
+<a class="jxr_linenumber" name="L365" href="#L365">365</a> 
+<a class="jxr_linenumber" name="L366" href="#L366">366</a>       @Override
+<a class="jxr_linenumber" name="L367" href="#L367">367</a>       <strong class="jxr_keyword">public</strong> Class&lt;String&gt; getType() {
+<a class="jxr_linenumber" name="L368" href="#L368">368</a>         <strong class="jxr_keyword">return</strong> String.<strong class="jxr_keyword">class</strong>;
+<a class="jxr_linenumber" name="L369" href="#L369">369</a>       }
+<a class="jxr_linenumber" name="L370" href="#L370">370</a>     });
+<a class="jxr_linenumber" name="L371" href="#L371">371</a> 
+<a class="jxr_linenumber" name="L372" href="#L372">372</a>     sampleEntityGrid.addItemClickListener(<strong class="jxr_keyword">new</strong> ItemClickListener() {
+<a class="jxr_linenumber" name="L373" href="#L373">373</a> 
+<a class="jxr_linenumber" name="L374" href="#L374">374</a>       @Override
+<a class="jxr_linenumber" name="L375" href="#L375">375</a>       <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> itemClick(ItemClickEvent event) {
+<a class="jxr_linenumber" name="L376" href="#L376">376</a> 
+<a class="jxr_linenumber" name="L377" href="#L377">377</a>         BeanItem selected = (BeanItem) samplesEntity.getItem(event.getItemId());
+<a class="jxr_linenumber" name="L378" href="#L378">378</a>         <a name="BiologicalEntitySampleBean" href=<a name="BiologicalEntitySampleBean" href="../../../../life/qbic/projectbrowser/model/BiologicalEntitySampleBean.html#BiologicalEntitySampleBean">BiologicalEntitySampleBean</a>jectbrowser/model/BiologicalEntitySampleBean.html#BiologicalEntitySampleBean">BiologicalEntitySampleBean</a> selectedExp = (<a name="BiologicalEntitySampleBean" href="../../../../life/qbic/projectbrowser/model/BiologicalEntitySampleBean.html#BiologicalEntitySampleBean">BiologicalEntitySampleBean</a>) selected.getBean();
+<a class="jxr_linenumber" name="L379" href="#L379">379</a> 
+<a class="jxr_linenumber" name="L380" href="#L380">380</a>         <a name="State"<a name="State" href="../../../../life/qbic/projectbrowser/controllers/State.html#State">State</a>="../../../../life/qbic/projectbrowser/controllers/State.html#State">State</a> state = (<a name="State" href="../../../../life/qbic/projectbrowser/controllers/State.html#State">State</a>) UI.getCurrent().getSession().getAttribute(<span class="jxr_string">"state"</span>);
+<a class="jxr_linenumber" name="L381" href="#L381">381</a>         ArrayList&lt;String&gt; message = <strong class="jxr_keyword">new</strong> ArrayList&lt;String&gt;();
+<a class="jxr_linenumber" name="L382" href="#L382">382</a>         message.add(<span class="jxr_string">"clicked"</span>);
+<a class="jxr_linenumber" name="L383" href="#L383">383</a>         message.add(selectedExp.getId());
+<a class="jxr_linenumber" name="L384" href="#L384">384</a>         message.add(<span class="jxr_string">"sample"</span>);
+<a class="jxr_linenumber" name="L385" href="#L385">385</a>         state.notifyObservers(message);
+<a class="jxr_linenumber" name="L386" href="#L386">386</a>       }
+<a class="jxr_linenumber" name="L387" href="#L387">387</a>     });
+<a class="jxr_linenumber" name="L388" href="#L388">388</a> 
+<a class="jxr_linenumber" name="L389" href="#L389">389</a>     sampleEntityGrid.getColumn(<span class="jxr_string">"edit"</span>).setRenderer(<strong class="jxr_keyword">new</strong> ButtonRenderer(<strong class="jxr_keyword">new</strong> RendererClickListener() {
+<a class="jxr_linenumber" name="L390" href="#L390">390</a> 
+<a class="jxr_linenumber" name="L391" href="#L391">391</a>       @Override
+<a class="jxr_linenumber" name="L392" href="#L392">392</a>       <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> click(RendererClickEvent event) {
+<a class="jxr_linenumber" name="L393" href="#L393">393</a>         BeanItem selected = (BeanItem) samplesEntity.getItem(event.getItemId());
+<a class="jxr_linenumber" name="L394" href="#L394">394</a>         <a name="BiologicalEntitySampleBean" href="..<a name="BiologicalEntitySampleBean" href="../../../../life/qbic/projectbrowser/model/BiologicalEntitySampleBean.html#BiologicalEntitySampleBean">BiologicalEntitySampleBean</a>tbrowser/model/BiologicalEntitySampleBean.html#BiologicalEntitySampleBean">BiologicalEntitySampleBean</a> selectedSample = (<a name="BiologicalEntitySampleBean" href="../../../../life/qbic/projectbrowser/model/BiologicalEntitySampleBean.html#BiologicalEntitySampleBean">BiologicalEntitySampleBean</a>) selected.getBean();
+<a class="jxr_linenumber" name="L395" href="#L395">395</a> 
+<a class="jxr_linenumber" name="L396" href="#L396">396</a>         Window subWindow = <strong class="jxr_keyword">new</strong> Window(<span class="jxr_string">"Edit Metadata"</span>);
+<a class="jxr_linenumber" name="L397" href="#L397">397</a> 
+<a class="jxr_linenumber" name="L398" href="#L398">398</a>         changeMetadata.updateUI(selectedSample.getId(), selectedSample.getType());
+<a class="jxr_linenumber" name="L399" href="#L399">399</a>         VerticalLayout subContent = <strong class="jxr_keyword">new</strong> VerticalLayout();
+<a class="jxr_linenumber" name="L400" href="#L400">400</a>         subContent.setMargin(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L401" href="#L401">401</a>         subContent.addComponent(changeMetadata);
+<a class="jxr_linenumber" name="L402" href="#L402">402</a>         subWindow.setContent(subContent);
+<a class="jxr_linenumber" name="L403" href="#L403">403</a>         <em class="jxr_comment">// Center it in the browser window</em>
+<a class="jxr_linenumber" name="L404" href="#L404">404</a>         subWindow.center();
+<a class="jxr_linenumber" name="L405" href="#L405">405</a>         subWindow.setModal(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L406" href="#L406">406</a>         subWindow.setIcon(FontAwesome.PENCIL);
+<a class="jxr_linenumber" name="L407" href="#L407">407</a>         subWindow.setHeight(<span class="jxr_string">"75%"</span>);
+<a class="jxr_linenumber" name="L408" href="#L408">408</a> 
+<a class="jxr_linenumber" name="L409" href="#L409">409</a>         subWindow.addCloseListener(<strong class="jxr_keyword">new</strong> CloseListener() {
+<a class="jxr_linenumber" name="L410" href="#L410">410</a>           <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L411" href="#L411">411</a> <em class="jxr_javadoccomment">           * </em>
+<a class="jxr_linenumber" name="L412" href="#L412">412</a> <em class="jxr_javadoccomment">           */</em>
+<a class="jxr_linenumber" name="L413" href="#L413">413</a>           <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> serialVersionUID = -1329152609834711109L;
+<a class="jxr_linenumber" name="L414" href="#L414">414</a> 
+<a class="jxr_linenumber" name="L415" href="#L415">415</a>           @Override
+<a class="jxr_linenumber" name="L416" href="#L416">416</a>           <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> windowClose(CloseEvent e) {
+<a class="jxr_linenumber" name="L417" href="#L417">417</a>             updateUI(currentID);
+<a class="jxr_linenumber" name="L418" href="#L418">418</a>           }
+<a class="jxr_linenumber" name="L419" href="#L419">419</a>         });
+<a class="jxr_linenumber" name="L420" href="#L420">420</a> 
+<a class="jxr_linenumber" name="L421" href="#L421">421</a>         <a name="ProjectBrowserPortl<a name="ProjectBrowserPortlet" href="../../../../life/qbic/portal/portlet/ProjectBrowserPortlet.html#ProjectBrowserPortlet">ProjectBrowserPortlet</a>/life/qbic/portal/portlet/ProjectBrowserPortlet.html#ProjectBrowserPortlet">ProjectBrowserPortlet</a> ui = (<a name="ProjectBrowserPortlet" href="../../../../life/qbic/portal/portlet/ProjectBrowserPortlet.html#ProjectBrowserPortlet">ProjectBrowserPortlet</a>) UI.getCurrent();
+<a class="jxr_linenumber" name="L422" href="#L422">422</a>         ui.addWindow(subWindow);
+<a class="jxr_linenumber" name="L423" href="#L423">423</a>       }
+<a class="jxr_linenumber" name="L424" href="#L424">424</a>     }));
+<a class="jxr_linenumber" name="L425" href="#L425">425</a>     sampleEntityGrid.getColumn(<span class="jxr_string">"edit"</span>).setWidth(70);
+<a class="jxr_linenumber" name="L426" href="#L426">426</a>     sampleEntityGrid.getColumn(<span class="jxr_string">"edit"</span>).setHeaderCaption(<span class="jxr_string">""</span>);
+<a class="jxr_linenumber" name="L427" href="#L427">427</a>     sampleEntityGrid.setColumnOrder(<span class="jxr_string">"edit"</span>, <span class="jxr_string">"secondaryName"</span>, <span class="jxr_string">"Organism"</span>, <span class="jxr_string">"properties"</span>, <span class="jxr_string">"code"</span>,
+<a class="jxr_linenumber" name="L428" href="#L428">428</a>         <span class="jxr_string">"additionalInfo"</span>, <span class="jxr_string">"gender"</span>, <span class="jxr_string">"externalDB"</span>);
+<a class="jxr_linenumber" name="L429" href="#L429">429</a> 
+<a class="jxr_linenumber" name="L430" href="#L430">430</a>     sampleBioGrid.addItemClickListener(<strong class="jxr_keyword">new</strong> ItemClickListener() {
+<a class="jxr_linenumber" name="L431" href="#L431">431</a> 
+<a class="jxr_linenumber" name="L432" href="#L432">432</a>       @Override
+<a class="jxr_linenumber" name="L433" href="#L433">433</a>       <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> itemClick(ItemClickEvent event) {
+<a class="jxr_linenumber" name="L434" href="#L434">434</a> 
+<a class="jxr_linenumber" name="L435" href="#L435">435</a>         BeanItem selected = (BeanItem) samplesBio.getItem(event.getItemId());
+<a class="jxr_linenumber" name="L436" href="#L436">436</a>         <a name="BiologicalSampleBean" href=<a name="BiologicalSampleBean" href="../../../../life/qbic/projectbrowser/model/BiologicalSampleBean.html#BiologicalSampleBean">BiologicalSampleBean</a>ic/projectbrowser/model/BiologicalSampleBean.html#BiologicalSampleBean">BiologicalSampleBean</a> selectedExp = (<a name="BiologicalSampleBean" href="../../../../life/qbic/projectbrowser/model/BiologicalSampleBean.html#BiologicalSampleBean">BiologicalSampleBean</a>) selected.getBean();
+<a class="jxr_linenumber" name="L437" href="#L437">437</a> 
+<a class="jxr_linenumber" name="L438" href="#L438">438</a>         <a name="State"<a name="State" href="../../../../life/qbic/projectbrowser/controllers/State.html#State">State</a>="../../../../life/qbic/projectbrowser/controllers/State.html#State">State</a> state = (<a name="State" href="../../../../life/qbic/projectbrowser/controllers/State.html#State">State</a>) UI.getCurrent().getSession().getAttribute(<span class="jxr_string">"state"</span>);
+<a class="jxr_linenumber" name="L439" href="#L439">439</a>         ArrayList&lt;String&gt; message = <strong class="jxr_keyword">new</strong> ArrayList&lt;String&gt;();
+<a class="jxr_linenumber" name="L440" href="#L440">440</a>         message.add(<span class="jxr_string">"clicked"</span>);
+<a class="jxr_linenumber" name="L441" href="#L441">441</a>         message.add(selectedExp.getId());
+<a class="jxr_linenumber" name="L442" href="#L442">442</a>         message.add(<span class="jxr_string">"sample"</span>);
+<a class="jxr_linenumber" name="L443" href="#L443">443</a>         state.notifyObservers(message);
+<a class="jxr_linenumber" name="L444" href="#L444">444</a>       }
+<a class="jxr_linenumber" name="L445" href="#L445">445</a>     });
+<a class="jxr_linenumber" name="L446" href="#L446">446</a> 
+<a class="jxr_linenumber" name="L447" href="#L447">447</a>     sampleBioGrid.getColumn(<span class="jxr_string">"edit"</span>).setRenderer(<strong class="jxr_keyword">new</strong> ButtonRenderer(<strong class="jxr_keyword">new</strong> RendererClickListener() {
+<a class="jxr_linenumber" name="L448" href="#L448">448</a> 
+<a class="jxr_linenumber" name="L449" href="#L449">449</a>       @Override
+<a class="jxr_linenumber" name="L450" href="#L450">450</a>       <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> click(RendererClickEvent event) {
+<a class="jxr_linenumber" name="L451" href="#L451">451</a>         BeanItem selected = (BeanItem) samplesBio.getItem(event.getItemId());
+<a class="jxr_linenumber" name="L452" href="#L452">452</a> 
+<a class="jxr_linenumber" name="L453" href="#L453">453</a>         <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L454" href="#L454">454</a>           <a name="BiologicalSampleBean" href="..<a name="BiologicalSampleBean" href="../../../../life/qbic/projectbrowser/model/BiologicalSampleBean.html#BiologicalSampleBean">BiologicalSampleBean</a>projectbrowser/model/BiologicalSampleBean.html#BiologicalSampleBean">BiologicalSampleBean</a> selectedSample = (<a name="BiologicalSampleBean" href="../../../../life/qbic/projectbrowser/model/BiologicalSampleBean.html#BiologicalSampleBean">BiologicalSampleBean</a>) selected.getBean();
+<a class="jxr_linenumber" name="L455" href="#L455">455</a> 
+<a class="jxr_linenumber" name="L456" href="#L456">456</a>           Window subWindow = <strong class="jxr_keyword">new</strong> Window();
+<a class="jxr_linenumber" name="L457" href="#L457">457</a> 
+<a class="jxr_linenumber" name="L458" href="#L458">458</a>           changeMetadata.updateUI(selectedSample.getId(), selectedSample.getType());
+<a class="jxr_linenumber" name="L459" href="#L459">459</a>           VerticalLayout subContent = <strong class="jxr_keyword">new</strong> VerticalLayout();
+<a class="jxr_linenumber" name="L460" href="#L460">460</a>           subContent.setMargin(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L461" href="#L461">461</a>           subContent.addComponent(changeMetadata);
+<a class="jxr_linenumber" name="L462" href="#L462">462</a>           subWindow.setContent(subContent);
+<a class="jxr_linenumber" name="L463" href="#L463">463</a>           <em class="jxr_comment">// Center it in the browser window</em>
+<a class="jxr_linenumber" name="L464" href="#L464">464</a>           subWindow.center();
+<a class="jxr_linenumber" name="L465" href="#L465">465</a>           subWindow.setModal(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L466" href="#L466">466</a>           subWindow.setResizable(false);
+<a class="jxr_linenumber" name="L467" href="#L467">467</a> 
+<a class="jxr_linenumber" name="L468" href="#L468">468</a>           subWindow.addCloseListener(<strong class="jxr_keyword">new</strong> CloseListener() {
+<a class="jxr_linenumber" name="L469" href="#L469">469</a>             <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L470" href="#L470">470</a> <em class="jxr_javadoccomment">            * </em>
+<a class="jxr_linenumber" name="L471" href="#L471">471</a> <em class="jxr_javadoccomment">            */</em>
+<a class="jxr_linenumber" name="L472" href="#L472">472</a>             <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> serialVersionUID = -1329152609834711109L;
+<a class="jxr_linenumber" name="L473" href="#L473">473</a> 
+<a class="jxr_linenumber" name="L474" href="#L474">474</a>             @Override
+<a class="jxr_linenumber" name="L475" href="#L475">475</a>             <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> windowClose(CloseEvent e) {
+<a class="jxr_linenumber" name="L476" href="#L476">476</a>               updateUI(currentID);
+<a class="jxr_linenumber" name="L477" href="#L477">477</a>             }
+<a class="jxr_linenumber" name="L478" href="#L478">478</a>           });
+<a class="jxr_linenumber" name="L479" href="#L479">479</a> 
+<a class="jxr_linenumber" name="L480" href="#L480">480</a>           <a name="ProjectBrowserPortl<a name="ProjectBrowserPortlet" href="../../../../life/qbic/portal/portlet/ProjectBrowserPortlet.html#ProjectBrowserPortlet">ProjectBrowserPortlet</a>/life/qbic/portal/portlet/ProjectBrowserPortlet.html#ProjectBrowserPortlet">ProjectBrowserPortlet</a> ui = (<a name="ProjectBrowserPortlet" href="../../../../life/qbic/portal/portlet/ProjectBrowserPortlet.html#ProjectBrowserPortlet">ProjectBrowserPortlet</a>) UI.getCurrent();
+<a class="jxr_linenumber" name="L481" href="#L481">481</a>           ui.addWindow(subWindow);
+<a class="jxr_linenumber" name="L482" href="#L482">482</a>         } <strong class="jxr_keyword">catch</strong> (NullPointerException e) {
+<a class="jxr_linenumber" name="L483" href="#L483">483</a>           System.err
+<a class="jxr_linenumber" name="L484" href="#L484">484</a>               .println(<span class="jxr_string">"NullPointerException while trying to set metadata: "</span> + e.getMessage());
+<a class="jxr_linenumber" name="L485" href="#L485">485</a> 
+<a class="jxr_linenumber" name="L486" href="#L486">486</a>         }
+<a class="jxr_linenumber" name="L487" href="#L487">487</a>       }
+<a class="jxr_linenumber" name="L488" href="#L488">488</a>     }));
+<a class="jxr_linenumber" name="L489" href="#L489">489</a> 
+<a class="jxr_linenumber" name="L490" href="#L490">490</a>     sampleBioGrid.getColumn(<span class="jxr_string">"edit"</span>).setWidth(70);
+<a class="jxr_linenumber" name="L491" href="#L491">491</a>     sampleBioGrid.getColumn(<span class="jxr_string">"edit"</span>).setHeaderCaption(<span class="jxr_string">""</span>);
+<a class="jxr_linenumber" name="L492" href="#L492">492</a>     sampleBioGrid.setColumnOrder(<span class="jxr_string">"edit"</span>, <span class="jxr_string">"secondaryName"</span>, <span class="jxr_string">"primaryTissue"</span>, <span class="jxr_string">"properties"</span>,
+<a class="jxr_linenumber" name="L493" href="#L493">493</a>         <span class="jxr_string">"tissueDetailed"</span>, <span class="jxr_string">"code"</span>, <span class="jxr_string">"additionalInfo"</span>, <span class="jxr_string">"biologicalEntity"</span>, <span class="jxr_string">"externalDB"</span>);
+<a class="jxr_linenumber" name="L494" href="#L494">494</a> 
+<a class="jxr_linenumber" name="L495" href="#L495">495</a>     sampleBioGrid.getColumn(<span class="jxr_string">"biologicalEntity"</span>).setHeaderCaption(<span class="jxr_string">"Source"</span>);
+<a class="jxr_linenumber" name="L496" href="#L496">496</a> 
+<a class="jxr_linenumber" name="L497" href="#L497">497</a>     GridFunctions.addColumnFilters(sampleBioGrid, gpcBio);
+<a class="jxr_linenumber" name="L498" href="#L498">498</a>     GridFunctions.addColumnFilters(sampleEntityGrid, gpcEntity);
+<a class="jxr_linenumber" name="L499" href="#L499">499</a> 
+<a class="jxr_linenumber" name="L500" href="#L500">500</a> 
+<a class="jxr_linenumber" name="L501" href="#L501">501</a>     <strong class="jxr_keyword">if</strong> (fileDownloaderSources != <strong class="jxr_keyword">null</strong>)
+<a class="jxr_linenumber" name="L502" href="#L502">502</a>       exportSources.removeExtension(fileDownloaderSources);
+<a class="jxr_linenumber" name="L503" href="#L503">503</a>     StreamResource srSource = Utils.getTSVStream(Utils.containerToString(samplesEntityContainer),
+<a class="jxr_linenumber" name="L504" href="#L504">504</a>         String.format(<span class="jxr_string">"%s_%s_"</span>, id.substring(1).replace(<span class="jxr_string">"/"</span>, <span class="jxr_string">"_"</span>), <span class="jxr_string">"sample_sources"</span>));
+<a class="jxr_linenumber" name="L505" href="#L505">505</a>     fileDownloaderSources = <strong class="jxr_keyword">new</strong> FileDownloader(srSource);
+<a class="jxr_linenumber" name="L506" href="#L506">506</a>     fileDownloaderSources.extend(exportSources);
+<a class="jxr_linenumber" name="L507" href="#L507">507</a> 
+<a class="jxr_linenumber" name="L508" href="#L508">508</a> 
+<a class="jxr_linenumber" name="L509" href="#L509">509</a>     <strong class="jxr_keyword">if</strong> (fileDownloaderSamples != <strong class="jxr_keyword">null</strong>)
+<a class="jxr_linenumber" name="L510" href="#L510">510</a>       exportSamples.removeExtension(fileDownloaderSamples);
+<a class="jxr_linenumber" name="L511" href="#L511">511</a>     StreamResource srSamples = Utils.getTSVStream(Utils.containerToString(samplesBioContainer),
+<a class="jxr_linenumber" name="L512" href="#L512">512</a>         String.format(<span class="jxr_string">"%s_%s_"</span>, id.substring(1).replace(<span class="jxr_string">"/"</span>, <span class="jxr_string">"_"</span>), <span class="jxr_string">"extracted_samples"</span>));
+<a class="jxr_linenumber" name="L513" href="#L513">513</a>     fileDownloaderSamples = <strong class="jxr_keyword">new</strong> FileDownloader(srSamples);
+<a class="jxr_linenumber" name="L514" href="#L514">514</a>     fileDownloaderSamples.extend(exportSamples);
+<a class="jxr_linenumber" name="L515" href="#L515">515</a> 
+<a class="jxr_linenumber" name="L516" href="#L516">516</a>     <strong class="jxr_keyword">this</strong>.buildLayout();
+<a class="jxr_linenumber" name="L517" href="#L517">517</a>   }
+<a class="jxr_linenumber" name="L518" href="#L518">518</a> 
+<a class="jxr_linenumber" name="L519" href="#L519">519</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L520" href="#L520">520</a> <em class="jxr_javadoccomment">   * Precondition: {DatasetView#table} has to be initialized. e.g. with</em>
+<a class="jxr_linenumber" name="L521" href="#L521">521</a> <em class="jxr_javadoccomment">   * {DatasetView#buildFilterTable} If it is not, strange behaviour has to be expected. builds the</em>
+<a class="jxr_linenumber" name="L522" href="#L522">522</a> <em class="jxr_javadoccomment">   * Layout of this view.</em>
+<a class="jxr_linenumber" name="L523" href="#L523">523</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L524" href="#L524">524</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> buildLayout() {
+<a class="jxr_linenumber" name="L525" href="#L525">525</a>     <strong class="jxr_keyword">this</strong>.vert.removeAllComponents();
+<a class="jxr_linenumber" name="L526" href="#L526">526</a>     <strong class="jxr_keyword">this</strong>.vert.setSizeFull();
+<a class="jxr_linenumber" name="L527" href="#L527">527</a>     vert.setResponsive(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L528" href="#L528">528</a> 
+<a class="jxr_linenumber" name="L529" href="#L529">529</a>     <em class="jxr_comment">// Table (containing datasets) section</em>
+<a class="jxr_linenumber" name="L530" href="#L530">530</a>     VerticalLayout tableSection = <strong class="jxr_keyword">new</strong> VerticalLayout();
+<a class="jxr_linenumber" name="L531" href="#L531">531</a>     HorizontalLayout tableSectionContent = <strong class="jxr_keyword">new</strong> HorizontalLayout();
+<a class="jxr_linenumber" name="L532" href="#L532">532</a>     HorizontalLayout sampletableSectionContent = <strong class="jxr_keyword">new</strong> HorizontalLayout();
+<a class="jxr_linenumber" name="L533" href="#L533">533</a>     tableSection.setResponsive(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L534" href="#L534">534</a>     tableSectionContent.setResponsive(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L535" href="#L535">535</a>     sampletableSectionContent.setResponsive(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L536" href="#L536">536</a> 
+<a class="jxr_linenumber" name="L537" href="#L537">537</a>     tableSectionContent.setMargin(<strong class="jxr_keyword">new</strong> MarginInfo(<strong class="jxr_keyword">true</strong>, false, false, false));
+<a class="jxr_linenumber" name="L538" href="#L538">538</a>     sampletableSectionContent.setMargin(<strong class="jxr_keyword">new</strong> MarginInfo(<strong class="jxr_keyword">true</strong>, false, false, false));
+<a class="jxr_linenumber" name="L539" href="#L539">539</a> 
+<a class="jxr_linenumber" name="L540" href="#L540">540</a>     <em class="jxr_comment">// tableSectionContent.setCaption("Datasets");</em>
+<a class="jxr_linenumber" name="L541" href="#L541">541</a>     <em class="jxr_comment">// tableSectionContent.setIcon(FontAwesome.FLASK);</em>
+<a class="jxr_linenumber" name="L542" href="#L542">542</a>     tableSection.addComponent(<strong class="jxr_keyword">new</strong> Label(String.format(
+<a class="jxr_linenumber" name="L543" href="#L543">543</a>         <span class="jxr_string">"This view shows the sample sources (e.g., human, mouse) to be studied and the corresponding extracted samples. With sample sources, information specific to the subject (e.g., age or BMI in the case of patient data) can be stored. The extracted sample is a sample which has been extracted from the corresponding sample source. This is the raw sample material that can be later prepared for specific analytical methods such as MS or NGS.&lt;br&gt; "</span>
+<a class="jxr_linenumber" name="L544" href="#L544">544</a>             + <span class="jxr_string">"\n\n There are %s extracted  samples coming from %s distinct sample sources in this study."</span>,
+<a class="jxr_linenumber" name="L545" href="#L545">545</a>         numberOfBioSamples, numberOfEntitySamples), ContentMode.HTML));
+<a class="jxr_linenumber" name="L546" href="#L546">546</a> 
+<a class="jxr_linenumber" name="L547" href="#L547">547</a>     tableSectionContent.addComponent(sampleBioGrid);
+<a class="jxr_linenumber" name="L548" href="#L548">548</a>     sampletableSectionContent.addComponent(sampleEntityGrid);
+<a class="jxr_linenumber" name="L549" href="#L549">549</a> 
+<a class="jxr_linenumber" name="L550" href="#L550">550</a>     sampleEntityGrid.setCaption(<span class="jxr_string">"Sample Sources"</span>);
+<a class="jxr_linenumber" name="L551" href="#L551">551</a>     sampleBioGrid.setCaption(<span class="jxr_string">"Extracted Samples"</span>);
+<a class="jxr_linenumber" name="L552" href="#L552">552</a> 
+<a class="jxr_linenumber" name="L553" href="#L553">553</a>     tableSection.setMargin(<strong class="jxr_keyword">new</strong> MarginInfo(<strong class="jxr_keyword">true</strong>, false, <strong class="jxr_keyword">true</strong>, <strong class="jxr_keyword">true</strong>));
+<a class="jxr_linenumber" name="L554" href="#L554">554</a>     tableSection.setSpacing(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L555" href="#L555">555</a> 
+<a class="jxr_linenumber" name="L556" href="#L556">556</a>     tableSection.addComponent(sampletableSectionContent);
+<a class="jxr_linenumber" name="L557" href="#L557">557</a>     tableSection.addComponent(exportSources);
+<a class="jxr_linenumber" name="L558" href="#L558">558</a>     tableSection.addComponent(tableSectionContent);
+<a class="jxr_linenumber" name="L559" href="#L559">559</a>     tableSection.addComponent(exportSamples);
+<a class="jxr_linenumber" name="L560" href="#L560">560</a>     <strong class="jxr_keyword">this</strong>.vert.addComponent(tableSection);
+<a class="jxr_linenumber" name="L561" href="#L561">561</a> 
+<a class="jxr_linenumber" name="L562" href="#L562">562</a>     sampleBioGrid.setWidth(100, Unit.PERCENTAGE);
+<a class="jxr_linenumber" name="L563" href="#L563">563</a>     sampleEntityGrid.setWidth(100, Unit.PERCENTAGE);
+<a class="jxr_linenumber" name="L564" href="#L564">564</a> 
+<a class="jxr_linenumber" name="L565" href="#L565">565</a>     <em class="jxr_comment">// sampleBioGrid.setHeightMode(HeightMode.ROW);</em>
+<a class="jxr_linenumber" name="L566" href="#L566">566</a>     <em class="jxr_comment">// sampleEntityGrid.setHeightMode(HeightMode.ROW);</em>
+<a class="jxr_linenumber" name="L567" href="#L567">567</a> 
+<a class="jxr_linenumber" name="L568" href="#L568">568</a>     <em class="jxr_comment">// sampleBioGrid.setHeightByRows(Math.min(10, numberOfBioSamples));</em>
+<a class="jxr_linenumber" name="L569" href="#L569">569</a>     <em class="jxr_comment">// sampleEntityGrid.setHeightByRows(Math.min(10, 5));</em>
+<a class="jxr_linenumber" name="L570" href="#L570">570</a> 
+<a class="jxr_linenumber" name="L571" href="#L571">571</a>     tableSection.setSizeFull();
+<a class="jxr_linenumber" name="L572" href="#L572">572</a>     sampletableSectionContent.setSizeFull();
+<a class="jxr_linenumber" name="L573" href="#L573">573</a>     tableSectionContent.setSizeFull();
+<a class="jxr_linenumber" name="L574" href="#L574">574</a>   }
+<a class="jxr_linenumber" name="L575" href="#L575">575</a> }
+</pre>
+<hr/>
+<div id="footer">Copyright &#169; 2019. All rights reserved.</div>
+</body>
+</html>

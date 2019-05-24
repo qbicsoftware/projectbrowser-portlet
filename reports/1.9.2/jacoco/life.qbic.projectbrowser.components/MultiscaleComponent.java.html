@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MultiscaleComponent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.components</a> &gt; <span class="el_source">MultiscaleComponent.java</span></div><h1>MultiscaleComponent.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.components;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.ui.Alignment;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.Notification;
+import com.vaadin.ui.Panel;
+import com.vaadin.ui.TextArea;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.themes.ValoTheme;
+
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
+
+import life.qbic.projectbrowser.controllers.MultiscaleController;
+import life.qbic.projectbrowser.model.notes.Note;
+
+public class MultiscaleComponent extends CustomComponent {
+
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 4700958245761376884L;
+  private MultiscaleController controller;
+  private VerticalLayout mainlayout;
+  // private Grid pastcomments;
+  private List&lt;Note&gt; notes;
+  private Panel commentsPanel;
+
+<span class="nc" id="L54">  public MultiscaleComponent(MultiscaleController c) {</span>
+<span class="nc" id="L55">    this.controller = c;</span>
+<span class="nc" id="L56">    initUI();</span>
+<span class="nc" id="L57">  }</span>
+
+  public void initUI() {
+<span class="nc" id="L60">    mainlayout = new VerticalLayout();</span>
+<span class="nc" id="L61">    mainlayout.setWidth(100, Unit.PERCENTAGE);</span>
+<span class="nc" id="L62">    commentsPanel = new Panel();</span>
+
+<span class="nc" id="L64">    Label commentsLabel = new Label(&quot;No comments added so far.&quot;, ContentMode.HTML);</span>
+<span class="nc" id="L65">    commentsPanel.setContent(commentsLabel);</span>
+
+<span class="nc" id="L67">    commentsPanel.setImmediate(true);</span>
+<span class="nc" id="L68">    commentsPanel.setWidth(50, Unit.PERCENTAGE);</span>
+<span class="nc" id="L69">    commentsPanel.setHeight(UI.getCurrent().getPage().getBrowserWindowHeight() * 0.2f, Unit.PIXELS);</span>
+
+<span class="nc" id="L71">    setCompositionRoot(mainlayout);</span>
+<span class="nc" id="L72">  }</span>
+
+  public void updateUI(String id, EntityType type) {
+<span class="nc" id="L75">    controller.update(id, type);</span>
+<span class="nc" id="L76">    setNotes();</span>
+<span class="nc" id="L77">  }</span>
+
+  void buildEmptyComments() {
+
+    // add comments
+<span class="nc" id="L82">    VerticalLayout addComment = new VerticalLayout();</span>
+<span class="nc" id="L83">    addComment.setMargin(true);</span>
+<span class="nc" id="L84">    addComment.setWidth(100, Unit.PERCENTAGE);</span>
+<span class="nc" id="L85">    final TextArea comments = new TextArea();</span>
+<span class="nc" id="L86">    comments.setInputPrompt(&quot;Write your comment here...&quot;);</span>
+<span class="nc" id="L87">    comments.setWidth(100, Unit.PERCENTAGE);</span>
+<span class="nc" id="L88">    comments.setRows(2);</span>
+<span class="nc" id="L89">    Button commentsOk = new Button(&quot;Add Comment&quot;);</span>
+<span class="nc" id="L90">    commentsOk.addStyleName(ValoTheme.BUTTON_FRIENDLY);</span>
+<span class="nc" id="L91">    commentsOk.addClickListener(new ClickListener() {</span>
+      /**
+       * 
+       */
+      private static final long serialVersionUID = -5369241494545155677L;
+
+      public void buttonClick(ClickEvent event) {
+<span class="nc bnc" id="L98" title="All 2 branches missed.">        if (&quot;&quot;.equals(comments.getValue()))</span>
+<span class="nc" id="L99">          return;</span>
+
+<span class="nc" id="L101">        String newComment = comments.getValue();</span>
+        // reset comments
+<span class="nc" id="L103">        comments.setValue(&quot;&quot;);</span>
+        // use some date format
+<span class="nc" id="L105">        Date dNow = new Date();</span>
+<span class="nc" id="L106">        SimpleDateFormat ft = new SimpleDateFormat(&quot;yyyy-MM-dd'T'HH:mm:ss.SSS'Z'&quot;);</span>
+
+<span class="nc" id="L108">        Note note = new Note();</span>
+<span class="nc" id="L109">        note.setComment(newComment);</span>
+<span class="nc" id="L110">        note.setUsername(controller.getUser());</span>
+<span class="nc" id="L111">        note.setTime(ft.format(dNow));</span>
+
+        // show it now
+        // pastcomments.getContainerDataSource().addItem(note);
+<span class="nc" id="L115">        notes.add(note);</span>
+
+        // TODO write back
+<span class="nc" id="L118">        Label commentsLabel = new Label(translateComments(notes), ContentMode.HTML);</span>
+<span class="nc" id="L119">        commentsPanel.setContent(commentsLabel);</span>
+
+        // write back to openbis
+<span class="nc bnc" id="L122" title="All 2 branches missed.">        if (!controller.addNote(note)) {</span>
+<span class="nc" id="L123">          Notification.show(&quot;Could not add comment to sample. How did you do that?&quot;);</span>
+        }
+
+<span class="nc" id="L126">      }</span>
+
+    });
+
+<span class="nc" id="L130">    HorizontalLayout inputPrompt = new HorizontalLayout();</span>
+<span class="nc" id="L131">    inputPrompt.addComponent(comments);</span>
+<span class="nc" id="L132">    inputPrompt.addComponent(commentsOk);</span>
+
+<span class="nc" id="L134">    inputPrompt.setWidth(50, Unit.PERCENTAGE);</span>
+<span class="nc" id="L135">    inputPrompt.setComponentAlignment(commentsOk, Alignment.TOP_RIGHT);</span>
+<span class="nc" id="L136">    inputPrompt.setExpandRatio(comments, 1.0f);</span>
+
+
+
+    // addComment.addComponent(comments);
+    // addComment.addComponent(commentsOk);
+
+<span class="nc" id="L143">    addComment.addComponent(commentsPanel);</span>
+<span class="nc" id="L144">    addComment.addComponent(inputPrompt);</span>
+
+    // addComment.setComponentAlignment(comments, Alignment.TOP_CENTER);
+    // addComment.setComponentAlignment(commentsOk, Alignment.MIDDLE_CENTER);
+
+<span class="nc" id="L149">    addComment.setComponentAlignment(commentsPanel, Alignment.TOP_CENTER);</span>
+<span class="nc" id="L150">    addComment.setComponentAlignment(inputPrompt, Alignment.MIDDLE_CENTER);</span>
+
+<span class="nc" id="L152">    mainlayout.addComponent(addComment);</span>
+
+    // mainlayout.addComponent(pastcomments);
+<span class="nc" id="L155">    Label commentsLabel = new Label(&quot;No comments added so far.&quot;, ContentMode.HTML);</span>
+<span class="nc" id="L156">    commentsPanel.setContent(commentsLabel);</span>
+
+    // mainlayout.addComponent(commentsPanel);
+    // mainlayout.setComponentAlignment(commentsPanel,
+    // Alignment.TOP_CENTER);
+<span class="nc" id="L161">  }</span>
+
+  void setNotes() {
+<span class="nc bnc" id="L164" title="All 4 branches missed.">    if (notes == null || notes.isEmpty()) {</span>
+<span class="nc" id="L165">      buildEmptyComments();</span>
+    }
+<span class="nc" id="L167">    Label commentsLabel = new Label(translateComments(controller.getNotes()), ContentMode.HTML);</span>
+<span class="nc" id="L168">    commentsPanel.setContent(commentsLabel);</span>
+<span class="nc" id="L169">    notes = controller.getNotes();</span>
+    // pastcomments.setContainerDataSource(controller.getNotes());
+    // pastcomments.setColumnOrder(&quot;time&quot;, &quot;username&quot;, &quot;comment&quot;);
+    // pastcomments.setHeightMode(HeightMode.ROW);
+    // pastcomments.setHeightByRows(controller.getContainer().size());
+<span class="nc" id="L174">  }</span>
+
+  public void resize(float width, float height) {
+<span class="nc" id="L177">    setWidth(width * 0.8f, Unit.PIXELS);</span>
+    // setHeight(height*0.6f, Unit.PIXELS);
+<span class="nc" id="L179">  }</span>
+
+  public String translateComments(List&lt;Note&gt; notes) {
+
+<span class="nc" id="L183">    String lastDay = &quot;&quot;;</span>
+<span class="nc" id="L184">    String labelString = &quot;&quot;;</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">    for (Note n : notes) {</span>
+<span class="nc" id="L186">      String date = n.getTime();</span>
+<span class="nc" id="L187">      String[] datetime = date.split(&quot;T&quot;);</span>
+<span class="nc" id="L188">      String day = datetime[0];</span>
+<span class="nc" id="L189">      String time = datetime[1].split(&quot;\\.&quot;)[0];</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">      if (!lastDay.equals(day)) {</span>
+<span class="nc" id="L191">        lastDay = day;</span>
+<span class="nc" id="L192">        labelString += String.format(&quot;%s\n&quot;, &quot;&lt;u&gt;&quot; + day + &quot;&lt;/u&gt;&quot;);</span>
+      }
+<span class="nc" id="L194">      labelString += String.format(&quot;%s\n%s %s\n&quot;,</span>
+<span class="nc" id="L195">          &quot;&lt;p&gt;&lt;b&gt;&quot; + controller.getLiferayUser(n.getUsername()) + &quot;&lt;/b&gt;.&lt;/p&gt;&quot;, n.getComment(),</span>
+          &quot;&lt;p&gt;&lt;i&gt;&lt;small&gt;&quot; + time + &quot;&lt;/small&gt;&lt;/i&gt;.&lt;/p&gt;&quot;);
+<span class="nc" id="L197">    }</span>
+
+<span class="nc" id="L199">    return labelString;</span>
+
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

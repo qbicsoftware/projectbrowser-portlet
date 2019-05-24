@@ -1,0 +1,10 @@
+life.qbic.portal.portlet
+life.qbic.projectbrowser.views
+life.qbic.projectbrowser.components
+life.qbic.projectbrowser.model
+life.qbic.projectbrowser.model.notes
+life.qbic.projectbrowser.model.maxquant
+life.qbic.projectbrowser.model.userdb
+life.qbic.projectbrowser.helpers
+life.qbic.projectbrowser.controllers
+life.qbic.projectbrowser.samplegraph

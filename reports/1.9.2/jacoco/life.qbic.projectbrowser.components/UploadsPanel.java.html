@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UploadsPanel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.components</a> &gt; <span class="el_source">UploadsPanel.java</span></div><h1>UploadsPanel.java</h1><pre class="source lang-java linenums">package life.qbic.projectbrowser.components;
+
+
+import java.io.File;
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.vaadin.event.FieldEvents.TextChangeEvent;
+import com.vaadin.event.FieldEvents.TextChangeListener;
+import com.vaadin.server.FontAwesome;
+import com.vaadin.ui.AbstractTextField.TextChangeEventMode;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.ProgressBar;
+import com.vaadin.ui.Table;
+import com.vaadin.ui.Upload.FinishedEvent;
+import com.vaadin.ui.Upload.FinishedListener;
+import com.vaadin.ui.themes.ValoTheme;
+
+import life.qbic.projectbrowser.helpers.*;
+import life.qbic.openbis.openbisclient.OpenBisClient;
+
+import com.vaadin.ui.ComboBox;
+import com.vaadin.ui.VerticalLayout;
+
+public class UploadsPanel extends VerticalLayout {
+
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 6971325287434528738L;
+
+<span class="nc" id="L44">  private static final Logger LOG = LogManager.getLogger(UploadsPanel.class);</span>
+
+  private File current;
+  private Map&lt;Object, AttachmentInformation&gt; attachments;
+  private String space;
+  private String project;
+
+  private ComboBox uploadType;
+  private UploadComponent upload;
+  private StandardTextField fileInfo;
+  private Table toUpload;
+  private Button commit;
+
+  private OpenBisClient openbis;
+  private Label info;
+  private ProgressBar bar;
+
+  private String userID;
+  private String tmpFolder;
+
+  public UploadsPanel(String tmpFolder, String space, String project, List&lt;String&gt; expOptions,
+<span class="nc" id="L65">      String userID, AttachmentConfig attachConfig, OpenBisClient openbis) {</span>
+<span class="nc" id="L66">    this.openbis = openbis;</span>
+<span class="nc" id="L67">    this.tmpFolder = tmpFolder;</span>
+<span class="nc" id="L68">    this.userID = userID;</span>
+<span class="nc" id="L69">    this.space = space;</span>
+<span class="nc" id="L70">    this.project = project;</span>
+<span class="nc" id="L71">    attachments = new HashMap&lt;Object, AttachmentInformation&gt;();</span>
+
+<span class="nc" id="L73">    fileInfo = new StandardTextField(&quot;Description&quot;);</span>
+<span class="nc" id="L74">    fileInfo.setRequired(true);</span>
+<span class="nc" id="L75">    fileInfo.setImmediate(true);</span>
+<span class="nc" id="L76">    fileInfo.setTextChangeEventMode(TextChangeEventMode.EAGER);</span>
+<span class="nc" id="L77">    addComponent(fileInfo);</span>
+
+<span class="nc" id="L79">    uploadType = new ComboBox(&quot;Attach to...&quot;);</span>
+<span class="nc" id="L80">    uploadType.setNullSelectionAllowed(false);</span>
+<span class="nc" id="L81">    uploadType.addItems(expOptions);</span>
+<span class="nc" id="L82">    uploadType.setValue(expOptions.get(0));</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">    if (expOptions.size() == 1)</span>
+<span class="nc" id="L84">      uploadType.setEnabled(false);</span>
+<span class="nc" id="L85">    addComponent(uploadType);</span>
+
+<span class="nc" id="L87">    initUpload(attachConfig.getMaxSize());</span>
+
+<span class="nc" id="L89">    initTable();</span>
+
+<span class="nc" id="L91">    bar = new ProgressBar();</span>
+<span class="nc" id="L92">    bar.setVisible(false);</span>
+<span class="nc" id="L93">    info = new Label();</span>
+<span class="nc" id="L94">    addComponent(bar);</span>
+<span class="nc" id="L95">    addComponent(info);</span>
+
+<span class="nc" id="L97">    commit = new Button(&quot;Upload all Files&quot;);</span>
+<span class="nc" id="L98">    addComponent(commit);</span>
+<span class="nc" id="L99">    commit.setVisible(false);</span>
+
+<span class="nc" id="L101">    final UploadsPanel view = this;</span>
+
+<span class="nc" id="L103">    final AttachmentMover mover = new AttachmentMover(tmpFolder, attachConfig);</span>
+<span class="nc" id="L104">    commit.addClickListener(new ClickListener() {</span>
+
+      @Override
+      public void buttonClick(ClickEvent event) {
+<span class="nc" id="L108">        startCommit();</span>
+        try {
+<span class="nc" id="L110">          mover.moveAttachments(new ArrayList&lt;AttachmentInformation&gt;(getAttachments().values()),</span>
+<span class="nc" id="L111">              getBar(), getLabel(), new MoveUploadsReadyRunnable(view));</span>
+<span class="nc" id="L112">        } catch (IOException e) {</span>
+<span class="nc" id="L113">          e.printStackTrace();</span>
+<span class="nc" id="L114">        }</span>
+<span class="nc" id="L115">      }</span>
+    });
+
+<span class="nc" id="L118">    setSpacing(true);</span>
+<span class="nc" id="L119">    addListeners();</span>
+<span class="nc" id="L120">  }</span>
+
+  protected String createMetadataString(AttachmentInformation a) {
+<span class="nc" id="L123">    String user = a.getUser();</span>
+<span class="nc" id="L124">    String info = a.getInfo().replace(&quot;\n&quot;, &quot; &quot;);</span>
+<span class="nc" id="L125">    String barcode = a.getBarcode();</span>
+<span class="nc" id="L126">    return &quot;user=&quot; + user + &quot;\n&quot; + &quot;info=&quot; + info + &quot;\n&quot; + &quot;barcode=&quot; + barcode + &quot;\n&quot; + &quot;type=&quot;</span>
+<span class="nc" id="L127">        + uploadType.getValue().toString();</span>
+  }
+
+  private void initTable() {
+<span class="nc" id="L131">    toUpload = new Table(&quot;Files to Upload&quot;);</span>
+<span class="nc" id="L132">    toUpload.setWidth(&quot;400px&quot;);</span>
+<span class="nc" id="L133">    toUpload.addContainerProperty(&quot;Info&quot;, String.class, null);</span>
+<span class="nc" id="L134">    toUpload.addContainerProperty(&quot;Context&quot;, String.class, null);</span>
+<span class="nc" id="L135">    toUpload.addContainerProperty(&quot;Remove&quot;, Button.class, null);</span>
+<span class="nc" id="L136">    addComponent(toUpload);</span>
+<span class="nc" id="L137">    toUpload.setVisible(false);</span>
+<span class="nc" id="L138">  }</span>
+
+<span class="nc" id="L140">  private void addListeners() {}</span>
+
+  private String getBarcode() {
+<span class="nc" id="L143">    return project + &quot;000&quot;;</span>
+  }
+
+  public Button getCommitButton() {
+<span class="nc" id="L147">    return commit;</span>
+  }
+
+  private void tableChanged() {
+<span class="nc bnc" id="L151" title="All 2 branches missed.">    boolean notEmpty = toUpload.size() != 0;</span>
+<span class="nc" id="L152">    toUpload.setPageLength(toUpload.size() + 1);</span>
+<span class="nc" id="L153">    toUpload.setVisible(notEmpty);</span>
+<span class="nc" id="L154">    commit.setVisible(notEmpty);</span>
+<span class="nc" id="L155">  }</span>
+
+  private void initUpload(int maxSize) {
+<span class="nc" id="L158">    upload = new UploadComponent(&quot;Select File&quot;, &quot;Add File&quot;, tmpFolder, userID, maxSize * 1000000);</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">    if (!new File(tmpFolder).exists()) {</span>
+<span class="nc" id="L160">      LOG.error(&quot;tmp folder &quot; + tmpFolder</span>
+          + &quot; does not exist! Create it or set another folder in properties file.&quot;);
+    }
+
+<span class="nc" id="L164">    upload.getUploadComponent().setEnabled(false);</span>
+<span class="nc" id="L165">    fileInfo.addTextChangeListener(new TextChangeListener() {</span>
+
+      @Override
+      public void textChange(TextChangeEvent event) {
+<span class="nc bnc" id="L169" title="All 2 branches missed.">        upload.getUploadComponent().setEnabled(!event.getText().isEmpty());</span>
+<span class="nc" id="L170">      }</span>
+    });
+
+<span class="nc" id="L173">    FinishedListener uploadFinListener = new FinishedListener() {</span>
+      /**
+       * 
+       */
+      private static final long serialVersionUID = -8413963075202260180L;
+
+      public void uploadFinished(FinishedEvent event) {
+<span class="nc bnc" id="L180" title="All 2 branches missed.">        if (upload.wasSuccess()) {</span>
+<span class="nc" id="L181">          File file = upload.getFile();</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">          if (!file.getName().equals(&quot;up_&quot;)) {</span>
+<span class="nc" id="L183">            LOG.info(&quot;Upload successful&quot;);</span>
+<span class="nc" id="L184">            current = file;</span>
+<span class="nc" id="L185">            int i = file.getName().lastIndexOf('.');</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">            if (i &lt; 0)</span>
+<span class="nc" id="L187">              i = file.getName().length();</span>
+<span class="nc bnc" id="L188" title="All 4 branches missed.">            if (fileInfo.getValue() == null || fileInfo.getValue().isEmpty())</span>
+<span class="nc" id="L189">              fileInfo.setValue(file.getName().substring(3, i));</span>
+
+<span class="nc" id="L191">            Button delete = new Button();</span>
+<span class="nc" id="L192">            delete.setStyleName(ValoTheme.BUTTON_BORDERLESS);</span>
+<span class="nc" id="L193">            delete.setIcon(FontAwesome.TRASH_O);</span>
+<span class="nc" id="L194">            delete.setWidth(&quot;10px&quot;);</span>
+
+<span class="nc" id="L196">            Object itemId = toUpload.addItem();</span>
+
+<span class="nc" id="L198">            delete.setData(itemId);</span>
+<span class="nc" id="L199">            String secondary = fileInfo.getValue();</span>
+<span class="nc" id="L200">            String type = (String) uploadType.getValue();</span>
+
+<span class="nc" id="L202">            Date date = new Date();</span>
+<span class="nc" id="L203">            String timeStamp = new Timestamp(date.getTime()).toString().split(&quot; &quot;)[1]</span>
+<span class="nc" id="L204">                .replace(&quot;:&quot;, &quot;&quot;).replace(&quot;.&quot;, &quot;&quot;);</span>
+
+<span class="nc" id="L206">            attachments.put(itemId, new AttachmentInformation(current.getName(), secondary, type,</span>
+<span class="nc" id="L207">                userID, getBarcode(), timeStamp));</span>
+
+<span class="nc" id="L209">            fileInfo.setValue(&quot;&quot;);</span>
+
+<span class="nc" id="L211">            delete.addClickListener(new ClickListener() {</span>
+              /**
+              * 
+              */
+              private static final long serialVersionUID = 5414603256990177472L;
+
+              @Override
+              public void buttonClick(ClickEvent event) {
+<span class="nc" id="L219">                Integer iid = (Integer) event.getButton().getData();</span>
+<span class="nc" id="L220">                toUpload.removeItem(iid);</span>
+<span class="nc" id="L221">                attachments.remove(iid);</span>
+<span class="nc" id="L222">                tableChanged();</span>
+<span class="nc" id="L223">              }</span>
+            });
+<span class="nc" id="L225">            toUpload.getContainerProperty(itemId, &quot;Info&quot;).setValue(secondary);</span>
+<span class="nc" id="L226">            toUpload.getContainerProperty(itemId, &quot;Context&quot;).setValue(type);</span>
+<span class="nc" id="L227">            toUpload.getContainerProperty(itemId, &quot;Remove&quot;).setValue(delete);</span>
+<span class="nc" id="L228">            tableChanged();</span>
+<span class="nc" id="L229">            upload.getUploadComponent().setEnabled(false);</span>
+          }
+        }
+<span class="nc" id="L232">      }</span>
+    };
+<span class="nc" id="L234">    upload.addFinishedListener(uploadFinListener);</span>
+<span class="nc" id="L235">    addComponent(upload);</span>
+<span class="nc" id="L236">  }</span>
+
+  public Map&lt;Object, AttachmentInformation&gt; getAttachments() {
+<span class="nc" id="L239">    return attachments;</span>
+  }
+
+  public Label getLabel() {
+<span class="nc" id="L243">    return info;</span>
+  }
+
+  public ProgressBar getBar() {
+<span class="nc" id="L247">    return bar;</span>
+  }
+
+  public void startCommit() {
+<span class="nc" id="L251">    commit.setEnabled(false);</span>
+<span class="nc" id="L252">    bar.setVisible(true);</span>
+<span class="nc" id="L253">    String sample = project + &quot;000&quot;;</span>
+<span class="nc" id="L254">    String experiment = project + &quot;_INFO&quot;;</span>
+    // only executed if someone wants to add files to an otherwise empty project
+<span class="nc bnc" id="L256" title="All 2 branches missed.">    if (!openbis.sampleExists(sample)) {</span>
+      // timeout in seconds if something goes wrong
+<span class="nc" id="L258">      int TIMEOUT = 10;// in s</span>
+<span class="nc" id="L259">      int step = 100; // in ms</span>
+<span class="nc" id="L260">      boolean error = false;</span>
+<span class="nc bnc" id="L261" title="All 2 branches missed.">      if (!openbis.expExists(space, project, experiment)) {</span>
+<span class="nc" id="L262">        Map&lt;String, Object&gt; params = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L263">        List&lt;Map&lt;String, Object&gt;&gt; props = new ArrayList&lt;Map&lt;String, Object&gt;&gt;();</span>
+<span class="nc" id="L264">        props.add(new HashMap&lt;String, Object&gt;()); // empty properties for this experiment object</span>
+<span class="nc" id="L265">        params.put(&quot;codes&quot;, new ArrayList&lt;String&gt;(Arrays.asList(experiment)));</span>
+<span class="nc" id="L266">        params.put(&quot;types&quot;, new ArrayList&lt;String&gt;(Arrays.asList(&quot;Q_PROJECT_DETAILS&quot;)));</span>
+<span class="nc" id="L267">        params.put(&quot;project&quot;, project);</span>
+<span class="nc" id="L268">        params.put(&quot;space&quot;, space);</span>
+<span class="nc" id="L269">        params.put(&quot;properties&quot;, props);</span>
+<span class="nc" id="L270">        params.put(&quot;user&quot;, userID);</span>
+<span class="nc" id="L271">        openbis.ingest(&quot;DSS1&quot;, &quot;register-exp&quot;, params);</span>
+<span class="nc" id="L272">        int time = TIMEOUT * 1000;</span>
+<span class="nc bnc" id="L273" title="All 4 branches missed.">        while (!openbis.expExists(space, project, experiment) &amp;&amp; time &gt; 0) {</span>
+<span class="nc" id="L274">          time -= step;</span>
+          try {
+<span class="nc" id="L276">            Thread.sleep(step);</span>
+<span class="nc" id="L277">          } catch (InterruptedException e) {</span>
+<span class="nc" id="L278">            e.printStackTrace();</span>
+<span class="nc" id="L279">          }</span>
+        }
+<span class="nc bnc" id="L281" title="All 2 branches missed.">        error = time == 0;</span>
+      }
+<span class="nc" id="L283">      Map&lt;String, Object&gt; params = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L284">      Map&lt;String, Object&gt; map = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L285">      map.put(&quot;code&quot;, sample);</span>
+<span class="nc" id="L286">      map.put(&quot;space&quot;, space);</span>
+<span class="nc" id="L287">      map.put(&quot;project&quot;, project);</span>
+<span class="nc" id="L288">      map.put(&quot;experiment&quot;, experiment);</span>
+<span class="nc" id="L289">      map.put(&quot;user&quot;, userID);</span>
+<span class="nc" id="L290">      map.put(&quot;type&quot;, &quot;Q_ATTACHMENT_SAMPLE&quot;);</span>
+<span class="nc" id="L291">      map.put(&quot;metadata&quot;, new HashMap&lt;String, Object&gt;());</span>
+<span class="nc" id="L292">      params.put(sample, map);</span>
+<span class="nc" id="L293">      openbis.ingest(&quot;DSS1&quot;, &quot;register-sample-batch&quot;, params);</span>
+<span class="nc" id="L294">      int time = TIMEOUT * 1000;</span>
+<span class="nc bnc" id="L295" title="All 4 branches missed.">      while (!openbis.sampleExists(sample) &amp;&amp; time &gt; 0) {</span>
+<span class="nc" id="L296">        time -= step;</span>
+        try {
+<span class="nc" id="L298">          Thread.sleep(step);</span>
+<span class="nc" id="L299">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L300">          e.printStackTrace();</span>
+<span class="nc" id="L301">        }</span>
+      }
+<span class="nc bnc" id="L303" title="All 4 branches missed.">      error = error || time == 0;</span>
+<span class="nc bnc" id="L304" title="All 2 branches missed.">      if (error)</span>
+<span class="nc" id="L305">        Utils.Notification(&quot;Something went wrong&quot;, &quot;Attachment could not be registered.&quot;, &quot;error&quot;);</span>
+    }
+<span class="nc" id="L307">  }</span>
+
+  public void commitDone() {
+<span class="nc" id="L310">    bar.setVisible(false);</span>
+<span class="nc" id="L311">    info.setValue(&quot;Successfully moved all files.&quot;);</span>
+<span class="nc" id="L312">    toUpload.removeAllItems();</span>
+<span class="nc" id="L313">    toUpload.setPageLength(1);</span>
+<span class="nc" id="L314">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

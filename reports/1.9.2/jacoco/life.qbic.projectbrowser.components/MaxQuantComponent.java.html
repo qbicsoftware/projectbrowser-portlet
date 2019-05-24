@@ -1,0 +1,508 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MaxQuantComponent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.components</a> &gt; <span class="el_source">MaxQuantComponent.java</span></div><h1>MaxQuantComponent.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects.
+ * Copyright (C) &quot;2016”  Christopher Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.components;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import life.qbic.projectbrowser.model.maxquant.Group;
+import life.qbic.projectbrowser.model.maxquant.MaxQuantModel;
+import life.qbic.projectbrowser.model.maxquant.RawFilesBean;
+import life.qbic.projectbrowser.helpers.JsonHelper;
+import submitter.Workflow;
+import submitter.parameters.InputList;
+import submitter.parameters.ParameterSet;
+
+import com.vaadin.data.fieldgroup.FieldGroup;
+import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.data.util.ObjectProperty;
+import com.vaadin.data.util.PropertysetItem;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.CheckBox;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.FormLayout;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.TabSheet;
+import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
+import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
+import com.vaadin.ui.TwinColSelect;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.themes.ValoTheme;
+
+import life.qbic.projectbrowser.controllers.WorkflowViewController;
+import de.uni_tuebingen.qbic.beans.DatasetBean;
+import fasta.FastaBean;
+import guse.workflowrepresentation.GuseNode;
+import guse.workflowrepresentation.GuseWorkflowRepresentation;
+import guse.workflowrepresentation.InputPort;
+
+public class MaxQuantComponent extends CustomComponent {
+  private static final long serialVersionUID = 5876981463933993626L;
+<span class="nc" id="L77">  private static final Logger LOG = LogManager.getLogger(MaxQuantComponent.class);</span>
+
+  private static final String INITNODE_CAPTION = &quot;Initialization&quot;;
+
+<span class="nc" id="L81">  private final String SELECTED_FILES_CAPTION = &quot;Selected files for analysis&quot;;</span>
+<span class="nc" id="L82">  private final String RAW_FILES_INFO =</span>
+      &quot;Select files for analysis. You can edit fraction and group parameters for each selected files by double clicking a selected file in the right table&quot;;
+<span class="nc" id="L84">  private final String BUTTON_START_CAPTION = &quot;start&quot;;</span>
+<span class="nc" id="L85">  public final String RAW_FILES_CAPTION = &quot;Raw files&quot;;</span>
+<span class="nc" id="L86">  private final String AVAILABLE_FILES_CAPTION = &quot;Avaliable files&quot;;</span>
+
+<span class="nc" id="L88">  private String FASTA_FILES_INFO = &quot;Select fasta files for analysis.&quot;;</span>
+  // private String AVAILABLE_FASTAS_CAPTION = &quot;Fasta files&quot;;
+<span class="nc" id="L90">  private String AVAILABLE_FASTAS_CAPTION = &quot;Available References&quot;;</span>
+<span class="nc" id="L91">  private String SELECTED_FASTAS_CAPTION = &quot;Selected Reference&quot;;</span>
+
+  private final MaxQuantModel model;
+
+  private Button start;
+  private TabSheet tabs;
+
+  private GroupSpecificParameterComponent groupSpecificParameterComponent;
+
+  private SelectFileComponent rawFiles;
+  private SelectFileComponent fastaFiles;
+
+  private TwinColSelect fixedModifications;
+  private CheckBox reQuantify;
+  private CheckBox matchBetweenRuns;
+
+  private PropertysetItem globalParameters;
+
+  private Workflow guseWorkflow;
+
+  private WorkflowViewController controller;
+
+
+
+<span class="nc" id="L115">  public MaxQuantComponent(final MaxQuantModel model, WorkflowViewController wfController) {</span>
+    // model
+<span class="nc" id="L117">    this.model = model;</span>
+<span class="nc" id="L118">    controller = wfController;</span>
+
+    // view
+<span class="nc" id="L121">    VerticalLayout mainLayout = new VerticalLayout();</span>
+    // mainLayout.setSpacing(true);
+<span class="nc" id="L123">    tabs = new TabSheet();</span>
+
+    // http://141.61.102.17/maxquant_doku/doku.php?id=maxquant:manual:beginner
+    // Filter for raw Files
+
+
+<span class="nc" id="L129">    rawFiles =</span>
+        new SelectFileComponent(RAW_FILES_CAPTION, RAW_FILES_INFO, AVAILABLE_FILES_CAPTION,
+<span class="nc" id="L131">            SELECTED_FILES_CAPTION, model.getDatasetBeans(), model.getRawFilesBeans());</span>
+
+<span class="nc" id="L133">    rawFiles.getDestination().setEditorEnabled(true);</span>
+<span class="nc" id="L134">    rawFiles.getDestination().getColumn(&quot;experiment&quot;).setEditable(false);</span>
+<span class="nc" id="L135">    rawFiles.getDestination().getColumn(&quot;file&quot;).setEditable(false);</span>
+<span class="nc" id="L136">    rawFiles.getDestination().setImmediate(true);</span>
+
+<span class="nc" id="L138">    tabs.addTab(rawFiles);</span>
+<span class="nc" id="L139">    groupSpecificParameterComponent = new GroupSpecificParameterComponent();</span>
+<span class="nc" id="L140">    tabs.addTab(groupSpecificParameterComponent);</span>
+<span class="nc" id="L141">    tabs.addTab(globalParameters());</span>
+
+<span class="nc" id="L143">    mainLayout.addComponent(tabs);</span>
+
+<span class="nc" id="L145">    start = new Button(BUTTON_START_CAPTION);</span>
+<span class="nc" id="L146">    mainLayout.addComponent(start);</span>
+<span class="nc" id="L147">    mainLayout.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L148">    this.setCompositionRoot(mainLayout);</span>
+
+    // controller
+<span class="nc" id="L151">    setLogic();</span>
+<span class="nc" id="L152">    bindGlobalParameters();</span>
+<span class="nc" id="L153">  }</span>
+
+  /**
+   * checks how many groups currently are present in raw files, and updates them
+   */
+  public void updateGroups() {
+<span class="nc bnc" id="L159" title="All 2 branches missed.">    if (model.getRawFilesBeans().size() == 0) {</span>
+<span class="nc" id="L160">      model.getGroups().clear();</span>
+<span class="nc" id="L161">      return;</span>
+    } else {
+<span class="nc" id="L163">      HashMap&lt;Integer, List&lt;RawFilesBean&gt;&gt; rawFilesSorted =</span>
+          new HashMap&lt;Integer, List&lt;RawFilesBean&gt;&gt;();
+<span class="nc bnc" id="L165" title="All 2 branches missed.">      for (RawFilesBean bean : model.getRawFilesBeans().getItemIds()) {</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">        if (rawFilesSorted.containsKey(bean.getParameterGroup())) {</span>
+<span class="nc" id="L167">          rawFilesSorted.get(bean.getParameterGroup()).add(bean);</span>
+        } else {
+<span class="nc" id="L169">          ArrayList&lt;RawFilesBean&gt; beans = new ArrayList&lt;RawFilesBean&gt;();</span>
+<span class="nc" id="L170">          beans.add(bean);</span>
+<span class="nc" id="L171">          rawFilesSorted.put(bean.getParameterGroup(), beans);</span>
+        }
+
+<span class="nc" id="L174">      }</span>
+      // remove old groups that are not used anymore
+<span class="nc bnc" id="L176" title="All 2 branches missed.">      for (Integer key : model.getGroups().keySet()) {</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">        if (!rawFilesSorted.containsKey(key)) {</span>
+<span class="nc" id="L178">          model.getGroups().remove(key);</span>
+        }
+<span class="nc" id="L180">      }</span>
+      // updated groups
+<span class="nc bnc" id="L182" title="All 2 branches missed.">      for (Integer key : rawFilesSorted.keySet()) {</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        if (model.getGroups().containsKey(key)) {</span>
+<span class="nc" id="L184">          model.getGroups().get(key).removeFiles();</span>
+<span class="nc" id="L185">          model.getGroups().get(key).setFiles(rawFilesSorted.get(key));</span>
+        } else {
+<span class="nc" id="L187">          Group group = new Group();</span>
+<span class="nc" id="L188">          group.setFiles(rawFilesSorted.get(key));</span>
+<span class="nc" id="L189">          model.getGroups().put(key, group);</span>
+        }
+
+<span class="nc" id="L192">      }</span>
+    }
+    // add new groups
+<span class="nc" id="L195">    HashMap&lt;Integer, Group&gt; groups = new HashMap&lt;Integer, Group&gt;();</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">    for (RawFilesBean bean : model.getRawFilesBeans().getItemIds()) {</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">      if (!groups.containsKey(bean.getParameterGroup())) {</span>
+<span class="nc" id="L198">        Group group = new Group();</span>
+<span class="nc" id="L199">        group.addFile(bean);</span>
+<span class="nc" id="L200">        groups.put(bean.getParameterGroup(), group);</span>
+      }
+<span class="nc" id="L202">    }</span>
+
+<span class="nc" id="L204">  }</span>
+
+  /**
+   * creates the global parameter component
+   * 
+   * @return
+   */
+  private Component globalParameters() {
+<span class="nc" id="L212">    FormLayout globalparameters = new FormLayout();</span>
+<span class="nc" id="L213">    globalparameters.setCaption(&quot;Global parameters&quot;);</span>
+<span class="nc" id="L214">    fastaFiles =</span>
+        new SelectFileComponent(&quot;&quot;, FASTA_FILES_INFO, AVAILABLE_FASTAS_CAPTION,
+<span class="nc" id="L216">            SELECTED_FASTAS_CAPTION, model.getFastaBeans(), model.getSelectedFastaBeans());</span>
+<span class="nc" id="L217">    globalparameters.addComponent(fastaFiles);</span>
+    // fixed modifications
+    // fixedModifications = new TwinColSelect(&quot;fixed modifications&quot;);
+<span class="nc" id="L220">    fixedModifications = new TwinColSelect();</span>
+
+<span class="nc" id="L222">    Label fixedInfo = new Label(&quot;Fixed Modifications&quot;);</span>
+<span class="nc" id="L223">    fixedInfo.addStyleName(ValoTheme.LABEL_COLORED);</span>
+
+<span class="nc" id="L225">    globalparameters.addComponent(fixedInfo);</span>
+<span class="nc" id="L226">    fixedModifications.addItems(&quot;Acetyl (Protein N-term)&quot;, &quot;Acetyl (K)&quot;, &quot;Oxidation (M)&quot;,</span>
+        &quot;Ala-&gt;Arg&quot;, &quot;Carbamidomethyl (C)&quot;);
+<span class="nc" id="L228">    globalparameters.addComponent(fixedModifications);</span>
+<span class="nc" id="L229">    reQuantify = new CheckBox(&quot;Requantify&quot;);</span>
+<span class="nc" id="L230">    globalparameters.addComponent(reQuantify);</span>
+<span class="nc" id="L231">    matchBetweenRuns = new CheckBox(&quot;Match Between Runs&quot;);</span>
+<span class="nc" id="L232">    globalparameters.addComponent(matchBetweenRuns);</span>
+<span class="nc" id="L233">    return globalparameters;</span>
+  }
+
+  void bindGlobalParameters() {
+<span class="nc" id="L237">    globalParameters = new PropertysetItem();</span>
+<span class="nc" id="L238">    globalParameters.addItemProperty(&quot;fixedModifications&quot;,</span>
+<span class="nc" id="L239">        new ObjectProperty&lt;LinkedHashSet&lt;String&gt;&gt;(model.getFixedMods()));</span>
+<span class="nc" id="L240">    globalParameters.addItemProperty(&quot;matchBetweenRuns&quot;,</span>
+<span class="nc" id="L241">        new ObjectProperty&lt;Boolean&gt;(model.getMatchBetweenRuns()));</span>
+<span class="nc" id="L242">    globalParameters.addItemProperty(&quot;reQuantify&quot;,</span>
+<span class="nc" id="L243">        new ObjectProperty&lt;Boolean&gt;(model.getReQuantify()));</span>
+<span class="nc" id="L244">    FieldGroup fieldGroup = new FieldGroup(globalParameters);</span>
+<span class="nc" id="L245">    fieldGroup.bind(fixedModifications, &quot;fixedModifications&quot;);</span>
+<span class="nc" id="L246">    fieldGroup.bind(matchBetweenRuns, &quot;matchBetweenRuns&quot;);</span>
+<span class="nc" id="L247">    fieldGroup.bind(reQuantify, &quot;reQuantify&quot;);</span>
+<span class="nc" id="L248">    fieldGroup.setBuffered(false);</span>
+<span class="nc" id="L249">  }</span>
+
+  void setLogic() {
+    // update groups for group specific paramter tab according to how many groups are currently
+    // created
+<span class="nc" id="L254">    tabs.addSelectedTabChangeListener(new SelectedTabChangeListener() {</span>
+      private static final long serialVersionUID = -8616030904807506084L;
+
+      @Override
+      public void selectedTabChange(SelectedTabChangeEvent event) {
+<span class="nc" id="L259">        if (event.getTabSheet().getSelectedTab().getCaption()</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">            .equals(GroupSpecificParameterComponent.CAPTION)) {</span>
+<span class="nc" id="L261">          updateGroups();</span>
+          // update component with new groups
+<span class="nc" id="L263">          groupSpecificParameterComponent.update(model.getGroups());</span>
+        }
+<span class="nc" id="L265">      }</span>
+    });
+
+    // button to move files from datasets to selected raw files
+<span class="nc" id="L269">    rawFiles.getToRightButton().addClickListener(new ClickListener() {</span>
+      private static final long serialVersionUID = -3673780036437094193L;
+
+      @Override
+      public void buttonClick(ClickEvent event) {
+<span class="nc" id="L274">        Collection&lt;Object&gt; available = rawFiles.getSource().getSelectedRows();</span>
+<span class="nc bnc" id="L275" title="All 4 branches missed.">        if (available == null || available.isEmpty())</span>
+<span class="nc" id="L276">          return;</span>
+
+<span class="nc bnc" id="L278" title="All 2 branches missed.">        for (Object o : available) {</span>
+<span class="nc" id="L279">          rawFiles.getSource().deselect(o);</span>
+<span class="nc" id="L280">        }</span>
+<span class="nc" id="L281">        model.selectRawFiles(available);</span>
+
+<span class="nc bnc" id="L283" title="All 2 branches missed.">        for (Grid.Column col : rawFiles.getSelected().getColumns()) {</span>
+<span class="nc" id="L284">          col.setWidthUndefined();</span>
+<span class="nc" id="L285">        }</span>
+<span class="nc" id="L286">      }</span>
+    });
+    // opposite of toRight
+<span class="nc" id="L289">    rawFiles.getToLeftButton().addClickListener(new ClickListener() {</span>
+      private static final long serialVersionUID = 2728686539720595641L;
+
+      @Override
+      public void buttonClick(ClickEvent event) {
+<span class="nc" id="L294">        Collection&lt;Object&gt; available = rawFiles.getDestination().getSelectedRows();</span>
+<span class="nc bnc" id="L295" title="All 4 branches missed.">        if (available == null || available.isEmpty())</span>
+<span class="nc" id="L296">          return;</span>
+
+<span class="nc bnc" id="L298" title="All 2 branches missed.">        for (Object o : available) {</span>
+<span class="nc" id="L299">          rawFiles.getDestination().deselect(o);</span>
+<span class="nc" id="L300">        }</span>
+<span class="nc" id="L301">        model.unselectRawFiles(available);</span>
+<span class="nc" id="L302">      }</span>
+    });
+
+
+    // button to move files from datasets to selected raw files
+<span class="nc" id="L307">    fastaFiles.getToRightButton().addClickListener(new ClickListener() {</span>
+      private static final long serialVersionUID = -3673780036437094193L;
+
+      @Override
+      public void buttonClick(ClickEvent event) {
+<span class="nc" id="L312">        Collection&lt;Object&gt; available = fastaFiles.getSource().getSelectedRows();</span>
+<span class="nc bnc" id="L313" title="All 4 branches missed.">        if (available == null || available.isEmpty())</span>
+<span class="nc" id="L314">          return;</span>
+
+<span class="nc bnc" id="L316" title="All 2 branches missed.">        for (Object o : available) {</span>
+<span class="nc" id="L317">          fastaFiles.getSource().deselect(o);</span>
+<span class="nc" id="L318">        }</span>
+<span class="nc" id="L319">        model.selectFastaFiles(available);</span>
+<span class="nc" id="L320">      }</span>
+    });
+    // opposite of toRight
+<span class="nc" id="L323">    fastaFiles.getToLeftButton().addClickListener(new ClickListener() {</span>
+      private static final long serialVersionUID = 2728686539720595641L;
+
+      @Override
+      public void buttonClick(ClickEvent event) {
+<span class="nc" id="L328">        Collection&lt;Object&gt; available = fastaFiles.getDestination().getSelectedRows();</span>
+<span class="nc bnc" id="L329" title="All 4 branches missed.">        if (available == null || available.isEmpty())</span>
+<span class="nc" id="L330">          return;</span>
+
+<span class="nc bnc" id="L332" title="All 2 branches missed.">        for (Object o : available) {</span>
+<span class="nc" id="L333">          fastaFiles.getDestination().deselect(o);</span>
+<span class="nc" id="L334">        }</span>
+<span class="nc" id="L335">        model.unselectFastaFiles(available);</span>
+
+<span class="nc bnc" id="L337" title="All 2 branches missed.">        for (Grid.Column col : fastaFiles.getSelected().getColumns()) {</span>
+<span class="nc" id="L338">          col.setWidthUndefined();</span>
+<span class="nc" id="L339">        }</span>
+<span class="nc" id="L340">      }</span>
+    });
+
+
+
+    // start workflow
+<span class="nc" id="L346">    start.addClickListener(new ClickListener() {</span>
+      private static final long serialVersionUID = 2728686539720595641L;
+
+      @Override
+      public void buttonClick(ClickEvent event) {
+<span class="nc" id="L351">        updateGroups();</span>
+<span class="nc" id="L352">      }</span>
+    });
+<span class="nc" id="L354">  }</span>
+
+  /**
+   * write the content the model to file
+   * 
+   * @param filePath
+   */
+  void writeToFile(String filePath) {
+    try {
+<span class="nc" id="L363">      FileWriter newConfigFile = new FileWriter(filePath);</span>
+      // WATCH OUT! Somehow if indentFactor=2, information gets lost
+<span class="nc" id="L365">      newConfigFile.write(toJson().toString(3));</span>
+<span class="nc" id="L366">      newConfigFile.flush();</span>
+<span class="nc" id="L367">      newConfigFile.close();</span>
+<span class="nc" id="L368">    } catch (JSONException | IOException e) {</span>
+      // TODO Auto-generated catch block
+<span class="nc" id="L370">      e.printStackTrace();</span>
+<span class="nc" id="L371">    }</span>
+
+<span class="nc" id="L373">  }</span>
+
+  /**
+   * creates a json object of this component. Be sure to be up to date. Otherwise, you might not get
+   * all actual groups. To be up to date execute {@link MaxQuantComponent.updateGroups}
+   * 
+   * @return
+   * @throws JSONException
+   */
+  public JSONObject toJson() throws JSONException {
+
+<span class="nc" id="L384">    Set&lt;Entry&lt;Integer, Group&gt;&gt; entryset = model.getGroups().entrySet();</span>
+<span class="nc" id="L385">    Iterator&lt;Entry&lt;Integer, Group&gt;&gt; iter = entryset.iterator();</span>
+<span class="nc" id="L386">    JSONArray rawFilesArray = new JSONArray();</span>
+<span class="nc bnc" id="L387" title="All 2 branches missed.">    while (iter.hasNext()) {</span>
+<span class="nc" id="L388">      Entry&lt;Integer, Group&gt; entry = iter.next();</span>
+<span class="nc" id="L389">      rawFilesArray.put(entry.getValue().toJson());</span>
+<span class="nc" id="L390">    }</span>
+<span class="nc" id="L391">    JSONObject params = new JSONObject();</span>
+<span class="nc" id="L392">    params.put(&quot;rawFiles&quot;, rawFilesArray);</span>
+<span class="nc" id="L393">    params.put(&quot;fastaFiles&quot;, fastaToJson());</span>
+<span class="nc" id="L394">    params.put(&quot;globalParams&quot;, globalParamsToJson());</span>
+<span class="nc" id="L395">    return params;</span>
+  }
+
+  /**
+   * writes all fasta related information into a JSONObject. See
+   * https://github.com/qbicsoftware/mqrun/blob/master/examples/simple.json
+   * http://mqrun.readthedocs.org/en/latest/param_format.html and
+   * https://github.com/qbicsoftware/mqrun/tree/master/mqrun/data for more information
+   * 
+   * @return
+   * @throws JSONException
+   */
+  JSONObject fastaToJson() throws JSONException {
+<span class="nc" id="L408">    JSONArray fastafiles = new JSONArray();</span>
+<span class="nc" id="L409">    BeanItemContainer&lt;FastaBean&gt; selected = model.getSelectedFastaBeans();</span>
+<span class="nc bnc" id="L410" title="All 2 branches missed.">    for (FastaBean bean : selected.getItemIds()) {</span>
+      // shouldn't contain file ending and it should be the file name rather than the name of the
+      // bean
+<span class="nc" id="L413">      Path p = Paths.get(bean.getPath());</span>
+<span class="nc" id="L414">      String file = p.getFileName().toString();</span>
+
+<span class="nc" id="L416">      fastafiles.put(file.split(&quot;\\.&quot;)[0]);</span>
+      // fastafiles.put(bean.getName());
+<span class="nc" id="L418">    }</span>
+<span class="nc" id="L419">    JSONObject ret = new JSONObject();</span>
+<span class="nc" id="L420">    ret.put(&quot;fileNames&quot;, fastafiles);</span>
+<span class="nc" id="L421">    ret.put(&quot;firstSearch&quot;, new JSONArray());</span>
+<span class="nc" id="L422">    return ret;</span>
+  }
+
+  JSONObject globalParamsToJson() throws JSONException {
+<span class="nc" id="L426">    JSONObject glparams = new JSONObject();</span>
+<span class="nc bnc" id="L427" title="All 2 branches missed.">    for (Object id : globalParameters.getItemPropertyIds()) {</span>
+<span class="nc" id="L428">      Object value = globalParameters.getItemProperty(id).getValue();</span>
+<span class="nc bnc" id="L429" title="All 2 branches missed.">      glparams.put((String) id,</span>
+<span class="nc" id="L430">          (value instanceof LinkedHashSet) ? JsonHelper.fromSet((LinkedHashSet&lt;String&gt;) value)</span>
+              : value);
+<span class="nc" id="L432">    }</span>
+<span class="nc" id="L433">    glparams.put(&quot;defaults&quot;, &quot;default&quot;);</span>
+<span class="nc" id="L434">    return glparams;</span>
+  }
+
+  public void addSubmissionListener(ClickListener maxQuantSubmissionListener) {
+<span class="nc" id="L438">    start.addClickListener(maxQuantSubmissionListener);</span>
+<span class="nc" id="L439">  }</span>
+
+  public void setWorkflow(Workflow workFlow) {
+<span class="nc" id="L442">    guseWorkflow = workFlow;</span>
+<span class="nc" id="L443">  }</span>
+
+  public Workflow getWorkflow() {
+<span class="nc" id="L446">    return guseWorkflow;</span>
+  }
+
+  public Collection&lt;DatasetBean&gt; getSelectedDatasets() {
+<span class="nc" id="L450">    return model.selectedDatasets();</span>
+  }
+
+  /**
+   * write json to correct workflow parameter!
+   * 
+   * @throws JSONException
+   * @throws IllegalArgumentException
+   */
+  public void writeParametersToWorkflow() throws IllegalArgumentException, JSONException {
+<span class="nc bnc" id="L460" title="All 2 branches missed.">    if (guseWorkflow instanceof GuseWorkflowRepresentation) {</span>
+<span class="nc" id="L461">      GuseWorkflowRepresentation w = (GuseWorkflowRepresentation) guseWorkflow;</span>
+
+<span class="nc" id="L463">      GuseNode node = w.getNode(INITNODE_CAPTION);</span>
+<span class="nc" id="L464">      InputPort port = node.getPort(&quot;WORKFLOW-CTD&quot;);</span>
+
+      // port.getParams().get(&quot;jsonParams&quot;).setValue(toJson().toString(3));
+
+<span class="nc" id="L468">      ParameterSet updated = w.getParameters();</span>
+<span class="nc" id="L469">      updated.getParam(&quot;MaxQuant.1.jsonParams&quot;).setValue(toJson().toString(3));</span>
+
+<span class="nc" id="L471">      InputList inpList = w.getData();</span>
+
+      // set Reference DB for 'data staging'
+<span class="nc" id="L474">      BeanItemContainer&lt;FastaBean&gt; selected = model.getSelectedFastaBeans();</span>
+<span class="nc bnc" id="L475" title="All 2 branches missed.">      for (FastaBean bean : selected.getItemIds()) {</span>
+<span class="nc" id="L476">        inpList.getData().get(&quot;InputFiles.1.db&quot;).setValue(bean.getPath());</span>
+<span class="nc" id="L477">      }</span>
+
+      // set input raw files for 'data staging'
+      // Collection&lt;Object&gt; selectionMulti = rawFiles.getDestination().getSelectedRows();
+      // if (selectionMulti == null || selectionMulti.isEmpty()) {
+      // showError(&quot;Warning: Nothing selected for multi input parameter &quot; +
+      // rawFiles.getCaption());
+      // return false;
+      // Notification.show(&quot;No Input files selected!&quot;);
+      // }
+<span class="nc" id="L487">      List&lt;String&gt; selectedPaths = new ArrayList&lt;String&gt;();</span>
+
+<span class="nc" id="L489">      Collection&lt;DatasetBean&gt; selectionMulti = model.selectedDatasets();</span>
+
+<span class="nc bnc" id="L491" title="All 2 branches missed.">      for (Object o : selectionMulti) {</span>
+<span class="nc" id="L492">        DatasetBean selectedBean = (DatasetBean) o;</span>
+
+        try {
+<span class="nc" id="L495">          selectedPaths.add(controller.getDatasetsNfsPath(selectedBean));</span>
+<span class="nc" id="L496">        } catch (Exception e) {</span>
+<span class="nc" id="L497">          LOG.error(</span>
+              &quot;could not retrieve nfs path. Using datasetbeans getfullpath instead. &quot;
+<span class="nc" id="L499">                  + e.getMessage(), e.getStackTrace());</span>
+<span class="nc" id="L500">          selectedPaths.add(selectedBean.getFullPath());</span>
+<span class="nc" id="L501">        }</span>
+<span class="nc" id="L502">      }</span>
+<span class="nc" id="L503">      inpList.getData().get(&quot;InputFiles.1.input&quot;).setValue(selectedPaths);</span>
+    }
+
+<span class="nc" id="L506">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RawFilesBean.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.model.maxquant</a> &gt; <span class="el_source">RawFilesBean.java</span></div><h1>RawFilesBean.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects.
+ * Copyright (C) &quot;2016”  Christopher Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.model.maxquant;
+
+import java.io.Serializable;
+
+public class RawFilesBean implements Serializable {
+  private static final long serialVersionUID = 3975747833269788515L;
+
+  private String file;
+  private Integer parameterGroup;
+  private Integer fraction;
+  private String experiment;
+
+  public RawFilesBean(String file, Integer parameterGroup, Integer fraction, String experiment) {
+<span class="nc" id="L31">    super();</span>
+<span class="nc" id="L32">    this.file = file;</span>
+<span class="nc" id="L33">    this.parameterGroup = parameterGroup;</span>
+<span class="nc" id="L34">    this.fraction = fraction;</span>
+<span class="nc" id="L35">    this.experiment = experiment;</span>
+<span class="nc" id="L36">  }</span>
+
+  /**
+   * will set fields accordingly. fraction and parameter group will both be set to 1 (standard).
+   * 
+   * @param file
+   * @param experiment
+   */
+  public RawFilesBean(String file, String experiment) {
+<span class="nc" id="L45">    super();</span>
+<span class="nc" id="L46">    this.file = file;</span>
+<span class="nc" id="L47">    this.parameterGroup = 1;</span>
+<span class="nc" id="L48">    this.fraction = 1;</span>
+<span class="nc" id="L49">    this.experiment = experiment;</span>
+<span class="nc" id="L50">  }</span>
+
+
+  public String getFile() {
+<span class="nc" id="L54">    return file;</span>
+  }
+
+  public String generateParamFile() {
+<span class="nc" id="L58">    return file.split(&quot;\\.&quot;)[0];</span>
+  }
+
+  public void setFile(String file) {
+<span class="nc" id="L62">    this.file = file;</span>
+<span class="nc" id="L63">  }</span>
+
+
+  public Integer getParameterGroup() {
+<span class="nc" id="L67">    return parameterGroup;</span>
+  }
+
+
+  public void setParameterGroup(Integer parameterGroup) {
+<span class="nc" id="L72">    this.parameterGroup = parameterGroup;</span>
+<span class="nc" id="L73">  }</span>
+
+
+  public Integer getFraction() {
+<span class="nc" id="L77">    return fraction;</span>
+  }
+
+
+  public void setFraction(Integer fraction) {
+<span class="nc" id="L82">    this.fraction = fraction;</span>
+<span class="nc" id="L83">  }</span>
+
+
+  public String getExperiment() {
+<span class="nc" id="L87">    return experiment;</span>
+  }
+
+
+  public void setExperiment(String experiment) {
+<span class="nc" id="L92">    this.experiment = experiment;</span>
+<span class="nc" id="L93">  }</span>
+
+  @Override
+  public String toString() {
+<span class="nc" id="L97">    return &quot;RawFilesBean [file=&quot; + file + &quot;, parameterGroup=&quot; + parameterGroup + &quot;, fraction=&quot;</span>
+        + fraction + &quot;, experiment=&quot; + experiment + &quot;]&quot;;
+  }
+
+  /*
+   * uncommented because it causes java.lang.IllegalArgumentException: Given item id (RawFilesBean
+   * [file=abc, parameterGroup=1, fraction=3, experiment=qbic1233]) does not exist in the container
+   * if one tries to edit values in a grid
+   * 
+   * @Override public int hashCode() { final int prime = 31; int result = 1; result = prime * result
+   * + ((experiment == null) ? 0 : experiment.hashCode()); result = prime * result + ((file == null)
+   * ? 0 : file.hashCode()); result = prime * result + ((fraction == null) ? 0 :
+   * fraction.hashCode()); result = prime * result + ((parameterGroup == null) ? 0 :
+   * parameterGroup.hashCode()); return result; }
+   */
+
+  @Override
+  public boolean equals(Object obj) {
+<span class="nc bnc" id="L115" title="All 2 branches missed.">    if (this == obj)</span>
+<span class="nc" id="L116">      return true;</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">    if (obj == null)</span>
+<span class="nc" id="L118">      return false;</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">    if (getClass() != obj.getClass())</span>
+<span class="nc" id="L120">      return false;</span>
+<span class="nc" id="L121">    RawFilesBean other = (RawFilesBean) obj;</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">    if (experiment == null) {</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">      if (other.experiment != null)</span>
+<span class="nc" id="L124">        return false;</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">    } else if (!experiment.equals(other.experiment))</span>
+<span class="nc" id="L126">      return false;</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">    if (file == null) {</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">      if (other.file != null)</span>
+<span class="nc" id="L129">        return false;</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">    } else if (!file.equals(other.file))</span>
+<span class="nc" id="L131">      return false;</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">    if (fraction == null) {</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">      if (other.fraction != null)</span>
+<span class="nc" id="L134">        return false;</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">    } else if (!fraction.equals(other.fraction))</span>
+<span class="nc" id="L136">      return false;</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">    if (parameterGroup == null) {</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">      if (other.parameterGroup != null)</span>
+<span class="nc" id="L139">        return false;</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">    } else if (!parameterGroup.equals(other.parameterGroup))</span>
+<span class="nc" id="L141">      return false;</span>
+<span class="nc" id="L142">    return true;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

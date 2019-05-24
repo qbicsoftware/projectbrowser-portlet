@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProjectGraph.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.samplegraph</a> &gt; <span class="el_source">ProjectGraph.java</span></div><h1>ProjectGraph.java</h1><pre class="source lang-java linenums">package life.qbic.projectbrowser.samplegraph;
+
+import java.util.List;
+
+import com.vaadin.annotations.JavaScript;
+import com.vaadin.ui.AbstractJavaScriptComponent;
+
+import life.qbic.datamodel.samples.SampleSummary;
+
+@JavaScript({&quot;vaadin://js/d3.v4.min.js&quot;, &quot;graph_connector.js&quot;, &quot;vaadin://js/dagre.min.js&quot;, &quot;vaadin://js/d3-scale-chromatic.v1.min.js&quot;})
+public class ProjectGraph extends AbstractJavaScriptComponent {
+
+  @Override
+  public ProjectGraphState getState() {
+<span class="nc" id="L15">    return (ProjectGraphState) super.getState();</span>
+  }
+
+  public void setProject(final List&lt;SampleSummary&gt; list) {
+<span class="nc" id="L19">    getState().setProject(list);</span>
+<span class="nc" id="L20">  }</span>
+  
+<span class="nc" id="L22">  public ProjectGraph(final GraphPage layout, String imagePath) {</span>
+<span class="nc" id="L23">    getState().setImagePath(imagePath);</span>
+
+<span class="nc" id="L25">    registerRpc(new NodeClickRpc() {</span>
+//      public void onNodeClick(List&lt;String&gt; nodeEntries) {
+//        layout.showSamples(nodeEntries);
+//      }
+      
+      public void onCircleClick(String label, List&lt;String&gt; sampleCodes) {
+<span class="nc" id="L31">        layout.showDatasetsForSamples(label, sampleCodes);</span>
+<span class="nc" id="L32">      }</span>
+    });
+<span class="nc" id="L34">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

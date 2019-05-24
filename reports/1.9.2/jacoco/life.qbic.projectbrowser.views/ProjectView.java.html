@@ -1,0 +1,949 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProjectView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.views</a> &gt; <span class="el_source">ProjectView.java</span></div><h1>ProjectView.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.views;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+
+import life.qbic.portal.utils.PortalUtils;
+import org.tepi.filtertable.FilterTable;
+
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.model.Company;
+import com.liferay.portal.model.User;
+import com.liferay.portal.service.CompanyLocalServiceUtil;
+import com.liferay.portal.service.UserLocalServiceUtil;
+import com.vaadin.navigator.View;
+import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
+import com.vaadin.server.FileDownloader;
+import com.vaadin.server.FontAwesome;
+import com.vaadin.server.Page;
+import com.vaadin.server.Resource;
+import com.vaadin.server.StreamResource;
+import com.vaadin.server.WebBrowser;
+import com.vaadin.shared.ui.MarginInfo;
+import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.ui.Alignment;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.CustomTable.RowHeaderMode;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Image;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.ProgressBar;
+import com.vaadin.ui.TabSheet;
+import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
+import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.themes.ValoTheme;
+
+import ch.systemsx.cisd.openbis.dss.client.api.v1.DataSet;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Project;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
+
+import life.qbic.openbis.openbisclient.OpenBisClient;
+
+import life.qbic.portal.utils.ConfigurationManager;
+
+import life.qbic.projectbrowser.model.ProjectBean;
+import life.qbic.projectbrowser.model.ExperimentBean;
+import life.qbic.projectbrowser.samplegraph.*;
+import life.qbic.xml.properties.Property;
+import life.qbic.projectbrowser.components.*;
+import life.qbic.projectbrowser.controllers.*;
+import life.qbic.projectbrowser.helpers.GraphGenerator;
+import life.qbic.projectbrowser.controllers.WorkflowViewController;
+import life.qbic.projectbrowser.helpers.Utils;
+import life.qbic.projectbrowser.helpers.DatasetViewFilterDecorator;
+import life.qbic.projectbrowser.helpers.DatasetViewFilterGenerator;
+import life.qbic.projectbrowser.helpers.ViewTablesClickListener;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+@SuppressWarnings(&quot;serial&quot;)
+public class ProjectView extends VerticalLayout implements View {
+
+  public final static String navigateToLabel = &quot;project&quot;;
+
+  FilterTable table;
+  VerticalLayout projectview_content;
+  VerticalLayout buttonLayoutSection;
+
+
+  private ProjectBean currentBean;
+
+  private Button export;
+
+  private DataHandler datahandler;
+
+  private State state;
+
+  private FileDownloader fileDownloader;
+
+  private String resourceUrl;
+
+  private Label contact;
+
+  private Label descContent;
+
+  private VerticalLayout status;
+
+  private HorizontalLayout statContent;
+
+  private VerticalLayout graphSectionContent;
+  private GraphPage newGraphContent;
+
+  private VerticalLayout membersSection;
+  private StringBuilder memberString;
+
+  private TabSheet projectview_tab;
+
+  private HorizontalLayout membersLayout;
+
+  private DatasetComponent datasetComponent;
+
+<span class="nc" id="L131">  Map&lt;String, String&gt; members = new TreeMap&lt;String, String&gt;();</span>
+<span class="nc" id="L132">  Map&lt;String, String&gt; memberLetters = new HashMap&lt;String, String&gt;();</span>
+
+  private LevelComponent measuredSamplesComponent;
+
+  private BiologicalSamplesComponent biologicalSamplesComponent;
+
+  private LevelComponent resultsComponent;
+
+<span class="nc" id="L140">  private static final Logger LOG = LogManager.getLogger(ProjectView.class);</span>
+
+  private String headerLabel;
+
+  private WorkflowViewController wfController;
+
+  private WorkflowComponent workflowComponent;
+
+  private ConfigurationManager manager;
+
+  private AttachmentUploadComponent uploadComponent;
+
+  private ProjInformationComponent projectInformation;
+
+  private VerticalLayout projDescriptionContent;
+
+  private ExperimentComponent experimentComponent;
+
+
+  public String getHeaderLabel() {
+<span class="nc" id="L160">    return headerLabel;</span>
+  }
+
+  public void setHeaderLabel(String headerLabel) {
+<span class="nc" id="L164">    this.headerLabel = headerLabel;</span>
+<span class="nc" id="L165">  }</span>
+
+  public ProjectView(DataHandler datahandler, State state, String resourceurl,
+      WorkflowViewController wfController, ConfigurationManager manager) {
+<span class="nc" id="L169">    this(datahandler, state, wfController);</span>
+<span class="nc" id="L170">    this.resourceUrl = resourceurl;</span>
+<span class="nc" id="L171">    this.manager = manager;</span>
+<span class="nc" id="L172">  }</span>
+
+<span class="nc" id="L174">  public ProjectView(DataHandler datahandler, State state, WorkflowViewController wfController) {</span>
+<span class="nc" id="L175">    this.wfController = wfController;</span>
+<span class="nc" id="L176">    this.datahandler = datahandler;</span>
+<span class="nc" id="L177">    this.state = state;</span>
+<span class="nc" id="L178">    resourceUrl = &quot;javascript;&quot;;</span>
+<span class="nc" id="L179">    initView();</span>
+<span class="nc" id="L180">  }</span>
+
+  /**
+   * updates view, if height, width or the browser changes.
+   * 
+   * @param browserHeight
+   * @param browserWidth
+   * @param browser
+   */
+  public void updateView(int browserHeight, int browserWidth, WebBrowser browser) {
+<span class="nc" id="L190">    setWidth((browserWidth * 0.85f), Unit.PIXELS);</span>
+<span class="nc" id="L191">  }</span>
+
+  /**
+   * init this view. builds the layout skeleton Menubar Description and others Statisitcs Experiment
+   * Table Graph
+   */
+  void initView() {
+<span class="nc" id="L198">    projectview_content = new VerticalLayout();</span>
+<span class="nc" id="L199">    projectview_content.setMargin(new MarginInfo(true, false, false, false));</span>
+
+    // labelContent = new VerticalLayout();
+    // labelContent.setMargin(new MarginInfo(true, false, true, false));
+
+<span class="nc" id="L204">    headerLabel = &quot;&quot;;</span>
+
+    // labelContent.addComponent(headerLabel);
+    // projectview_content.addComponent(labelContent);
+
+<span class="nc" id="L209">    projectview_tab = new TabSheet();</span>
+<span class="nc" id="L210">    projectview_tab.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L211">    projectview_tab.setHeight(&quot;100%&quot;);</span>
+
+<span class="nc" id="L213">    datasetComponent = new DatasetComponent(datahandler, state, resourceUrl);</span>
+<span class="nc" id="L214">    biologicalSamplesComponent =</span>
+        new BiologicalSamplesComponent(datahandler, state, resourceUrl, &quot;Biological Samples&quot;);
+<span class="nc" id="L216">    measuredSamplesComponent = new LevelComponent(datahandler, state, resourceUrl, &quot;Raw Data&quot;);</span>
+<span class="nc" id="L217">    resultsComponent = new LevelComponent(datahandler, state, resourceUrl, &quot;Results&quot;);</span>
+<span class="nc" id="L218">    workflowComponent = new WorkflowComponent(wfController);</span>
+<span class="nc" id="L219">    uploadComponent = new AttachmentUploadComponent();</span>
+<span class="nc" id="L220">    projectInformation = new ProjInformationComponent(datahandler, state, resourceUrl);</span>
+<span class="nc" id="L221">    experimentComponent = new ExperimentComponent(datahandler, state, resourceUrl);</span>
+
+    // add styles to tab sheet
+<span class="nc" id="L224">    projectview_tab.addStyleName(ValoTheme.TABSHEET_EQUAL_WIDTH_TABS);</span>
+<span class="nc" id="L225">    projectview_tab.addStyleName(ValoTheme.TABSHEET_FRAMED);</span>
+    // projectview_tab.addStyleName(ValoTheme.TABSHEET_PADDED_TABBAR);
+
+    // add tabs to tabsheet
+<span class="nc" id="L229">    projectview_tab.addTab(projectInformation).setIcon(FontAwesome.INFO_CIRCLE);</span>
+<span class="nc" id="L230">    projectview_tab.addTab(initGraphs()).setIcon(FontAwesome.SITEMAP);</span>
+    // projectview_tab.addTab(initMemberSection()).setIcon(FontAwesome.USERS);
+
+<span class="nc" id="L233">    projectview_tab.addTab(experimentComponent).setIcon(FontAwesome.FLASK);</span>
+<span class="nc" id="L234">    projectview_tab.addTab(datasetComponent).setIcon(FontAwesome.DATABASE);</span>
+<span class="nc" id="L235">    projectview_tab.addTab(biologicalSamplesComponent).setIcon(FontAwesome.TINT);</span>
+<span class="nc" id="L236">    projectview_tab.addTab(measuredSamplesComponent).setIcon(FontAwesome.SIGNAL);</span>
+<span class="nc" id="L237">    projectview_tab.addTab(resultsComponent).setIcon(FontAwesome.TH_LARGE);</span>
+<span class="nc" id="L238">    projectview_tab.addTab(workflowComponent).setIcon(FontAwesome.COGS);</span>
+<span class="nc" id="L239">    projectview_tab.addTab(uploadComponent).setIcon(FontAwesome.UPLOAD);</span>
+
+<span class="nc" id="L241">    projectview_tab.setImmediate(true);</span>
+
+
+<span class="nc" id="L244">    projectview_tab.addSelectedTabChangeListener(new SelectedTabChangeListener() {</span>
+
+      @Override
+      public void selectedTabChange(SelectedTabChangeEvent event) {
+<span class="nc bnc" id="L248" title="All 2 branches missed.">        if (event.getTabSheet().getSelectedTab().getCaption().equals(&quot;Project Graph&quot;)) {</span>
+<span class="nc" id="L249">          loadGraph();</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">        } else if (event.getTabSheet().getSelectedTab().getCaption().equals(&quot;Exp. Steps&quot;)) {</span>
+<span class="nc" id="L251">          experimentComponent.updateUI(getCurrentBean());</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">        } else if (event.getTabSheet().getSelectedTab().getCaption().equals(&quot;Datasets&quot;)) {</span>
+<span class="nc" id="L253">          datasetComponent.updateUI(navigateToLabel, getCurrentBean().getId());</span>
+<span class="nc bnc" id="L254" title="All 2 branches missed.">        } else if (event.getTabSheet().getSelectedTab().getCaption().equals(&quot;Raw Data&quot;)) {</span>
+<span class="nc" id="L255">          measuredSamplesComponent.updateUI(navigateToLabel, getCurrentBean().getId(), &quot;measured&quot;);</span>
+<span class="nc bnc" id="L256" title="All 2 branches missed.">        } else if (event.getTabSheet().getSelectedTab().getCaption().equals(&quot;Biological Samples&quot;)) {</span>
+<span class="nc" id="L257">          biologicalSamplesComponent.updateUI(getCurrentBean().getId());</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">        } else if (event.getTabSheet().getSelectedTab().getCaption().equals(&quot;Results&quot;)) {</span>
+<span class="nc" id="L259">          resultsComponent.updateUI(navigateToLabel, getCurrentBean().getId(), &quot;results&quot;);</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">        } else if (event.getTabSheet().getSelectedTab().getCaption().equals(&quot;Workflows&quot;)) {</span>
+<span class="nc" id="L261">          Map&lt;String, String&gt; args = new HashMap&lt;String, String&gt;();</span>
+<span class="nc" id="L262">          args.put(&quot;id&quot;, getCurrentBean().getId());</span>
+<span class="nc" id="L263">          args.put(&quot;type&quot;, navigateToLabel);</span>
+<span class="nc" id="L264">          workflowComponent.update(args);</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">        } else if (event.getTabSheet().getSelectedTab().getCaption().equals(&quot;Upload Files&quot;)) {</span>
+          // (get space from currentBean)
+<span class="nc" id="L267">          uploadComponent.updateUI(manager, getCurrentBean().getCode(),</span>
+<span class="nc" id="L268">              currentBean.getId().split(&quot;/&quot;)[1], datahandler.getOpenBisClient());</span>
+<span class="nc bnc" id="L269" title="All 2 branches missed.">        } else if (event.getTabSheet().getSelectedTab().getCaption().equals(&quot;&quot;)) {</span>
+<span class="nc" id="L270">          projectInformation.updateUI(getCurrentBean(), &quot;project&quot;);</span>
+        }
+<span class="nc" id="L272">      }</span>
+    });
+
+    // projectview_content.addComponent(initMenuBar());
+<span class="nc" id="L276">    projectview_content.addComponent(projectview_tab);</span>
+    // projectview_content.addComponent(initDescription());
+    // projectview_content.addComponent(initStatistics());
+    // projectview_content.addComponent(initTable());
+    // projectview_content.addComponent(initButtonLayout());
+
+    // projectview_content.addComponent(initGraph());
+
+    // use the component that is returned by initTable
+    // projectview_content.setComponentAlignment(this.table, Alignment.TOP_CENTER);
+    // projectview_content.setWidth(&quot;100%&quot;);
+<span class="nc" id="L287">    this.addComponent(projectview_content);</span>
+<span class="nc" id="L288">  }</span>
+
+  /**
+   * This function should be called each time currentBean is changed
+   */
+  public void updateContent() {
+    // updateContentToolBar();
+<span class="nc" id="L295">    headerLabel = String.format(&quot;%s&quot;, getCurrentBean().getCode());</span>
+
+    // updateContentDescription();
+    // updateContentMemberSection();
+    // updateContentStatistics();
+<span class="nc" id="L300">    updateContentTable();</span>
+
+    // updateContentButtonLayout();
+
+<span class="nc" id="L304">    projectInformation.updateUI(getCurrentBean(), &quot;project&quot;);</span>
+<span class="nc" id="L305">  }</span>
+
+
+  /**
+   * 
+   * @return
+   */
+  Component initButtonLayout() {
+<span class="nc" id="L313">    this.export = new Button(&quot;Export as TSV&quot;);</span>
+<span class="nc" id="L314">    buttonLayoutSection = new VerticalLayout();</span>
+<span class="nc" id="L315">    HorizontalLayout buttonLayout = new HorizontalLayout();</span>
+<span class="nc" id="L316">    buttonLayout.setHeight(null);</span>
+<span class="nc" id="L317">    buttonLayout.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L318">    buttonLayout.addComponent(this.export);</span>
+<span class="nc" id="L319">    buttonLayout.setMargin(new MarginInfo(false, false, false, true));</span>
+<span class="nc" id="L320">    buttonLayoutSection.addComponent(buttonLayout);</span>
+<span class="nc" id="L321">    buttonLayoutSection.setSpacing(true);</span>
+<span class="nc" id="L322">    buttonLayoutSection.setMargin(new MarginInfo(false, false, false, true));</span>
+
+<span class="nc" id="L324">    return buttonLayoutSection;</span>
+  }
+
+  void updateContentButtonLayout() {
+<span class="nc bnc" id="L328" title="All 2 branches missed.">    if (fileDownloader != null)</span>
+<span class="nc" id="L329">      this.export.removeExtension(fileDownloader);</span>
+<span class="nc" id="L330">    StreamResource sr = Utils.getTSVStream(Utils.containerToString(currentBean.getExperiments()),</span>
+<span class="nc" id="L331">        currentBean.getId());</span>
+<span class="nc" id="L332">    fileDownloader = new FileDownloader(sr);</span>
+<span class="nc" id="L333">    fileDownloader.extend(this.export);</span>
+<span class="nc" id="L334">  }</span>
+
+
+  /**
+   * initializes the description layout
+   * 
+   * @return
+   */
+  VerticalLayout initDescription() {
+<span class="nc" id="L343">    VerticalLayout projDescription = new VerticalLayout();</span>
+<span class="nc" id="L344">    projDescriptionContent = new VerticalLayout();</span>
+
+<span class="nc" id="L346">    projDescription.setCaption(&quot;&quot;);</span>
+
+<span class="nc" id="L348">    descContent = new Label(&quot;&quot;);</span>
+<span class="nc" id="L349">    contact = new Label(&quot;&quot;, ContentMode.HTML);</span>
+<span class="nc" id="L350">    projDescriptionContent.addComponent(descContent);</span>
+<span class="nc" id="L351">    projDescriptionContent.addComponent(contact);</span>
+<span class="nc" id="L352">    projDescriptionContent.setMargin(new MarginInfo(true, false, true, true));</span>
+
+<span class="nc" id="L354">    projDescription.addComponent(projDescriptionContent);</span>
+<span class="nc" id="L355">    projDescriptionContent.setSpacing(true);</span>
+<span class="nc" id="L356">    projDescription.setMargin(new MarginInfo(true, false, true, true));</span>
+<span class="nc" id="L357">    projDescription.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L358">    projDescription.setSpacing(true);</span>
+<span class="nc" id="L359">    projDescription.addComponent(projectInformation);</span>
+
+<span class="nc" id="L361">    return projDescription;</span>
+  }
+
+  VerticalLayout initMemberSection() {
+<span class="nc" id="L365">    VerticalLayout projMembers = new VerticalLayout();</span>
+<span class="nc" id="L366">    projMembers.setCaption(&quot;Members&quot;);</span>
+
+<span class="nc" id="L368">    membersSection = new VerticalLayout();</span>
+<span class="nc" id="L369">    Component membersContent = new VerticalLayout();</span>
+
+    // membersContent.setIcon(FontAwesome.USERS);
+    // membersContent.setCaption(&quot;Members&quot;);
+<span class="nc" id="L373">    membersSection.addComponent(membersContent);</span>
+    // membersSection.setMargin(new MarginInfo(false, false, false, true));
+<span class="nc" id="L375">    membersSection.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L376">    membersSection.setSpacing(true);</span>
+
+<span class="nc" id="L378">    membersSection.setMargin(new MarginInfo(true, false, true, true));</span>
+<span class="nc" id="L379">    projMembers.addComponent(membersSection);</span>
+
+<span class="nc" id="L381">    projMembers.setMargin(new MarginInfo(true, false, true, true));</span>
+<span class="nc" id="L382">    projMembers.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L383">    projMembers.setSpacing(true);</span>
+
+<span class="nc" id="L385">    return projMembers;</span>
+  }
+
+  void updateContentDescription() {
+<span class="nc" id="L389">    projDescriptionContent.removeAllComponents();</span>
+<span class="nc" id="L390">    contact.setValue(</span>
+        &quot;&lt;a href=\&quot;mailto:support@qbic.zendesk.com?subject=Question%20concerning%20project%20&quot;
+<span class="nc" id="L392">            + currentBean.getId()</span>
+            + &quot;\&quot; style=\&quot;color: #0068AA; text-decoration: none\&quot;&gt;Send question regarding project &quot;
+<span class="nc" id="L394">            + currentBean.getId() + &quot;&lt;/a&gt;&quot;);</span>
+<span class="nc" id="L395">    String desc = currentBean.getDescription();</span>
+<span class="nc bnc" id="L396" title="All 2 branches missed.">    if (!desc.isEmpty()) {</span>
+<span class="nc" id="L397">      descContent.setValue(desc);</span>
+    }
+
+<span class="nc" id="L400">    projDescriptionContent.addComponent(</span>
+<span class="nc" id="L401">        new Label(String.format(&quot;%s experiment(s),&quot;, currentBean.getExperiments().size())));</span>
+
+    // VerticalLayout statusContent =
+    // this.createProjectStatusComponent(datahandler.computeProjectStatuses(currentBean));
+
+    // statusContent.setSpacing(true);
+    // statusContent.setMargin(new MarginInfo(true, false, true, true));
+
+    // projDescriptionContent.addComponent(statusContent);
+<span class="nc" id="L410">  }</span>
+
+  /*
+   * 
+   */
+  void updateContentMemberSection() {
+<span class="nc" id="L416">    membersSection.removeAllComponents();</span>
+<span class="nc" id="L417">    membersSection.addComponent(getMembersComponent());</span>
+<span class="nc" id="L418">  }</span>
+
+
+  /**
+   * 
+   * @return
+   * 
+   */
+  VerticalLayout initStatistics() {
+<span class="nc" id="L427">    VerticalLayout statistics = new VerticalLayout();</span>
+<span class="nc" id="L428">    statistics.setCaption(&quot;Status&quot;);</span>
+
+<span class="nc" id="L430">    statContent = new HorizontalLayout();</span>
+<span class="nc" id="L431">    statContent.addComponent(new Label(&quot;&quot;));</span>
+
+<span class="nc" id="L433">    statContent.setMargin(new MarginInfo(true, false, false, true));</span>
+<span class="nc" id="L434">    statContent.setSpacing(true);</span>
+
+<span class="nc" id="L436">    statistics.addComponent(statContent);</span>
+<span class="nc" id="L437">    statistics.setMargin(new MarginInfo(true, false, false, true));</span>
+<span class="nc" id="L438">    statistics.setSpacing(true);</span>
+
+<span class="nc" id="L440">    status = new VerticalLayout();</span>
+<span class="nc" id="L441">    status.setSpacing(true);</span>
+
+<span class="nc" id="L443">    statistics.addComponent(status);</span>
+<span class="nc" id="L444">    return statistics;</span>
+  }
+
+  /**
+   * 
+   */
+  void updateContentStatistics() {
+<span class="nc" id="L451">    statContent.removeAllComponents();</span>
+<span class="nc" id="L452">    statContent.addComponent(</span>
+<span class="nc" id="L453">        new Label(String.format(&quot;%s experiment(s),&quot;, currentBean.getExperiments().size())));</span>
+<span class="nc" id="L454">    statContent.setMargin(new MarginInfo(true, false, true, true));</span>
+
+<span class="nc" id="L456">    status.removeAllComponents();</span>
+<span class="nc" id="L457">  }</span>
+
+
+
+  VerticalLayout initTable() {
+<span class="nc" id="L462">    this.table = this.buildFilterTable();</span>
+<span class="nc" id="L463">    this.tableClickChangeTreeView();</span>
+<span class="nc" id="L464">    VerticalLayout tableSection = new VerticalLayout();</span>
+<span class="nc" id="L465">    VerticalLayout tableSectionContent = new VerticalLayout();</span>
+
+<span class="nc" id="L467">    tableSection.setCaption(&quot;Exp. Steps&quot;);</span>
+    // tableSectionContent.setCaption(&quot;Registered Experiments&quot;);
+    // tableSectionContent.setIcon(FontAwesome.FLASK);
+<span class="nc" id="L470">    tableSectionContent.addComponent(this.table);</span>
+
+<span class="nc" id="L472">    tableSectionContent.setMargin(new MarginInfo(true, false, false, true));</span>
+<span class="nc" id="L473">    tableSection.setMargin(new MarginInfo(true, false, false, true));</span>
+<span class="nc" id="L474">    this.table.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L475">    tableSection.setWidth(Page.getCurrent().getBrowserWindowWidth() * 0.8f, Unit.PIXELS);</span>
+<span class="nc" id="L476">    tableSectionContent.setWidth(&quot;100%&quot;);</span>
+
+<span class="nc" id="L478">    tableSection.addComponent(tableSectionContent);</span>
+
+<span class="nc" id="L480">    this.export = new Button(&quot;Export as TSV&quot;);</span>
+<span class="nc" id="L481">    buttonLayoutSection = new VerticalLayout();</span>
+<span class="nc" id="L482">    HorizontalLayout buttonLayout = new HorizontalLayout();</span>
+<span class="nc" id="L483">    buttonLayout.setHeight(null);</span>
+<span class="nc" id="L484">    buttonLayout.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L485">    buttonLayout.addComponent(this.export);</span>
+<span class="nc" id="L486">    buttonLayout.setMargin(new MarginInfo(false, false, true, false));</span>
+<span class="nc" id="L487">    buttonLayoutSection.addComponent(buttonLayout);</span>
+<span class="nc" id="L488">    buttonLayoutSection.setSpacing(true);</span>
+<span class="nc" id="L489">    buttonLayoutSection.setMargin(new MarginInfo(false, false, true, true));</span>
+
+<span class="nc" id="L491">    tableSection.addComponent(buttonLayoutSection);</span>
+
+<span class="nc" id="L493">    return tableSection;</span>
+  }
+
+
+  /**
+   * 
+   */
+  void updateContentTable() {
+    // Nothing to do here at the moment
+    // table is already set in setdataresource
+<span class="nc" id="L503">  }</span>
+
+  /**
+   * 
+   */
+  void resetGraphs() {
+<span class="nc" id="L509">    graphSectionContent.removeAllComponents();</span>
+<span class="nc" id="L510">    newGraphContent.removeAllComponents();</span>
+<span class="nc" id="L511">  }</span>
+
+  /**
+   * 
+   * @return
+   */
+  VerticalLayout initGraph() {
+<span class="nc" id="L518">    VerticalLayout graphSection = new VerticalLayout();</span>
+<span class="nc" id="L519">    graphSectionContent = new VerticalLayout();</span>
+<span class="nc" id="L520">    graphSection.setCaption(&quot;Project Graph&quot;);</span>
+
+<span class="nc" id="L522">    graphSectionContent.setMargin(new MarginInfo(true, false, true, true));</span>
+<span class="nc" id="L523">    graphSection.setMargin(new MarginInfo(true, false, true, true));</span>
+<span class="nc" id="L524">    graphSection.setWidth(Page.getCurrent().getBrowserWindowWidth() * 0.8f, Unit.PIXELS);</span>
+<span class="nc" id="L525">    graphSectionContent.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L526">    graphSection.addComponent(graphSectionContent);</span>
+<span class="nc" id="L527">    return graphSection;</span>
+  }
+
+  /**
+   * for both graphs
+   * 
+   * @return the tablayout containing both graphs
+   */
+  Component initGraphs() {
+<span class="nc" id="L536">    TabSheet graphTab = new TabSheet();</span>
+<span class="nc" id="L537">    graphTab.setCaption(&quot;Project Graph&quot;);</span>
+
+<span class="nc" id="L539">    VerticalLayout graphSection = new VerticalLayout();</span>
+<span class="nc" id="L540">    graphSectionContent = new VerticalLayout();</span>
+
+<span class="nc" id="L542">    graphSection.setCaption(&quot;Project Graph&quot;);</span>
+
+<span class="nc" id="L544">    graphSectionContent.setMargin(new MarginInfo(true, false, true, true));</span>
+<span class="nc" id="L545">    graphSection.setMargin(new MarginInfo(true, false, true, true));</span>
+<span class="nc" id="L546">    graphSection.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L547">    graphSectionContent.setWidth(&quot;100%&quot;);</span>
+
+<span class="nc" id="L549">    OpenBisClient openbis = datahandler.getOpenBisClient();</span>
+<span class="nc" id="L550">    Map&lt;String, String&gt; taxMap = openbis.getVocabCodesAndLabelsForVocab(&quot;Q_NCBI_TAXONOMY&quot;);</span>
+<span class="nc" id="L551">    Map&lt;String, String&gt; tissueMap = openbis.getVocabCodesAndLabelsForVocab(&quot;Q_PRIMARY_TISSUES&quot;);</span>
+
+<span class="nc" id="L553">    newGraphContent = new GraphPage(taxMap, tissueMap);</span>
+
+<span class="nc" id="L555">    graphSection.addComponent(graphSectionContent);</span>
+<span class="nc" id="L556">    graphTab.addTab(graphSection, &quot;Sample Graph&quot;);</span>
+<span class="nc" id="L557">    graphTab.addTab(newGraphContent, &quot;Sample Graph v2 (beta)&quot;);</span>
+<span class="nc" id="L558">    return graphTab;</span>
+  }
+
+  public void processed() {
+<span class="nc" id="L562">    UI.getCurrent().setPollInterval(-1);</span>
+<span class="nc" id="L563">  }</span>
+
+  class Worker extends Thread {
+    private ProjectView projectView;
+
+<span class="nc" id="L568">    public Worker(ProjectView current) {</span>
+<span class="nc" id="L569">      projectView = current;</span>
+<span class="nc" id="L570">    }</span>
+
+    @Override
+    public void run() {
+<span class="nc" id="L574">      projectView.updateContentGraph();</span>
+<span class="nc" id="L575">      synchronized (UI.getCurrent()) {</span>
+<span class="nc" id="L576">        processed();</span>
+<span class="nc" id="L577">      }</span>
+
+<span class="nc" id="L579">    }</span>
+  }
+
+  /**
+   * 
+   */
+  public void loadGraph() {
+<span class="nc bnc" id="L586" title="All 2 branches missed.">    if (graphSectionContent.getComponentCount() == 0</span>
+<span class="nc bnc" id="L587" title="All 2 branches missed.">        || !(graphSectionContent.getComponent(0) instanceof Image)) {</span>
+<span class="nc" id="L588">      ProgressBar progress = new ProgressBar();</span>
+<span class="nc" id="L589">      progress.setIndeterminate(true);</span>
+<span class="nc" id="L590">      Label info = new Label(</span>
+          &quot;Computing the project graph can take several seconds on big projects. Please be patient.&quot;);
+<span class="nc" id="L592">      info.setStyleName(ValoTheme.LABEL_SUCCESS);</span>
+<span class="nc" id="L593">      graphSectionContent.removeAllComponents();</span>
+<span class="nc" id="L594">      graphSectionContent.addComponent(progress);</span>
+<span class="nc" id="L595">      graphSectionContent.setComponentAlignment(progress, Alignment.MIDDLE_CENTER);</span>
+<span class="nc" id="L596">      Worker worker = new Worker(getCurrent());</span>
+<span class="nc" id="L597">      worker.start();</span>
+<span class="nc" id="L598">      UI.getCurrent().setPollInterval(500);</span>
+    }
+<span class="nc" id="L600">  }</span>
+
+  /**
+   * 
+   * @return
+   */
+  public ProjectView getCurrent() {
+<span class="nc" id="L607">    return this;</span>
+  }
+
+  /**
+   * 
+   */
+  void updateContentGraph() {
+<span class="nc" id="L614">    String projectID = currentBean.getId();</span>
+<span class="nc" id="L615">    List&lt;Sample&gt; samples = datahandler.getOpenBisClient()</span>
+<span class="nc" id="L616">        .getSamplesWithParentsAndChildrenOfProjectBySearchService(projectID);</span>
+<span class="nc" id="L617">    parseNewGraph(projectID, samples);</span>
+<span class="nc" id="L618">    Resource resource = getGraphResource(projectID, samples);</span>
+
+<span class="nc bnc" id="L620" title="All 2 branches missed.">    if (resource != null) {</span>
+<span class="nc" id="L621">      graphSectionContent.removeAllComponents();</span>
+<span class="nc" id="L622">      Image graphImage = new Image(&quot;&quot;, resource);</span>
+
+<span class="nc" id="L624">      graphSectionContent.addComponent(graphImage);</span>
+<span class="nc" id="L625">      graphSectionContent.setComponentAlignment(graphImage, Alignment.MIDDLE_CENTER);</span>
+<span class="nc" id="L626">    } else {</span>
+<span class="nc" id="L627">      Label error = new Label(&quot;Project Graph can not be computed at that time for this project&quot;);</span>
+<span class="nc" id="L628">      error.setStyleName(ValoTheme.LABEL_FAILURE);</span>
+<span class="nc" id="L629">      graphSectionContent.removeAllComponents();</span>
+<span class="nc" id="L630">      graphSectionContent.addComponent(error);</span>
+<span class="nc" id="L631">      graphSectionContent.setComponentAlignment(error, Alignment.MIDDLE_CENTER);</span>
+
+<span class="nc" id="L633">      LOG.error(String.format(&quot;%s: %s&quot;, error.getValue(), currentBean.getId()));</span>
+    }
+<span class="nc" id="L635">  }</span>
+
+
+  private void parseNewGraph(String projectID, List&lt;Sample&gt; samples) {
+<span class="nc" id="L639">    List&lt;DataSet&gt; datasets =</span>
+<span class="nc" id="L640">        datahandler.getOpenBisClient().getDataSetsOfProjectByIdentifier(projectID);</span>
+<span class="nc" id="L641">    Set&lt;String&gt; factorLabels = datahandler.getFactorLabels();</span>
+    
+<span class="nc" id="L643">    Map&lt;Pair&lt;String, String&gt;, Property&gt; factorsForLabelsAndSamples =</span>
+<span class="nc" id="L644">        datahandler.getFactorsForLabelsAndSamples();</span>
+<span class="nc" id="L645">    newGraphContent.loadProjectGraph(projectID, samples, datasets, factorLabels,</span>
+        factorsForLabelsAndSamples);
+<span class="nc" id="L647">  }</span>
+
+  /**
+   * 
+   * @param resourceurl
+   */
+  public void setResourceUrl(String resourceurl) {
+<span class="nc" id="L654">    this.resourceUrl = resourceurl;</span>
+<span class="nc" id="L655">  }</span>
+
+  /**
+   * 
+   * @return
+   */
+  public String getResourceUrl() {
+<span class="nc" id="L662">    return resourceUrl;</span>
+  }
+
+  /**
+   * 
+   * @return
+   */
+  public String getNavigatorLabel() {
+<span class="nc" id="L670">    return navigateToLabel;</span>
+  }
+
+  /**
+   * sets the ContainerDataSource for showing it in a table and the id of the current Openbis
+   * Project. The id is shown in the caption.
+   * 
+   * @param projectBean
+   */
+  public void setContainerDataSource(ProjectBean projectBean) {
+<span class="nc" id="L680">    this.currentBean = projectBean;</span>
+<span class="nc" id="L681">    this.table.setContainerDataSource(projectBean.getExperiments());</span>
+
+<span class="nc bnc" id="L683" title="All 2 branches missed.">    for (Iterator&lt;?&gt; i = table.getItemIds().iterator(); i.hasNext();) {</span>
+      // Get the current item identifier, which is an integer.
+<span class="nc" id="L685">      ExperimentBean item = (ExperimentBean) i.next();</span>
+
+<span class="nc" id="L687">    }</span>
+<span class="nc" id="L688">    table.setVisibleColumns(</span>
+        new Object[] {&quot;code&quot;, &quot;prettyType&quot;, &quot;registrationDate&quot;, &quot;registrator&quot;, &quot;status&quot;});
+
+<span class="nc" id="L691">    table.setColumnHeader(&quot;prettyType&quot;, &quot;Type&quot;);</span>
+<span class="nc" id="L692">    int rowNumber = this.table.size();</span>
+
+<span class="nc bnc" id="L694" title="All 2 branches missed.">    if (rowNumber == 0) {</span>
+<span class="nc" id="L695">      this.table.setVisible(false);</span>
+    } else {
+<span class="nc" id="L697">      this.table.setVisible(true);</span>
+<span class="nc" id="L698">      this.table.setPageLength(Math.min(rowNumber, 10));</span>
+    }
+<span class="nc" id="L700">  }</span>
+
+
+  /**
+   * returns Resource which represents the project graph of the current Bean. Can be set as the
+   * resource of an {@link Image}.
+   * 
+   * @return
+   */
+  private Resource getGraphResource(String projectID, List&lt;Sample&gt; samples) {
+<span class="nc" id="L710">    Resource resource = null;</span>
+    try {
+<span class="nc" id="L712">      GraphGenerator graphFrame =</span>
+<span class="nc" id="L713">          new GraphGenerator(samples, datahandler.getOpenBisClient().getSampleTypes(),</span>
+<span class="nc" id="L714">              datahandler.getOpenBisClient(), projectID);</span>
+<span class="nc" id="L715">      resource = graphFrame.getRes();</span>
+<span class="nc" id="L716">    } catch (IOException e) {</span>
+<span class="nc" id="L717">      LOG.error(&quot;graph creation failed&quot;, e.getStackTrace());</span>
+<span class="nc" id="L718">    }</span>
+<span class="nc" id="L719">    return resource;</span>
+  }
+
+  private void tableClickChangeTreeView() {
+<span class="nc" id="L723">    table.setSelectable(true);</span>
+<span class="nc" id="L724">    table.setImmediate(true);</span>
+<span class="nc" id="L725">    this.table</span>
+<span class="nc" id="L726">        .addValueChangeListener(new ViewTablesClickListener(table, ExperimentView.navigateToLabel));</span>
+<span class="nc" id="L727">  }</span>
+
+  /**
+   * initializes and builds a filtering table for this view
+   * 
+   * @return
+   */
+  private FilterTable buildFilterTable() {
+<span class="nc" id="L735">    FilterTable filterTable = new FilterTable();</span>
+
+<span class="nc" id="L737">    filterTable.setFilterDecorator(new DatasetViewFilterDecorator());</span>
+<span class="nc" id="L738">    filterTable.setFilterGenerator(new DatasetViewFilterGenerator());</span>
+
+<span class="nc" id="L740">    filterTable.setFilterBarVisible(true);</span>
+
+
+<span class="nc" id="L743">    filterTable.setSelectable(true);</span>
+<span class="nc" id="L744">    filterTable.setImmediate(true);</span>
+
+<span class="nc" id="L746">    filterTable.setRowHeaderMode(RowHeaderMode.INDEX);</span>
+
+<span class="nc" id="L748">    filterTable.setColumnCollapsingAllowed(true);</span>
+
+<span class="nc" id="L750">    filterTable.setColumnReorderingAllowed(true);</span>
+
+
+<span class="nc" id="L753">    filterTable.setColumnHeader(&quot;code&quot;, &quot;Name&quot;);</span>
+<span class="nc" id="L754">    filterTable.setColumnHeader(&quot;type&quot;, &quot;Type&quot;);</span>
+<span class="nc" id="L755">    filterTable.setColumnHeader(&quot;registrationDate&quot;, &quot;Registration Date&quot;);</span>
+<span class="nc" id="L756">    filterTable.setColumnHeader(&quot;registrator&quot;, &quot;Registered By&quot;);</span>
+<span class="nc" id="L757">    filterTable.setColumnHeader(&quot;status&quot;, &quot;Status&quot;);</span>
+
+<span class="nc" id="L759">    return filterTable;</span>
+  }
+
+
+<span class="nc" id="L763">  class MemberWorker extends Thread {</span>
+
+    @Override
+    public void run() {
+<span class="nc" id="L767">      Company company = null;</span>
+<span class="nc" id="L768">      long companyId = 1;</span>
+      try {
+<span class="nc" id="L770">        String webId = PropsUtil.get(PropsKeys.COMPANY_DEFAULT_WEB_ID);</span>
+<span class="nc" id="L771">        company = CompanyLocalServiceUtil.getCompanyByWebId(webId);</span>
+<span class="nc" id="L772">        companyId = company.getCompanyId();</span>
+
+<span class="nc" id="L774">      } catch (PortalException | SystemException e) {</span>
+<span class="nc" id="L775">        LOG.error(&quot;liferay error, could not retrieve companyId. Trying default companyId, which is &quot;</span>
+<span class="nc" id="L776">            + companyId, e.getStackTrace());</span>
+<span class="nc" id="L777">      }</span>
+<span class="nc" id="L778">      Set&lt;String&gt; list = datahandler.removeQBiCStaffFromMemberSet(</span>
+<span class="nc" id="L779">          datahandler.getOpenBisClient().getSpaceMembers(currentBean.getId().split(&quot;/&quot;)[1]));</span>
+<span class="nc" id="L780">      members = new TreeMap&lt;String, String&gt;();</span>
+<span class="nc" id="L781">      memberLetters = new HashMap&lt;String, String&gt;();</span>
+
+<span class="nc bnc" id="L783" title="All 2 branches missed.">      if (list != null) {</span>
+<span class="nc" id="L784">        memberString = new StringBuilder();</span>
+<span class="nc bnc" id="L785" title="All 2 branches missed.">        for (String member : list) {</span>
+<span class="nc" id="L786">          User user = null;</span>
+          try {
+<span class="nc" id="L788">            user = UserLocalServiceUtil.getUserByScreenName(companyId, member);</span>
+<span class="nc" id="L789">          } catch (PortalException | SystemException e) {</span>
+<span class="nc" id="L790">          }</span>
+
+<span class="nc bnc" id="L792" title="All 2 branches missed.">          if (memberString.length() &gt; 0) {</span>
+            // memberString.append(&quot; , &quot;);
+          }
+
+<span class="nc bnc" id="L796" title="All 2 branches missed.">          if (user == null) {</span>
+<span class="nc" id="L797">            LOG.warn(String.format(&quot;Openbis user %s appears to not exist in Portal&quot;, member));</span>
+            // memberString.append(member);
+<span class="nc" id="L799">            members.put(member, member);</span>
+            // membersLayout.addComponent(new Label(member));
+          } else {
+<span class="nc" id="L802">            String firstName = user.getFirstName();</span>
+<span class="nc" id="L803">            String lastName = user.getLastName();</span>
+
+<span class="nc" id="L805">            String email = user.getEmailAddress();</span>
+
+<span class="nc" id="L807">            String userString =</span>
+                &quot;&lt;a href=\&quot;mailto:&quot; + email + &quot;\&quot; style=\&quot;color: #0068AA; text-decoration: none\&quot;&gt;&quot;
+                    + lastName + &quot;, &quot; + firstName + &quot;&lt;/a&gt;&quot;;
+
+<span class="nc bnc" id="L811" title="All 2 branches missed.">            if (user.getLastName().length() &gt; 0) {</span>
+<span class="nc" id="L812">              members.put(user.getLastName(), userString);</span>
+            }
+
+            else {
+<span class="nc" id="L816">              members.put(user.getFirstName(), userString);</span>
+            }
+
+          }
+<span class="nc" id="L820">        }</span>
+<span class="nc" id="L821">        synchronized (UI.getCurrent()) {</span>
+<span class="nc" id="L822">          processedMember();</span>
+<span class="nc" id="L823">        }</span>
+      }
+<span class="nc" id="L825">    }</span>
+  }
+
+  /**
+   * 
+   * @return
+   */
+  private Component getMembersComponent() {
+<span class="nc" id="L833">    membersLayout = new HorizontalLayout();</span>
+<span class="nc" id="L834">    membersLayout.setWidth(&quot;100%&quot;);</span>
+
+<span class="nc" id="L836">    ProgressBar progress = new ProgressBar();</span>
+<span class="nc" id="L837">    progress.setIndeterminate(true);</span>
+<span class="nc" id="L838">    Label info = new Label(</span>
+        &quot;Searching for members. Can take several seconds on big projects. Please be patient.&quot;);
+<span class="nc" id="L840">    info.setStyleName(ValoTheme.LABEL_SUCCESS);</span>
+<span class="nc" id="L841">    membersLayout.addComponent(progress);</span>
+<span class="nc" id="L842">    MemberWorker worker = new MemberWorker();</span>
+<span class="nc" id="L843">    worker.start();</span>
+<span class="nc" id="L844">    UI.getCurrent().setPollInterval(500);</span>
+
+<span class="nc" id="L846">    return membersLayout;</span>
+  }
+
+
+  /**
+   * 
+   */
+  public void processedMember() {
+<span class="nc" id="L854">    String memberString = &quot;&quot;;</span>
+    Label label;
+
+<span class="nc bnc" id="L857" title="All 2 branches missed.">    if (members.size() &lt; 1) {</span>
+<span class="nc" id="L858">      label = new Label(&quot;No Members found.&quot;);</span>
+    } else {
+<span class="nc bnc" id="L860" title="All 2 branches missed.">      for (Entry&lt;String, String&gt; entry : members.entrySet()) {</span>
+<span class="nc" id="L861">        String firstLetter = String.valueOf(entry.getKey().charAt(0));</span>
+
+<span class="nc bnc" id="L863" title="All 2 branches missed.">        if (!memberLetters.containsKey(firstLetter)) {</span>
+<span class="nc" id="L864">          memberString +=</span>
+<span class="nc" id="L865">              String.format(&quot;&lt;font size='16'&gt;&lt;b&gt;%s&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&quot;, firstLetter.toUpperCase());</span>
+<span class="nc" id="L866">          memberLetters.put(firstLetter, &quot;&quot;);</span>
+        }
+
+<span class="nc" id="L869">        memberString += String.format(&quot;%s&lt;br&gt;&quot;, entry.getValue());</span>
+<span class="nc" id="L870">      }</span>
+<span class="nc" id="L871">      label = new Label(memberString, ContentMode.HTML);</span>
+    }
+<span class="nc" id="L873">    membersLayout.removeAllComponents();</span>
+<span class="nc" id="L874">    membersLayout.addComponent(label);</span>
+<span class="nc" id="L875">    membersLayout.setSpacing(true);</span>
+<span class="nc" id="L876">    membersLayout.setMargin(new MarginInfo(false, false, true, true));</span>
+
+<span class="nc" id="L878">    UI.getCurrent().setPollInterval(-1);</span>
+<span class="nc" id="L879">  }</span>
+
+
+  /**
+   * 
+   */
+  @Override
+  public void enter(ViewChangeEvent event) {
+<span class="nc" id="L887">    String currentValue = event.getParameters();</span>
+
+<span class="nc" id="L889">    OpenBisClient oc = datahandler.getOpenBisClient();</span>
+<span class="nc" id="L890">    List&lt;Project&gt; userProjects = oc.getOpenbisInfoService().listProjectsOnBehalfOfUser(</span>
+<span class="nc" id="L891">        oc.getSessionToken(), PortalUtils.getNonNullScreenName());</span>
+
+<span class="nc" id="L893">    List&lt;String&gt; projectIDs = new ArrayList&lt;String&gt;();</span>
+
+<span class="nc bnc" id="L895" title="All 2 branches missed.">    for (Project p : userProjects) {</span>
+<span class="nc" id="L896">      projectIDs.add(p.getIdentifier());</span>
+<span class="nc" id="L897">    }</span>
+<span class="nc bnc" id="L898" title="All 2 branches missed.">    if (projectIDs.contains(currentValue)) {</span>
+      // TODO updateContent only if currentProject is not equal to newProject
+      // this.table.unselect(this.table.getValue());
+<span class="nc" id="L901">      ProjectBean pbean = datahandler.getProject2(currentValue);</span>
+      // if the new project bean is different then reset the graph.
+<span class="nc bnc" id="L903" title="All 4 branches missed.">      if (currentBean != null &amp;&amp; !pbean.getId().equals(currentBean.getId())) {</span>
+<span class="nc" id="L904">        resetGraphs();</span>
+<span class="nc" id="L905">        projectview_tab.setSelectedTab(0);</span>
+      }
+<span class="nc" id="L907">      this.currentBean = pbean;</span>
+      // this.setContainerDataSource(pbean);
+
+<span class="nc" id="L910">      updateContent();</span>
+<span class="nc" id="L911">    } else {</span>
+<span class="nc" id="L912">      Utils.Notification(&quot;Unable to load project&quot;,</span>
+<span class="nc" id="L913">          String.format(</span>
+              &quot;The requested project %s could not be loaded. You probably don't have access to the requested project. Please contact the corresponding project manager or write an email to support@qbic.zendesk.com.&quot;,
+              currentValue),
+          &quot;error&quot;);
+    }
+<span class="nc" id="L918">  }</span>
+
+
+  /**
+   * Enables or disables the component. The user can not interact disabled components, which are
+   * shown with a style that indicates the status, usually shaded in light gray color. Components
+   * are enabled by default.
+   */
+  public void setEnabled(boolean enabled) {
+<span class="nc" id="L927">    this.export.setEnabled(enabled);</span>
+<span class="nc" id="L928">    this.table.setEnabled(enabled);</span>
+<span class="nc" id="L929">  }</span>
+
+  /**
+   * 
+   * @return
+   */
+  public ProjectBean getCurrentBean() {
+<span class="nc" id="L936">    return currentBean;</span>
+  }
+
+  /**
+   * 
+   * @param currentBean
+   */
+  public void setCurrentBean(ProjectBean currentBean) {
+<span class="nc" id="L944">    this.currentBean = currentBean;</span>
+<span class="nc" id="L945">  }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

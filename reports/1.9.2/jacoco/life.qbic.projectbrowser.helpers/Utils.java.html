@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Utils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.helpers</a> &gt; <span class="el_source">Utils.java</span></div><h1>Utils.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.helpers;
+
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.model.Company;
+import com.liferay.portal.model.User;
+import com.liferay.portal.service.CompanyLocalServiceUtil;
+import com.liferay.portal.service.UserLocalServiceUtil;
+import com.vaadin.data.Item;
+import com.vaadin.data.Property;
+import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.server.FontAwesome;
+import com.vaadin.server.Page;
+import com.vaadin.server.StreamResource;
+import com.vaadin.shared.Position;
+import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.Notification;
+import com.vaadin.ui.Panel;
+import com.vaadin.ui.PopupView;
+import com.vaadin.ui.PopupView.Content;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.themes.ValoTheme;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+import life.qbic.projectbrowser.components.CustomVisibilityComponent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import life.qbic.projectbrowser.model.ProjectBean;
+
+/**
+ * Utility functions.
+ */
+<span class="nc" id="L72">public class Utils {</span>
+
+<span class="nc" id="L74">    private static final Logger LOG = LogManager.getLogger(Utils.class);</span>
+
+    /**
+     * Checks if a String can be parsed to an Integer
+     *
+     * @param s a String
+     * @return true, if the String can be parsed to an Integer successfully, false otherwise
+     */
+    public static boolean isInteger(String s) {
+        try {
+<span class="nc" id="L84">            Integer.parseInt(s);</span>
+<span class="nc" id="L85">        } catch (NumberFormatException e) {</span>
+<span class="nc" id="L86">            return false;</span>
+<span class="nc" id="L87">        }</span>
+<span class="nc" id="L88">        return true;</span>
+    }
+
+    /**
+     * Parses a whole String list to integers and returns them in another list.
+     *
+     * @param strings List of Strings
+     * @return list of integer representations of the input list
+     */
+    public static List&lt;Integer&gt; strArrToInt(List&lt;String&gt; strings) {
+<span class="nc" id="L98">        List&lt;Integer&gt; res = new ArrayList&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        for (String s : strings) {</span>
+<span class="nc" id="L100">            res.add(Integer.parseInt(s));</span>
+<span class="nc" id="L101">        }</span>
+<span class="nc" id="L102">        return res;</span>
+    }
+
+    /**
+     * Maps an integer to a char representation. This can be used for computing the checksum.
+     *
+     * @param i number to be mapped
+     * @return char representing the input number
+     */
+    public static char mapToChar(int i) {
+<span class="nc" id="L112">        i += 48;</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        if (i &gt; 57) {</span>
+<span class="nc" id="L114">            i += 7;</span>
+        }
+<span class="nc" id="L116">        return (char) i;</span>
+    }
+
+    /**
+     * Checks which of two Strings can be parsed to a larger Integer and returns it.
+     *
+     * @param a a String
+     * @param b another String
+     * @return the String that represents the larger number.
+     */
+    public static String max(String a, String b) {
+<span class="nc" id="L127">        int a1 = Integer.parseInt(a);</span>
+<span class="nc" id="L128">        int b1 = Integer.parseInt(b);</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        if (Math.max(a1, b1) == a1) {</span>
+<span class="nc" id="L130">            return a;</span>
+        } else {
+<span class="nc" id="L132">            return b;</span>
+        }
+    }
+
+    /**
+     * Creates a string with leading zeroes from a number
+     *
+     * @param id number
+     * @param length of the final string
+     * @return the completed String with leading zeroes
+     */
+    public static String createCountString(int id, int length) {
+<span class="nc" id="L144">        String res = Integer.toString(id);</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        while (res.length() &lt; length) {</span>
+<span class="nc" id="L146">            res = &quot;0&quot; + res;</span>
+        }
+<span class="nc" id="L148">        return res;</span>
+    }
+
+    /**
+     * Increments the value of an upper case char. When at &quot;X&quot; restarts with &quot;A&quot;.
+     *
+     * @param c the char to be incremented
+     * @return the next letter in the alphabet relative to the input char
+     */
+    public static char incrementUppercase(char c) {
+<span class="nc bnc" id="L158" title="All 2 branches missed.">        if (c == 'X') {</span>
+<span class="nc" id="L159">            return 'A';</span>
+        } else {
+<span class="nc" id="L161">            int charValue = c;</span>
+<span class="nc" id="L162">            return (char) (charValue + 1);</span>
+        }
+    }
+
+    public static StreamResource getTSVStream(final String content, String id) {
+<span class="nc" id="L167">        StreamResource resource = new StreamResource(new StreamResource.StreamSource() {</span>
+            private static final long serialVersionUID = 946357391804404061L;
+
+            @Override
+            public InputStream getStream() {
+                try {
+<span class="nc" id="L173">                    InputStream is = new ByteArrayInputStream(content.getBytes());</span>
+<span class="nc" id="L174">                    return is;</span>
+<span class="nc" id="L175">                } catch (Exception e) {</span>
+<span class="nc" id="L176">                    e.printStackTrace();</span>
+<span class="nc" id="L177">                    return null;</span>
+                }
+            }
+            // remove slashes and get rid of leading underscore afterwards
+<span class="nc" id="L181">        }, String.format(&quot;%s.tsv&quot;, id));</span>
+<span class="nc" id="L182">        return resource;</span>
+    }
+
+    /**
+     * Converts an item container into an exportable string (tab-separated format).
+     *
+     * @param container the container to export.
+     * @return the exportable string.
+     */
+    // TODO fix and test
+    public static String containerToString(final BeanItemContainer container) {
+<span class="nc" id="L193">        final StringBuilder stringValue = new StringBuilder();</span>
+<span class="nc" id="L194">        final Set&lt;String&gt; exclusionList = new HashSet&lt;&gt;(Arrays</span>
+<span class="nc" id="L195">            .asList(&quot;experiments&quot;, &quot;dssPath&quot;, &quot;children&quot;, &quot;samples&quot;, &quot;properties&quot;, &quot;controlledVocabularies&quot;, &quot;typeLabels&quot;, &quot;containsData&quot;, &quot;parent&quot;, &quot;parents&quot;,</span>
+                &quot;isSelected&quot;, &quot;root&quot;));
+
+<span class="nc" id="L198">        final Collection&lt;String&gt; filteredPropertyIDs = ((Collection&lt;String&gt;) container.getContainerPropertyIds()).parallelStream()</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">            .filter(p -&gt; !exclusionList.contains(p)).collect(Collectors.toList());</span>
+
+<span class="nc bnc" id="L201" title="All 2 branches missed.">        for (final Object o : filteredPropertyIDs) {</span>
+<span class="nc" id="L202">            final String propertyAsString = o.toString();</span>
+<span class="nc" id="L203">            stringValue.append(propertyAsString.replaceAll(&quot;project&quot;, &quot;sub-project&quot;).replace(&quot;space&quot;, &quot;project&quot;)).append('\t');</span>
+<span class="nc" id="L204">        }</span>
+<span class="nc" id="L205">        stringValue.append('\n');</span>
+
+<span class="nc bnc" id="L207" title="All 2 branches missed.">        for (final Object id : container.getItemIds()) {</span>
+<span class="nc" id="L208">            final Item item = container.getItem(id);</span>
+
+<span class="nc bnc" id="L210" title="All 2 branches missed.">            for (final Object propertyId : filteredPropertyIDs) {</span>
+                // Could be extended to an exclusion list if we don't want to show further columns
+<span class="nc" id="L212">                final Property prop = item.getItemProperty(propertyId);</span>
+<span class="nc bnc" id="L213" title="All 2 branches missed.">                if (prop.getValue() == null) {</span>
+<span class="nc" id="L214">                    stringValue.append(&quot;-\t&quot;);</span>
+                } else {
+<span class="nc" id="L216">                    stringValue.append(prop.getValue().toString()).append('\t');</span>
+                }
+<span class="nc" id="L218">            }</span>
+<span class="nc" id="L219">            stringValue.append('\n');</span>
+<span class="nc" id="L220">        }</span>
+<span class="nc" id="L221">        return stringValue.toString();</span>
+    }
+
+    public static String getTime() {
+<span class="nc" id="L225">        Date dNow = new Date();</span>
+<span class="nc" id="L226">        SimpleDateFormat ft = new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss ZZZ&quot;);</span>
+<span class="nc" id="L227">        return ft.format(dNow);</span>
+    }
+
+    public static HorizontalLayout questionize(Component c, final String info, final String header) {
+<span class="nc" id="L231">        final HorizontalLayout res = new HorizontalLayout();</span>
+<span class="nc" id="L232">        res.setSpacing(true);</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        if (c instanceof CustomVisibilityComponent) {</span>
+<span class="nc" id="L234">            CustomVisibilityComponent custom = (CustomVisibilityComponent) c;</span>
+<span class="nc" id="L235">            c = custom.getInnerComponent();</span>
+<span class="nc" id="L236">            custom.addListener(new VisibilityChangeListener() {</span>
+
+                @Override
+                public void setVisible(boolean b) {
+<span class="nc" id="L240">                    res.setVisible(b);</span>
+<span class="nc" id="L241">                }</span>
+            });
+        }
+
+<span class="nc" id="L245">        res.setVisible(c.isVisible());</span>
+<span class="nc" id="L246">        res.setCaption(c.getCaption());</span>
+<span class="nc" id="L247">        c.setCaption(null);</span>
+<span class="nc" id="L248">        res.addComponent(c);</span>
+
+<span class="nc" id="L250">        PopupView pv = new PopupView(new Content() {</span>
+
+            @Override
+            public Component getPopupComponent() {
+<span class="nc" id="L254">                Label l = new Label(info, ContentMode.HTML);</span>
+<span class="nc" id="L255">                l.setCaption(header);</span>
+<span class="nc" id="L256">                l.setIcon(FontAwesome.INFO);</span>
+<span class="nc" id="L257">                l.setWidth(&quot;250px&quot;);</span>
+<span class="nc" id="L258">                l.addStyleName(&quot;info&quot;);</span>
+<span class="nc" id="L259">                return new VerticalLayout(l);</span>
+            }
+
+            @Override
+            public String getMinimizedValueAsHTML() {
+<span class="nc" id="L264">                return &quot;[?]&quot;;</span>
+            }
+        });
+<span class="nc" id="L267">        pv.setHideOnMouseOut(false);</span>
+
+<span class="nc" id="L269">        res.addComponent(pv);</span>
+
+<span class="nc" id="L271">        return res;</span>
+    }
+
+    public static void Notification(String title, String description, String type) {
+<span class="nc" id="L275">        Notification notify = new Notification(title, description);</span>
+<span class="nc" id="L276">        notify.setPosition(Position.TOP_CENTER);</span>
+<span class="nc bnc" id="L277" title="All 2 branches missed.">        if (type.equals(&quot;error&quot;)) {</span>
+<span class="nc" id="L278">            notify.setDelayMsec(16000);</span>
+<span class="nc" id="L279">            notify.setIcon(FontAwesome.FROWN_O);</span>
+<span class="nc" id="L280">            notify.setStyleName(ValoTheme.NOTIFICATION_ERROR + &quot; &quot; + ValoTheme.NOTIFICATION_CLOSABLE);</span>
+<span class="nc bnc" id="L281" title="All 2 branches missed.">        } else if (type.equals(&quot;success&quot;)) {</span>
+<span class="nc" id="L282">            notify.setDelayMsec(8000);</span>
+<span class="nc" id="L283">            notify.setIcon(FontAwesome.SMILE_O);</span>
+<span class="nc" id="L284">            notify.setStyleName(ValoTheme.NOTIFICATION_SUCCESS + &quot; &quot; + ValoTheme.NOTIFICATION_CLOSABLE);</span>
+        } else {
+<span class="nc" id="L286">            notify.setDelayMsec(8000);</span>
+<span class="nc" id="L287">            notify.setIcon(FontAwesome.COMMENT);</span>
+<span class="nc" id="L288">            notify.setStyleName(ValoTheme.NOTIFICATION_TRAY + &quot; &quot; + ValoTheme.NOTIFICATION_CLOSABLE);</span>
+        }
+<span class="nc" id="L290">        notify.show(Page.getCurrent());</span>
+<span class="nc" id="L291">    }</span>
+
+    public static Panel createInfoBox(String caption, String description) {
+<span class="nc" id="L294">        Panel panel = new Panel(caption);</span>
+<span class="nc" id="L295">        panel.setIcon(FontAwesome.INFO);</span>
+<span class="nc" id="L296">        panel.setStyleName(ValoTheme.PANEL_BORDERLESS);</span>
+<span class="nc" id="L297">        HorizontalLayout layout = new HorizontalLayout();</span>
+<span class="nc" id="L298">        Label label = new Label();</span>
+<span class="nc" id="L299">        label.setValue(description);</span>
+<span class="nc" id="L300">        layout.addComponent(label);</span>
+
+<span class="nc" id="L302">        panel.setContent(layout);</span>
+<span class="nc" id="L303">        return panel;</span>
+    }
+
+    public static String usernameToFullName(String username) {
+<span class="nc" id="L307">        Company company = null;</span>
+
+<span class="nc" id="L309">        String res = username;</span>
+<span class="nc" id="L310">        long companyId = 1;</span>
+        try {
+<span class="nc" id="L312">            String webId = PropsUtil.get(PropsKeys.COMPANY_DEFAULT_WEB_ID);</span>
+<span class="nc" id="L313">            company = CompanyLocalServiceUtil.getCompanyByWebId(webId);</span>
+<span class="nc" id="L314">            companyId = company.getCompanyId();</span>
+<span class="nc" id="L315">        } catch (PortalException | SystemException e) {</span>
+<span class="nc" id="L316">            LOG</span>
+<span class="nc" id="L317">                .error(&quot;liferay error, could not retrieve companyId. Trying default companyId, which is &quot;</span>
+<span class="nc" id="L318">                    + companyId, e.getStackTrace());</span>
+<span class="nc" id="L319">        }</span>
+<span class="nc" id="L320">        User user = null;</span>
+        try {
+<span class="nc" id="L322">            user = UserLocalServiceUtil.getUserByScreenName(companyId, username);</span>
+<span class="nc" id="L323">        } catch (PortalException | SystemException e) {</span>
+<span class="nc" id="L324">            LOG.warn(&quot;got this error while trying to fetch full name of user:&quot;);</span>
+<span class="nc" id="L325">            LOG.warn(e.getMessage());</span>
+<span class="nc" id="L326">            LOG.info(&quot;returning username instead.&quot;);</span>
+<span class="nc" id="L327">        }</span>
+<span class="nc bnc" id="L328" title="All 2 branches missed.">        if (user == null) {</span>
+<span class="nc" id="L329">            LOG.warn(String.format(&quot;Openbis user %s appears to not exist in Portal&quot;, username));</span>
+        } else {
+<span class="nc" id="L331">            String firstName = user.getFirstName();</span>
+<span class="nc" id="L332">            String lastName = user.getLastName();</span>
+<span class="nc" id="L333">            res = firstName + &quot; &quot; + lastName;</span>
+        }
+<span class="nc" id="L335">        return res;</span>
+    }
+
+    public void generateProjectReport(ProjectBean projectBean) {
+<span class="nc" id="L339">        Writer report = null;</span>
+        try {
+<span class="nc" id="L341">            report = new BufferedWriter(</span>
+                new OutputStreamWriter(new FileOutputStream(&quot;/tmp/report.tex&quot;), &quot;utf-8&quot;));
+
+            // write tex file header
+<span class="nc" id="L345">            report.write(&quot;\\documentclass[ngerman]{scrartcl} \n&quot;);</span>
+<span class="nc" id="L346">            report.write(&quot;\\begin{document} \n&quot;);</span>
+<span class="nc" id="L347">            report.write(String.format(&quot;\\section{Project Report %s} \n&quot;, projectBean.getCode()));</span>
+
+<span class="nc" id="L349">            report.write(&quot;\\subsection{General Information} \n&quot;);</span>
+<span class="nc" id="L350">            report.write(&quot;&quot;);</span>
+
+<span class="nc" id="L352">            report.write(&quot;\\end{document}&quot;);</span>
+<span class="nc" id="L353">        } catch (UnsupportedEncodingException e) {</span>
+            // TODO Auto-generated catch block
+<span class="nc" id="L355">            e.printStackTrace();</span>
+<span class="nc" id="L356">        } catch (FileNotFoundException e) {</span>
+            // TODO Auto-generated catch block
+<span class="nc" id="L358">            e.printStackTrace();</span>
+<span class="nc" id="L359">        } catch (IOException e) {</span>
+            // TODO Auto-generated catch block
+<span class="nc" id="L361">            e.printStackTrace();</span>
+<span class="nc" id="L362">        }</span>
+<span class="nc" id="L363">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

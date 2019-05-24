@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExperimentView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.views</a> &gt; <span class="el_source">ExperimentView.java</span></div><h1>ExperimentView.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.views;
+
+import javax.xml.bind.JAXBException;
+
+import org.tepi.filtertable.FilterTable;
+
+import com.vaadin.navigator.View;
+import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
+import com.vaadin.server.FileDownloader;
+import com.vaadin.server.FontAwesome;
+import com.vaadin.server.StreamResource;
+import com.vaadin.shared.ui.MarginInfo;
+import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.CustomTable.RowHeaderMode;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.TabSheet;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.themes.ValoTheme;
+
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
+
+import life.qbic.projectbrowser.controllers.*;
+import life.qbic.projectbrowser.helpers.UglyToPrettyNameMapper;
+import life.qbic.projectbrowser.helpers.Utils;
+import life.qbic.projectbrowser.helpers.ViewTablesClickListener;
+import life.qbic.projectbrowser.helpers.DatasetViewFilterGenerator;
+import life.qbic.projectbrowser.helpers.DatasetViewFilterDecorator;
+import life.qbic.projectbrowser.model.ExperimentBean;
+import life.qbic.projectbrowser.components.MultiscaleComponent;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+
+public class ExperimentView extends VerticalLayout implements View {
+
+  /**
+   * 
+   */
+  private static final long serialVersionUID = -9156593640161721690L;
+<span class="nc" id="L58">  private static final Logger LOG = LogManager.getLogger(ExperimentView.class);</span>
+
+  public final static String navigateToLabel = &quot;experiment&quot;;
+  FilterTable table;
+  VerticalLayout expview_content;
+
+  private Button export;
+  private DataHandler datahandler;
+  private State state;
+  private String resourceUrl;
+  private VerticalLayout buttonLayoutSection;
+  private FileDownloader fileDownloader;
+  private ExperimentBean currentBean;
+  private Label generalInfoLabel;
+  private Label statContentLabel;
+  private Label propertiesContentLabel;
+
+<span class="nc" id="L75">  private UglyToPrettyNameMapper prettyNameMapper = new UglyToPrettyNameMapper();</span>
+  private TabSheet expview_tab;
+  private Label experimentalFactorLabel;
+  private Label idLabel;
+
+  private VerticalLayout innerNotesComponent;
+  private MultiscaleController controller;
+  private MultiscaleComponent noteComponent;
+
+  public ExperimentView(DataHandler datahandler, State state, String resourceurl,
+      MultiscaleController controller) {
+<span class="nc" id="L86">    this(datahandler, state, controller);</span>
+<span class="nc" id="L87">    this.resourceUrl = resourceurl;</span>
+<span class="nc" id="L88">  }</span>
+
+
+<span class="nc" id="L91">  public ExperimentView(DataHandler datahandler, State state, MultiscaleController controller) {</span>
+<span class="nc" id="L92">    this.datahandler = datahandler;</span>
+<span class="nc" id="L93">    this.state = state;</span>
+<span class="nc" id="L94">    this.controller = controller;</span>
+<span class="nc" id="L95">    resourceUrl = &quot;javascript;&quot;;</span>
+<span class="nc" id="L96">    initView();</span>
+<span class="nc" id="L97">  }</span>
+
+
+  /**
+   * init this view. builds the layout skeleton Menubar Description and others Statisitcs Experiment
+   * Table Graph
+   */
+  void initView() {
+<span class="nc" id="L105">    setWidth(100, Unit.PERCENTAGE);</span>
+<span class="nc" id="L106">    setResponsive(true);</span>
+
+<span class="nc" id="L108">    expview_content = new VerticalLayout();</span>
+<span class="nc" id="L109">    expview_content.setResponsive(true);</span>
+<span class="nc" id="L110">    expview_content.setMargin(new MarginInfo(true, true, false, false));</span>
+
+<span class="nc" id="L112">    expview_tab = new TabSheet();</span>
+<span class="nc" id="L113">    expview_tab.setWidth(100, Unit.PERCENTAGE);</span>
+<span class="nc" id="L114">    expview_tab.setResponsive(true);</span>
+
+<span class="nc" id="L116">    expview_tab.addStyleName(ValoTheme.TABSHEET_EQUAL_WIDTH_TABS);</span>
+<span class="nc" id="L117">    expview_tab.addStyleName(ValoTheme.TABSHEET_FRAMED);</span>
+<span class="nc" id="L118">    expview_tab.addStyleName(ValoTheme.TABSHEET_PADDED_TABBAR);</span>
+
+<span class="nc" id="L120">    expview_content.addComponent(expview_tab);</span>
+
+<span class="nc" id="L122">    expview_tab.addTab(initDescription(), &quot;General Information&quot;).setIcon(FontAwesome.INFO_CIRCLE);</span>
+    // expview_tab.addTab(initStatistics(), &quot;Statistics&quot;).setIcon(FontAwesome.CHECK_CIRCLE);
+<span class="nc" id="L124">    expview_tab.addTab(initProperties(), &quot;Metadata&quot;).setIcon(FontAwesome.LIST_UL);</span>
+<span class="nc" id="L125">    expview_tab.addTab(initTable(), &quot;Samples&quot;).setIcon(FontAwesome.TINT);</span>
+<span class="nc" id="L126">    initNoteComponent();</span>
+<span class="nc" id="L127">    expview_tab.addTab(innerNotesComponent).setIcon(FontAwesome.PENCIL);</span>
+
+<span class="nc" id="L129">    expview_content.setWidth(100, Unit.PERCENTAGE);</span>
+<span class="nc" id="L130">    this.addComponent(expview_content);</span>
+<span class="nc" id="L131">  }</span>
+
+  private void initNoteComponent() {
+
+<span class="nc" id="L135">    innerNotesComponent = new VerticalLayout();</span>
+
+<span class="nc" id="L137">    innerNotesComponent.setIcon(FontAwesome.NAVICON);</span>
+<span class="nc" id="L138">    innerNotesComponent.setCaption(&quot;Experiment Notes&quot;);</span>
+
+<span class="nc" id="L140">    noteComponent = new MultiscaleComponent(controller);</span>
+<span class="nc" id="L141">    innerNotesComponent.addComponent(noteComponent);</span>
+<span class="nc" id="L142">    innerNotesComponent.setMargin(new MarginInfo(true, false, false, true));</span>
+<span class="nc" id="L143">  }</span>
+
+  private void updateNoteComponent() {
+<span class="nc" id="L146">    noteComponent = new MultiscaleComponent(controller);</span>
+<span class="nc" id="L147">    noteComponent.updateUI(currentBean.getId(), EntityType.EXPERIMENT);</span>
+<span class="nc" id="L148">    innerNotesComponent.removeAllComponents();</span>
+<span class="nc" id="L149">    innerNotesComponent.addComponent(noteComponent);</span>
+<span class="nc" id="L150">  }</span>
+
+  /**
+   * This function should be called each time currentBean is changed
+   */
+  public void updateContent() {
+<span class="nc" id="L156">    updateContentDescription();</span>
+<span class="nc" id="L157">    updateContentStatistics();</span>
+<span class="nc" id="L158">    updateContentProperties();</span>
+<span class="nc" id="L159">    updateContentTable();</span>
+<span class="nc" id="L160">    updateNoteComponent();</span>
+<span class="nc" id="L161">    updateContentButtonLayout();</span>
+<span class="nc" id="L162">  }</span>
+
+  /**
+   * 
+   * @return
+   */
+  HorizontalLayout initButtonLayout() {
+<span class="nc" id="L169">    this.export = new Button(&quot;Export as TSV&quot;);</span>
+<span class="nc" id="L170">    buttonLayoutSection = new VerticalLayout();</span>
+<span class="nc" id="L171">    HorizontalLayout buttonLayout = new HorizontalLayout();</span>
+<span class="nc" id="L172">    buttonLayout.setMargin(new MarginInfo(false, false, true, true));</span>
+<span class="nc" id="L173">    buttonLayout.setHeight(null);</span>
+<span class="nc" id="L174">    buttonLayout.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L175">    buttonLayoutSection.setSpacing(true);</span>
+<span class="nc" id="L176">    buttonLayoutSection.addComponent(buttonLayout);</span>
+<span class="nc" id="L177">    buttonLayoutSection.setMargin(new MarginInfo(false, false, true, true));</span>
+<span class="nc" id="L178">    buttonLayout.addComponent(this.export);</span>
+<span class="nc" id="L179">    return buttonLayout;</span>
+  }
+
+  void updateContentButtonLayout() {
+<span class="nc bnc" id="L183" title="All 2 branches missed.">    if (fileDownloader != null)</span>
+<span class="nc" id="L184">      this.export.removeExtension(fileDownloader);</span>
+<span class="nc" id="L185">    StreamResource sr =</span>
+<span class="nc" id="L186">        Utils.getTSVStream(Utils.containerToString(currentBean.getSamples()), currentBean.getId());</span>
+<span class="nc" id="L187">    fileDownloader = new FileDownloader(sr);</span>
+<span class="nc" id="L188">    fileDownloader.extend(this.export);</span>
+<span class="nc" id="L189">  }</span>
+
+  /**
+   * initializes the description layout
+   * 
+   * @return
+   */
+  VerticalLayout initDescription() {
+<span class="nc" id="L197">    VerticalLayout generalInfo = new VerticalLayout();</span>
+<span class="nc" id="L198">    VerticalLayout generalInfoContent = new VerticalLayout();</span>
+<span class="nc" id="L199">    idLabel = new Label(&quot;&quot;);</span>
+<span class="nc" id="L200">    generalInfoLabel = new Label(&quot;&quot;);</span>
+<span class="nc" id="L201">    statContentLabel = new Label(&quot;&quot;);</span>
+
+<span class="nc" id="L203">    generalInfoContent.addComponent(idLabel);</span>
+<span class="nc" id="L204">    generalInfo.setMargin(new MarginInfo(true, false, true, true));</span>
+<span class="nc" id="L205">    generalInfoContent.addComponent(generalInfoLabel);</span>
+<span class="nc" id="L206">    generalInfoContent.setMargin(new MarginInfo(true, false, true, true));</span>
+<span class="nc" id="L207">    generalInfoContent.addComponent(statContentLabel);</span>
+<span class="nc" id="L208">    generalInfoContent.setSpacing(true);</span>
+
+<span class="nc" id="L210">    generalInfo.addComponent(generalInfoContent);</span>
+
+<span class="nc" id="L212">    return generalInfo;</span>
+  }
+
+  void updateContentDescription() {
+<span class="nc" id="L216">    idLabel.setValue(String.format(&quot;Identifier: %s&quot;, currentBean.getId()));</span>
+<span class="nc" id="L217">    generalInfoLabel.setValue(</span>
+<span class="nc" id="L218">        String.format(&quot;Stage:\t %s&quot;, prettyNameMapper.getPrettyName(currentBean.getType())));</span>
+<span class="nc" id="L219">    statContentLabel.setValue(String.format(&quot;This experimental step involves %s sample(s)&quot;,</span>
+<span class="nc" id="L220">        currentBean.getSamples().size()));</span>
+
+<span class="nc" id="L222">  }</span>
+
+  /**
+   * 
+   * @return
+   * 
+   */
+  VerticalLayout initStatistics() {
+<span class="nc" id="L230">    VerticalLayout statistics = new VerticalLayout();</span>
+
+<span class="nc" id="L232">    HorizontalLayout statContent = new HorizontalLayout();</span>
+    // statContent.setCaption(&quot;Statistics&quot;);
+    // statContent.setIcon(FontAwesome.BAR_CHART_O);
+
+
+    // int numberOfDatasets = dh.datasetMap.get(experimentBean.getId()).size();
+<span class="nc" id="L238">    statContentLabel = new Label(&quot;&quot;);</span>
+
+<span class="nc" id="L240">    statContent.addComponent(statContentLabel);</span>
+<span class="nc" id="L241">    statContent.setMargin(new MarginInfo(true, false, true, true));</span>
+
+    // statContent.addComponent(new Label(String.format(&quot;%s dataset(s).&quot;,numberOfDatasets )));
+    // statContent.setMargin(true);
+    // statContent.setMargin(new MarginInfo(false, false, false, true));
+    // statContent.setSpacing(true);
+
+    /*
+     * if (numberOfDatasets &gt; 0) {
+     * 
+     * String lastSample = &quot;No samples available&quot;; if (experimentBean.getLastChangedSample() !=
+     * null) { lastSample = experimentBean.getLastChangedSample();// .split(&quot;/&quot;)[2]; }
+     * statContent.addComponent(new Label(String.format( &quot;Last change %s&quot;, String.format(
+     * &quot;occurred in sample %s (%s)&quot;, lastSample,
+     * experimentBean.getLastChangedDataset().toString())))); }
+     */
+
+
+<span class="nc" id="L259">    statistics.addComponent(statContent);</span>
+    // statistics.setMargin(true);
+
+    // Properties of experiment
+    // VerticalLayout properties = new VerticalLayout();
+    // VerticalLayout propertiesContent = new VerticalLayout();
+    // propertiesContent.setCaption(&quot;Properties&quot;);
+    // propertiesContent.setIcon(FontAwesome.LIST_UL);
+    // propertiesContentLabel = new Label(&quot;&quot;, ContentMode.HTML);
+    // propertiesContent.addComponent(propertiesContentLabel);
+    // properties.addComponent(propertiesContent);
+    // propertiesContent.setMargin(new MarginInfo(true, false, false, true));
+
+    // properties.setMargin(true);
+    // statistics.addComponent(properties);
+
+<span class="nc" id="L275">    statistics.setMargin(new MarginInfo(true, false, true, true));</span>
+<span class="nc" id="L276">    statistics.setSpacing(true);</span>
+
+<span class="nc" id="L278">    return statistics;</span>
+  }
+
+  /**
+   * 
+   */
+  void updateContentStatistics() {
+<span class="nc" id="L285">    statContentLabel.setValue(String.format(&quot;%s sample(s),&quot;, currentBean.getSamples().size()));</span>
+<span class="nc" id="L286">  }</span>
+
+  VerticalLayout initProperties() {
+    // Properties of experiment
+<span class="nc" id="L290">    VerticalLayout properties = new VerticalLayout();</span>
+<span class="nc" id="L291">    VerticalLayout propertiesContent = new VerticalLayout();</span>
+    // propertiesContent.setCaption(&quot;Properties&quot;);
+    // propertiesContent.setIcon(FontAwesome.LIST_UL);
+<span class="nc" id="L294">    propertiesContentLabel = new Label(&quot;&quot;, ContentMode.HTML);</span>
+<span class="nc" id="L295">    propertiesContentLabel.setCaption(&quot;Properties&quot;);</span>
+<span class="nc" id="L296">    experimentalFactorLabel = new Label(&quot;&quot;, ContentMode.HTML);</span>
+<span class="nc" id="L297">    experimentalFactorLabel.setCaption(&quot;Workflow Settings&quot;);</span>
+
+<span class="nc" id="L299">    propertiesContent.addComponent(propertiesContentLabel);</span>
+<span class="nc" id="L300">    propertiesContent.addComponent(experimentalFactorLabel);</span>
+
+<span class="nc" id="L302">    properties.addComponent(propertiesContent);</span>
+<span class="nc" id="L303">    propertiesContent.setMargin(new MarginInfo(true, false, true, true));</span>
+
+<span class="nc" id="L305">    return properties;</span>
+  }
+
+  void updateContentProperties() {
+    try {
+<span class="nc" id="L310">      propertiesContentLabel.setValue(currentBean.generatePropertiesFormattedString());</span>
+<span class="nc" id="L311">      experimentalFactorLabel.setValue(currentBean.generateXMLPropertiesFormattedString());</span>
+<span class="nc" id="L312">    } catch (JAXBException e) {</span>
+      // TODO Auto-generated catch block
+<span class="nc" id="L314">      e.printStackTrace();</span>
+<span class="nc" id="L315">    }</span>
+<span class="nc" id="L316">  }</span>
+
+  VerticalLayout initTable() {
+<span class="nc" id="L319">    this.table = this.buildFilterTable();</span>
+<span class="nc" id="L320">    this.tableClickChangeTreeView();</span>
+<span class="nc" id="L321">    VerticalLayout tableSection = new VerticalLayout();</span>
+<span class="nc" id="L322">    HorizontalLayout tableSectionContent = new HorizontalLayout();</span>
+    // tableSectionContent.setCaption(&quot;Registered Samples&quot;);
+    // tableSectionContent.setIcon(FontAwesome.FLASK);
+<span class="nc" id="L325">    tableSectionContent.addComponent(this.table);</span>
+<span class="nc" id="L326">    tableSectionContent.setMargin(new MarginInfo(true, true, false, true));</span>
+
+    // tableSectionContent.setMargin(true);
+    // tableSection.setMargin(true);
+<span class="nc" id="L330">    tableSection.setMargin(new MarginInfo(true, false, false, true));</span>
+
+    // this.table.setWidth(&quot;100%&quot;);
+<span class="nc" id="L333">    tableSection.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L334">    tableSectionContent.setWidth(&quot;100%&quot;);</span>
+
+<span class="nc" id="L336">    tableSection.addComponent(tableSectionContent);</span>
+
+<span class="nc" id="L338">    this.export = new Button(&quot;Export as TSV&quot;);</span>
+<span class="nc" id="L339">    buttonLayoutSection = new VerticalLayout();</span>
+<span class="nc" id="L340">    HorizontalLayout buttonLayout = new HorizontalLayout();</span>
+<span class="nc" id="L341">    buttonLayout.setMargin(new MarginInfo(false, false, false, true));</span>
+<span class="nc" id="L342">    buttonLayout.setHeight(null);</span>
+<span class="nc" id="L343">    buttonLayout.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L344">    buttonLayoutSection.setSpacing(true);</span>
+<span class="nc" id="L345">    buttonLayoutSection.addComponent(buttonLayout);</span>
+<span class="nc" id="L346">    buttonLayoutSection.setMargin(new MarginInfo(true, false, true, false));</span>
+<span class="nc" id="L347">    buttonLayout.addComponent(this.export);</span>
+
+<span class="nc" id="L349">    tableSection.addComponent(buttonLayoutSection);</span>
+
+<span class="nc" id="L351">    return tableSection;</span>
+  }
+
+
+  void updateContentTable() {
+    // Nothing to do here at the moment
+    // table is already set in setdataresource
+<span class="nc" id="L358">  }</span>
+
+  public void setResourceUrl(String resourceurl) {
+<span class="nc" id="L361">    this.resourceUrl = resourceurl;</span>
+<span class="nc" id="L362">  }</span>
+
+  public String getResourceUrl() {
+<span class="nc" id="L365">    return resourceUrl;</span>
+  }
+
+  public String getNavigatorLabel() {
+<span class="nc" id="L369">    return navigateToLabel;</span>
+  }
+
+  /**
+   * sets the ContainerDataSource for showing it in a table and the id of the current Openbis
+   * Experiment. The id is shown in the caption.
+   * 
+   * @param experimentBean
+   */
+  public void setContainerDataSource(ExperimentBean experimentBean) {
+<span class="nc" id="L379">    this.currentBean = experimentBean;</span>
+<span class="nc" id="L380">    this.table.setContainerDataSource(experimentBean.getSamples());</span>
+<span class="nc" id="L381">    this.table.setVisibleColumns(new Object[] {&quot;code&quot;, &quot;prettyType&quot;});</span>
+
+<span class="nc" id="L383">    int rowNumber = this.table.size();</span>
+
+<span class="nc bnc" id="L385" title="All 2 branches missed.">    if (rowNumber == 0) {</span>
+<span class="nc" id="L386">      this.table.setVisible(false);</span>
+    } else {
+<span class="nc" id="L388">      this.table.setVisible(true);</span>
+<span class="nc" id="L389">      this.table.setPageLength(Math.max(3, Math.min(rowNumber, 10)));</span>
+    }
+
+
+
+<span class="nc" id="L394">  }</span>
+
+  private void tableClickChangeTreeView() {
+<span class="nc" id="L397">    table.setSelectable(true);</span>
+<span class="nc" id="L398">    table.setImmediate(true);</span>
+<span class="nc" id="L399">    this.table</span>
+<span class="nc" id="L400">        .addValueChangeListener(new ViewTablesClickListener(table, SampleView.navigateToLabel));</span>
+<span class="nc" id="L401">  }</span>
+
+  private FilterTable buildFilterTable() {
+<span class="nc" id="L404">    FilterTable filterTable = new FilterTable();</span>
+<span class="nc" id="L405">    filterTable.setSizeFull();</span>
+
+<span class="nc" id="L407">    filterTable.setFilterDecorator(new DatasetViewFilterDecorator());</span>
+<span class="nc" id="L408">    filterTable.setFilterGenerator(new DatasetViewFilterGenerator());</span>
+
+<span class="nc" id="L410">    filterTable.setFilterBarVisible(true);</span>
+
+<span class="nc" id="L412">    filterTable.setSelectable(true);</span>
+<span class="nc" id="L413">    filterTable.setImmediate(true);</span>
+
+<span class="nc" id="L415">    filterTable.setRowHeaderMode(RowHeaderMode.INDEX);</span>
+
+<span class="nc" id="L417">    filterTable.setColumnCollapsingAllowed(true);</span>
+
+<span class="nc" id="L419">    filterTable.setColumnReorderingAllowed(true);</span>
+
+<span class="nc" id="L421">    filterTable.setColumnHeader(&quot;code&quot;, &quot;QBiC ID&quot;);</span>
+<span class="nc" id="L422">    filterTable.setColumnHeader(&quot;prettyType&quot;, &quot;Sample Type&quot;);</span>
+
+<span class="nc" id="L424">    return filterTable;</span>
+  }
+
+
+  @Override
+  public void enter(ViewChangeEvent event) {
+<span class="nc" id="L430">    String currentValue = event.getParameters();</span>
+    // TODO updateContent only if currentExperiment is not equal to newExperiment
+<span class="nc" id="L432">    this.table.unselect(this.table.getValue());</span>
+<span class="nc" id="L433">    this.setContainerDataSource(datahandler.getExperiment2(currentValue));</span>
+<span class="nc" id="L434">    updateContent();</span>
+<span class="nc" id="L435">  }</span>
+
+
+  public ExperimentBean getCurrentBean() {
+<span class="nc" id="L439">    return currentBean;</span>
+  }
+
+  /**
+   * Enables or disables the component. The user can not interact disabled components, which are
+   * shown with a style that indicates the status, usually shaded in light gray color. Components
+   * are enabled by default.
+   */
+  public void setEnabled(boolean enabled) {
+<span class="nc" id="L448">    this.export.setEnabled(enabled);</span>
+<span class="nc" id="L449">    this.table.setEnabled(enabled);</span>
+    // this.createBarcodesMenuItem.getParent().setEnabled(false);
+    // this.downloadCompleteProjectMenuItem.getParent().setEnabled(false);
+    //this.toolbar.setEnabled(enabled);
+<span class="nc" id="L453">  }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

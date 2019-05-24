@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExperimentComponent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.components</a> &gt; <span class="el_source">ExperimentComponent.java</span></div><h1>ExperimentComponent.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.components;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+
+import com.vaadin.data.Item;
+import com.vaadin.data.util.BeanItem;
+import com.vaadin.data.util.GeneratedPropertyContainer;
+import com.vaadin.data.util.PropertyValueGenerator;
+import com.vaadin.event.ItemClickEvent;
+import com.vaadin.event.ItemClickEvent.ItemClickListener;
+import com.vaadin.server.FileDownloader;
+import com.vaadin.server.FontAwesome;
+import com.vaadin.server.StreamResource;
+import com.vaadin.shared.ui.MarginInfo;
+import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Window;
+import com.vaadin.ui.renderers.ButtonRenderer;
+import com.vaadin.ui.renderers.ClickableRenderer.RendererClickEvent;
+import com.vaadin.ui.renderers.ClickableRenderer.RendererClickListener;
+
+import life.qbic.portal.portlet.ProjectBrowserPortlet;
+import life.qbic.projectbrowser.helpers.Utils;
+import life.qbic.projectbrowser.controllers.*;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import life.qbic.projectbrowser.model.ExperimentBean;
+import life.qbic.projectbrowser.model.ProjectBean;
+
+public class ExperimentComponent extends CustomComponent {
+  /**
+   * 
+   */
+  private static final long serialVersionUID = -278474320056258264L;
+
+<span class="nc" id="L61">  private static final Logger LOG = LogManager.getLogger(ExperimentComponent.class);</span>
+
+  private DataHandler datahandler;
+  private String resourceUrl;
+  private State state;
+  private VerticalLayout expSteps;
+  private Grid experiments;
+  private Button export;
+  private ProjectBean projectBean;
+  private ChangeExperimentMetadataComponent changeMetadata;
+
+
+  private FileDownloader fileDownloader;
+
+<span class="nc" id="L75">  public ExperimentComponent(DataHandler dh, State state, String resourceurl) {</span>
+<span class="nc" id="L76">    this.datahandler = dh;</span>
+<span class="nc" id="L77">    this.resourceUrl = resourceurl;</span>
+<span class="nc" id="L78">    this.state = state;</span>
+
+<span class="nc" id="L80">    changeMetadata = new ChangeExperimentMetadataComponent(dh, state, resourceurl);</span>
+
+<span class="nc" id="L82">    this.setCaption(&quot;Exp. Steps&quot;);</span>
+
+<span class="nc" id="L84">    this.initUI();</span>
+<span class="nc" id="L85">  }</span>
+
+  private void initUI() {
+<span class="nc" id="L88">    expSteps = new VerticalLayout();</span>
+<span class="nc" id="L89">    expSteps.setWidth(100.0f, Unit.PERCENTAGE);</span>
+
+<span class="nc" id="L91">    expSteps.setMargin(new MarginInfo(true, true, true, true));</span>
+<span class="nc" id="L92">    expSteps.setSpacing(true);</span>
+
+<span class="nc" id="L94">    export = new Button(&quot;Export as TSV&quot;);</span>
+<span class="nc" id="L95">    export.setIcon(FontAwesome.DOWNLOAD);</span>
+<span class="nc" id="L96">    VerticalLayout buttonLayoutSection = new VerticalLayout();</span>
+<span class="nc" id="L97">    HorizontalLayout buttonLayout = new HorizontalLayout();</span>
+<span class="nc" id="L98">    buttonLayout.setHeight(null);</span>
+<span class="nc" id="L99">    buttonLayout.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L100">    buttonLayout.addComponent(this.export);</span>
+<span class="nc" id="L101">    buttonLayout.setMargin(new MarginInfo(false, false, false, false));</span>
+<span class="nc" id="L102">    buttonLayoutSection.addComponent(buttonLayout);</span>
+<span class="nc" id="L103">    buttonLayoutSection.setSpacing(true);</span>
+<span class="nc" id="L104">    buttonLayoutSection.setMargin(new MarginInfo(false, false, false, false));</span>
+
+<span class="nc" id="L106">    experiments = new Grid();</span>
+<span class="nc" id="L107">    experiments.setReadOnly(true);</span>
+<span class="nc" id="L108">    experiments.setWidth(100.0f, Unit.PERCENTAGE);</span>
+<span class="nc" id="L109">    experiments.setCaption(&quot;Registered Experimental Steps&quot;);</span>
+
+    // experiments.setContainerDataSource(new
+    // BeanItemContainer&lt;ExperimentBean&gt;(ExperimentBean.class));
+
+<span class="nc" id="L114">    expSteps.addComponent(new Label(</span>
+        &quot;This view shows the experimental steps which have been registered for this project. Experimental steps contain real biological experiments as well as executed computational workflows on project data&quot;,
+        ContentMode.HTML));
+
+<span class="nc" id="L118">    expSteps.addComponent(experiments);</span>
+<span class="nc" id="L119">    expSteps.addComponent(buttonLayoutSection);</span>
+
+<span class="nc" id="L121">    setCompositionRoot(expSteps);</span>
+
+<span class="nc" id="L123">  }</span>
+
+  public void updateUI(ProjectBean currentBean) {
+<span class="nc" id="L126">    projectBean = currentBean;</span>
+<span class="nc" id="L127">    experiments.removeAllColumns();</span>
+    // experiments.setContainerDataSource(projectBean.getExperiments());
+
+    // BeanItemContainer&lt;ExperimentBean&gt; experimentBeans =
+    // loadMoreExperimentInformation(projectBean.getExperiments());
+    // GeneratedPropertyContainer gpc = new GeneratedPropertyContainer(experimentBeans);
+<span class="nc" id="L133">    GeneratedPropertyContainer gpc = new GeneratedPropertyContainer(projectBean.getExperiments());</span>
+
+<span class="nc" id="L135">    gpc.removeContainerProperty(&quot;containsData&quot;);</span>
+<span class="nc" id="L136">    gpc.removeContainerProperty(&quot;controlledVocabularies&quot;);</span>
+<span class="nc" id="L137">    gpc.removeContainerProperty(&quot;id&quot;);</span>
+<span class="nc" id="L138">    gpc.removeContainerProperty(&quot;lastChangedDataset&quot;);</span>
+<span class="nc" id="L139">    gpc.removeContainerProperty(&quot;lastChangedSample&quot;);</span>
+<span class="nc" id="L140">    gpc.removeContainerProperty(&quot;properties&quot;);</span>
+<span class="nc" id="L141">    gpc.removeContainerProperty(&quot;type&quot;);</span>
+<span class="nc" id="L142">    gpc.removeContainerProperty(&quot;samples&quot;);</span>
+<span class="nc" id="L143">    gpc.removeContainerProperty(&quot;status&quot;);</span>
+<span class="nc" id="L144">    gpc.removeContainerProperty(&quot;typeLabels&quot;);</span>
+<span class="nc" id="L145">    gpc.removeContainerProperty(&quot;registrationDate&quot;);</span>
+
+
+<span class="nc" id="L148">    experiments.addItemClickListener(new ItemClickListener() {</span>
+
+      /**
+       * 
+       */
+      private static final long serialVersionUID = -43367719647620455L;
+
+      @Override
+      public void itemClick(ItemClickEvent event) {
+
+<span class="nc" id="L158">        BeanItem selected = (BeanItem) projectBean.getExperiments().getItem(event.getItemId());</span>
+<span class="nc" id="L159">        ExperimentBean selectedExp = (ExperimentBean) selected.getBean();</span>
+
+<span class="nc" id="L161">        State state = (State) UI.getCurrent().getSession().getAttribute(&quot;state&quot;);</span>
+<span class="nc" id="L162">        ArrayList&lt;String&gt; message = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L163">        message.add(&quot;clicked&quot;);</span>
+<span class="nc" id="L164">        message.add(selectedExp.getId());</span>
+<span class="nc" id="L165">        message.add(&quot;experiment&quot;);</span>
+<span class="nc" id="L166">        state.notifyObservers(message);</span>
+<span class="nc" id="L167">      }</span>
+    });
+
+<span class="nc" id="L170">    gpc.addGeneratedProperty(&quot;edit&quot;, new PropertyValueGenerator&lt;String&gt;() {</span>
+
+      /**
+       * 
+       */
+      private static final long serialVersionUID = 7558511163500976236L;
+
+      @Override
+      public String getValue(Item item, Object itemId, Object propertyId) {
+<span class="nc" id="L179">        return &quot;Edit&quot;;</span>
+      }
+
+      @Override
+      public Class&lt;String&gt; getType() {
+<span class="nc" id="L184">        return String.class;</span>
+      }
+    });
+
+<span class="nc" id="L188">    gpc.addGeneratedProperty(&quot;registrationDate&quot;, new PropertyValueGenerator&lt;String&gt;() {</span>
+
+      @Override
+      public Class&lt;String&gt; getType() {
+<span class="nc" id="L192">        return String.class;</span>
+      }
+
+      @Override
+      public String getValue(Item item, Object itemId, Object propertyId) {
+<span class="nc" id="L197">        BeanItem selected = (BeanItem) projectBean.getExperiments().getItem(itemId);</span>
+<span class="nc" id="L198">        ExperimentBean expBean = (ExperimentBean) selected.getBean();</span>
+<span class="nc" id="L199">        Date date = expBean.getRegistrationDate();</span>
+<span class="nc" id="L200">        SimpleDateFormat sd = new SimpleDateFormat(&quot;yyyy-MM-dd hh:mm a&quot;);</span>
+<span class="nc" id="L201">        String dateString = sd.format(date);</span>
+
+<span class="nc" id="L203">        return dateString;</span>
+      }
+    });
+
+<span class="nc" id="L207">    experiments.setContainerDataSource(gpc);</span>
+<span class="nc" id="L208">    experiments.getColumn(&quot;prettyType&quot;).setHeaderCaption(&quot;Type&quot;);</span>
+<span class="nc" id="L209">    experiments.getColumn(&quot;edit&quot;).setRenderer(new ButtonRenderer(new RendererClickListener() {</span>
+
+      @Override
+      public void click(RendererClickEvent event) {
+<span class="nc" id="L213">        BeanItem selected = (BeanItem) projectBean.getExperiments().getItem(event.getItemId());</span>
+<span class="nc" id="L214">        ExperimentBean selectedSample = (ExperimentBean) selected.getBean();</span>
+
+<span class="nc" id="L216">        Window subWindow = new Window(&quot;Edit Metadata&quot;);</span>
+
+<span class="nc" id="L218">        changeMetadata.updateUI(selectedSample.getId(), selectedSample.getType());</span>
+<span class="nc" id="L219">        VerticalLayout subContent = new VerticalLayout();</span>
+<span class="nc" id="L220">        subContent.setMargin(true);</span>
+<span class="nc" id="L221">        subContent.addComponent(changeMetadata);</span>
+<span class="nc" id="L222">        subWindow.setContent(subContent);</span>
+        // Center it in the browser window
+<span class="nc" id="L224">        subWindow.center();</span>
+<span class="nc" id="L225">        subWindow.setModal(true);</span>
+<span class="nc" id="L226">        subWindow.setSizeUndefined();</span>
+<span class="nc" id="L227">        subWindow.setIcon(FontAwesome.PENCIL);</span>
+<span class="nc" id="L228">        subWindow.setHeight(&quot;75%&quot;);</span>
+<span class="nc" id="L229">        subWindow.setResizable(false);</span>
+
+<span class="nc" id="L231">        ProjectBrowserPortlet ui = (ProjectBrowserPortlet) UI.getCurrent();</span>
+<span class="nc" id="L232">        ui.addWindow(subWindow);</span>
+<span class="nc" id="L233">      }</span>
+
+    }));
+
+<span class="nc" id="L237">    experiments.getColumn(&quot;edit&quot;).setWidth(70);</span>
+<span class="nc" id="L238">    experiments.setColumnOrder(&quot;edit&quot;, &quot;prettyType&quot;);</span>
+<span class="nc" id="L239">    experiments.getColumn(&quot;edit&quot;).setHeaderCaption(&quot;&quot;);</span>
+
+    // experiments.setHeightMode(HeightMode.ROW);
+    // experiments.setHeightByRows(gpc.size());
+
+<span class="nc bnc" id="L244" title="All 2 branches missed.">    if (fileDownloader != null)</span>
+<span class="nc" id="L245">      this.export.removeExtension(fileDownloader);</span>
+<span class="nc" id="L246">    StreamResource sr =</span>
+<span class="nc" id="L247">        Utils.getTSVStream(Utils.containerToString(projectBean.getExperiments()), String.format(</span>
+<span class="nc" id="L248">            &quot;%s_%s_&quot;, projectBean.getId().substring(1).replace(&quot;/&quot;, &quot;_&quot;), &quot;experimental_steps&quot;));</span>
+<span class="nc" id="L249">    fileDownloader = new FileDownloader(sr);</span>
+<span class="nc" id="L250">    fileDownloader.extend(export);</span>
+<span class="nc" id="L251">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

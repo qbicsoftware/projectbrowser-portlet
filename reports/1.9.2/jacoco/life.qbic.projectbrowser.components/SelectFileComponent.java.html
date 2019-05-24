@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SelectFileComponent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.components</a> &gt; <span class="el_source">SelectFileComponent.java</span></div><h1>SelectFileComponent.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects.
+ * Copyright (C) &quot;2016”  Christopher Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.components;
+
+import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.server.FontAwesome;
+import com.vaadin.shared.ui.MarginInfo;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.Grid.SelectionMode;
+import com.vaadin.ui.GridLayout;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.themes.ValoTheme;
+
+public class SelectFileComponent extends CustomComponent {
+  private static final long serialVersionUID = -8740268090810853563L;
+  private Button toLeft;
+  private Button toRight;
+  private Grid available;
+  private Grid selected;
+
+  public SelectFileComponent(String mainCaption, String info, String sourceCaption,
+<span class="nc" id="L40">      String destinationCaption, BeanItemContainer&lt;?&gt; source, BeanItemContainer&lt;?&gt; destination) {</span>
+<span class="nc" id="L41">    setCaption(mainCaption);</span>
+
+<span class="nc" id="L43">    VerticalLayout files = new VerticalLayout();</span>
+<span class="nc" id="L44">    files.setSpacing(true);</span>
+
+    // info label
+<span class="nc" id="L47">    Label rawFilesInfo = new Label(info);</span>
+<span class="nc" id="L48">    rawFilesInfo.addStyleName(ValoTheme.LABEL_COLORED);</span>
+<span class="nc" id="L49">    files.addComponent(rawFilesInfo);</span>
+<span class="nc" id="L50">    files.setWidth(&quot;100%&quot;);</span>
+
+    // available files in openbis
+<span class="nc" id="L53">    available = new Grid(source);</span>
+<span class="nc" id="L54">    available.setCaption(sourceCaption);</span>
+<span class="nc" id="L55">    available.setSelectionMode(SelectionMode.MULTI);</span>
+
+    // selected files for anaylsis
+<span class="nc" id="L58">    selected = new Grid(destination);</span>
+
+<span class="nc bnc" id="L60" title="All 2 branches missed.">    if (mainCaption.equals(&quot;Raw files&quot;)) {</span>
+<span class="nc" id="L61">      available.removeColumn(&quot;fullPath&quot;);</span>
+<span class="nc" id="L62">      available.removeColumn(&quot;openbisCode&quot;);</span>
+    }
+
+<span class="nc bnc" id="L65" title="All 2 branches missed.">    else if (mainCaption.equals(&quot;&quot;)) {</span>
+<span class="nc" id="L66">      available.removeColumn(&quot;name&quot;);</span>
+<span class="nc" id="L67">      available.removeColumn(&quot;path&quot;);</span>
+<span class="nc" id="L68">      selected.removeColumn(&quot;name&quot;);</span>
+<span class="nc" id="L69">      selected.removeColumn(&quot;path&quot;);</span>
+    }
+
+<span class="nc" id="L72">    selected.setCaption(destinationCaption);</span>
+<span class="nc" id="L73">    selected.setSelectionMode(SelectionMode.MULTI);</span>
+
+
+<span class="nc bnc" id="L76" title="All 2 branches missed.">    for (Grid.Column col : available.getColumns()) {</span>
+<span class="nc" id="L77">      col.setWidthUndefined();</span>
+<span class="nc" id="L78">    }</span>
+
+    // selectedFiles.set
+    // buttons to add or remove files
+<span class="nc" id="L82">    VerticalLayout buttons = new VerticalLayout();</span>
+<span class="nc" id="L83">    toLeft = new Button();</span>
+<span class="nc" id="L84">    toLeft.setIcon(FontAwesome.ARROW_LEFT);</span>
+
+<span class="nc" id="L86">    toRight = new Button();</span>
+<span class="nc" id="L87">    toRight.setIcon(FontAwesome.ARROW_RIGHT);</span>
+<span class="nc" id="L88">    buttons.addComponent(toRight);</span>
+<span class="nc" id="L89">    buttons.addComponent(toLeft);</span>
+
+<span class="nc" id="L91">    GridLayout grids = new GridLayout(3, 1);</span>
+<span class="nc" id="L92">    grids.setWidth(&quot;100%&quot;);</span>
+
+    // grids.setSpacing(true);
+<span class="nc" id="L95">    grids.addComponent(available, 0, 0);</span>
+
+<span class="nc" id="L97">    available.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L98">    grids.addComponent(buttons, 1, 0);</span>
+<span class="nc" id="L99">    grids.addComponent(selected, 2, 0);</span>
+<span class="nc" id="L100">    grids.setColumnExpandRatio(0, 0.45f);</span>
+<span class="nc" id="L101">    grids.setColumnExpandRatio(1, 0.029f);</span>
+<span class="nc" id="L102">    grids.setColumnExpandRatio(2, 0.45f);</span>
+<span class="nc" id="L103">    grids.setSpacing(false);</span>
+<span class="nc" id="L104">    grids.setComponentAlignment(buttons, com.vaadin.ui.Alignment.MIDDLE_CENTER);</span>
+
+<span class="nc" id="L106">    selected.setWidth(&quot;100%&quot;);</span>
+
+<span class="nc" id="L108">    files.addComponent(grids);</span>
+
+<span class="nc" id="L110">    this.setCompositionRoot(files);</span>
+<span class="nc" id="L111">    files.setMargin(new MarginInfo(true, true, true, false));</span>
+<span class="nc" id="L112">    this.setWidth(&quot;100%&quot;);</span>
+
+<span class="nc" id="L114">  }</span>
+
+  /**
+   * returns the button that should move files from left to right. Basically add to destination
+   * 
+   * @return
+   */
+  public Button getToRightButton() {
+<span class="nc" id="L122">    return toRight;</span>
+  }
+
+  /**
+   * returns the button to should move files from right to left. Basically remove from destination
+   * 
+   * @return
+   */
+  public Button getToLeftButton() {
+<span class="nc" id="L131">    return toLeft;</span>
+  }
+
+  public Grid getSource() {
+<span class="nc" id="L135">    return available;</span>
+  }
+
+  public Grid getDestination() {
+<span class="nc" id="L139">    return selected;</span>
+  }
+
+  public Grid getSelected() {
+<span class="nc" id="L143">    return selected;</span>
+  }
+
+  public void setSelected(Grid selected) {
+<span class="nc" id="L147">    this.selected = selected;</span>
+<span class="nc" id="L148">  }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

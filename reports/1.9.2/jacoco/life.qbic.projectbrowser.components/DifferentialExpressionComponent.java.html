@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DifferentialExpressionComponent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.components</a> &gt; <span class="el_source">DifferentialExpressionComponent.java</span></div><h1>DifferentialExpressionComponent.java</h1><pre class="source lang-java linenums">package life.qbic.projectbrowser.components;
+
+import guse.workflowrepresentation.GuseNode;
+import guse.workflowrepresentation.GuseWorkflowRepresentation;
+import guse.workflowrepresentation.InputPort;
+
+import java.util.List;
+import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONException;
+
+import submitter.Workflow;
+
+import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.VerticalLayout;
+
+import life.qbic.projectbrowser.controllers.WorkflowViewController;
+
+// from workflow API
+import de.uni_tuebingen.qbic.beans.DatasetBean;
+
+public class DifferentialExpressionComponent extends CustomComponent {
+
+<span class="nc" id="L30">  private static final Logger LOG = LogManager.getLogger(DifferentialExpressionComponent.class);</span>
+
+<span class="nc" id="L32">  private Button submit = new Button(&quot;Submit&quot;);</span>
+<span class="nc" id="L33">  private Button reset = new Button(&quot;Reset&quot;);</span>
+
+<span class="nc" id="L35">  private ParameterComponent parameterComponent = new ParameterComponent();</span>
+<span class="nc" id="L36">  private InputFilesComponent inputFileComponent = new InputFilesComponent();</span>
+
+  private WorkflowViewController controller;
+
+<span class="nc" id="L40">  public DifferentialExpressionComponent(WorkflowViewController controller) {</span>
+<span class="nc" id="L41">    this.controller = controller;</span>
+<span class="nc" id="L42">    reset.setDescription(&quot;Reset Parameters to default values.&quot;);</span>
+<span class="nc" id="L43">    submit</span>
+<span class="nc" id="L44">        .setDescription(&quot;Execute Workflow. With given input files, database/reference files and parameters.&quot;);</span>
+
+<span class="nc" id="L46">    HorizontalLayout buttonContent = new HorizontalLayout();</span>
+<span class="nc" id="L47">    buttonContent.addComponent(reset);</span>
+<span class="nc" id="L48">    buttonContent.addComponent(submit);</span>
+
+<span class="nc" id="L50">    VerticalLayout submissionContent = new VerticalLayout();</span>
+<span class="nc" id="L51">    submissionContent.setSpacing(true);</span>
+<span class="nc" id="L52">    submissionContent.addComponent(inputFileComponent);</span>
+<span class="nc" id="L53">    submissionContent.addComponent(parameterComponent);</span>
+<span class="nc" id="L54">    submissionContent.addComponent(buttonContent);</span>
+<span class="nc" id="L55">    setCompositionRoot(submissionContent);</span>
+<span class="nc" id="L56">  }</span>
+
+  public List&lt;DatasetBean&gt; getSelectedDatasets() {
+<span class="nc" id="L59">    return inputFileComponent.getSelectedDatasets();</span>
+  }
+
+  public Map&lt;String, List&lt;DatasetBean&gt;&gt; getSelectedDatasetsAsMap() {
+<span class="nc" id="L63">    return inputFileComponent.getSelectedDatasetsAsMap();</span>
+  }
+
+  public Workflow getWorkflow() {
+<span class="nc" id="L67">    Workflow tmp = parameterComponent.getWorkflow();</span>
+<span class="nc" id="L68">    boolean success = inputFileComponent.updateWorkflow(tmp, controller);</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">    return success ? tmp : null;</span>
+  }
+
+  public void update(Workflow workflow, BeanItemContainer&lt;DatasetBean&gt; input) {
+<span class="nc" id="L73">    this.inputFileComponent.buildLayout(workflow.getData().getData(), input);</span>
+<span class="nc" id="L74">    this.parameterComponent.buildLayout(workflow);</span>
+<span class="nc" id="L75">  }</span>
+
+  public void resetParameters() {
+<span class="nc" id="L78">    parameterComponent.resetParameters();</span>
+<span class="nc" id="L79">  }</span>
+
+  public void addResetListener(ClickListener listener) {
+<span class="nc" id="L82">    reset.addClickListener(listener);</span>
+<span class="nc" id="L83">  }</span>
+
+  public void addSubmissionListener(ClickListener listener) {
+<span class="nc" id="L86">    submit.addClickListener(listener);</span>
+<span class="nc" id="L87">  }</span>
+
+  public void writeParametersToWorkflow() throws IllegalArgumentException, JSONException {
+<span class="nc bnc" id="L90" title="All 2 branches missed.">    if (parameterComponent.getWorkflow() instanceof GuseWorkflowRepresentation) {</span>
+<span class="nc" id="L91">      GuseWorkflowRepresentation w = (GuseWorkflowRepresentation) parameterComponent.getWorkflow();</span>
+
+<span class="nc" id="L93">      String header = &quot;filename\tQBIC_ID\tinternal_ID\ttreatment\ttime\tgroup\tbio_rep&quot;;</span>
+
+<span class="nc" id="L95">      StringBuilder tsv = new StringBuilder(header);</span>
+
+      // TODO iterate over map
+<span class="nc bnc" id="L98" title="All 2 branches missed.">      for (Map.Entry&lt;String, List&lt;DatasetBean&gt;&gt; entry : inputFileComponent</span>
+<span class="nc" id="L99">          .getSelectedDatasetsAsMap().entrySet()) {</span>
+<span class="nc" id="L100">        String group = &quot;&quot;;</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        if (entry.getKey().contains(&quot;tumor&quot;)) {</span>
+<span class="nc" id="L102">          group = &quot;tumor&quot;;</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">        } else if (entry.getKey().contains(&quot;normal&quot;)) {</span>
+<span class="nc" id="L104">          group = &quot;normal&quot;;</span>
+        } else {
+<span class="nc" id="L106">          group = &quot;unknown&quot;;</span>
+        }
+<span class="nc bnc" id="L108" title="All 2 branches missed.">        for (DatasetBean b : entry.getValue()) {</span>
+<span class="nc" id="L109">          String file = b.getFileName();</span>
+<span class="nc" id="L110">          String[] splittedID = b.getSampleIdentifier().split(&quot;/&quot;);</span>
+<span class="nc" id="L111">          String id = splittedID[splittedID.length - 1];</span>
+<span class="nc" id="L112">          tsv.append(&quot;\n&quot; + file + &quot;\t&quot; + id + &quot;\t&quot; + &quot;-&quot; + &quot;\t&quot; + &quot;-&quot; + &quot;\t&quot; + &quot;-&quot; + &quot;\t&quot; + group</span>
+              + &quot;\t&quot; + &quot;-&quot;);
+<span class="nc" id="L114">        }</span>
+<span class="nc" id="L115">      }</span>
+<span class="nc" id="L116">      tsv.append(&quot;\n&quot;);</span>
+
+<span class="nc" id="L118">      GuseNode node = w.getNode(&quot;Workflow&quot;);</span>
+<span class="nc" id="L119">      InputPort port = node.getPort(&quot;GROUPS&quot;);</span>
+<span class="nc" id="L120">      port.getParams().get(&quot;groups&quot;).setValue(tsv.toString());</span>
+    }
+
+<span class="nc" id="L123">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

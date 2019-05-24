@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ParameterComponent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.components</a> &gt; <span class="el_source">ParameterComponent.java</span></div><h1>ParameterComponent.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016”
+ * Christopher Mohr, David Wojnar, Andreas Friedrich
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.components;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.log4j.net.SyslogAppender;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import submitter.Workflow;
+import submitter.parameters.BooleanParameter;
+import submitter.parameters.FloatParameter;
+import submitter.parameters.InputList;
+import submitter.parameters.IntParameter;
+import submitter.parameters.Parameter;
+import submitter.parameters.ParameterSet;
+import submitter.parameters.StringParameter;
+
+import com.vaadin.data.Validator;
+import com.vaadin.data.fieldgroup.FieldGroup;
+import com.vaadin.data.util.converter.Converter;
+import com.vaadin.data.util.converter.StringToFloatConverter;
+import com.vaadin.data.util.converter.StringToIntegerConverter;
+import com.vaadin.data.validator.FloatRangeValidator;
+import com.vaadin.data.validator.IntegerRangeValidator;
+import com.vaadin.shared.ui.combobox.FilteringMode;
+import com.vaadin.ui.CheckBox;
+import com.vaadin.ui.ComboBox;
+import com.vaadin.ui.Field;
+import com.vaadin.ui.FormLayout;
+import com.vaadin.ui.TextField;
+
+import life.qbic.projectbrowser.helpers.*;
+
+public class ParameterComponent extends WorkflowParameterComponent {
+
+  /**
+   * 
+   */
+  private static final long serialVersionUID = -3182823029401916444L;
+<span class="nc" id="L58">  private static final Logger LOG = LogManager.getLogger(ParameterComponent.class);</span>
+
+<span class="nc" id="L60">  private FormLayout parameterForm = new FormLayout();</span>
+  private FieldGroup parameterFieldGroup;
+  private FieldGroup inputListFieldGroup;
+  private Workflow workFlow;
+
+<span class="nc" id="L65">  public ParameterComponent(Workflow workFlow) {</span>
+<span class="nc" id="L66">    this.workFlow = workFlow;</span>
+<span class="nc" id="L67">    this.buildLayout(workFlow);</span>
+<span class="nc" id="L68">    setCompositionRoot(parameterForm);</span>
+<span class="nc" id="L69">  }</span>
+
+<span class="nc" id="L71">  public ParameterComponent() {</span>
+<span class="nc" id="L72">    setCompositionRoot(parameterForm);</span>
+<span class="nc" id="L73">  }</span>
+
+  @Override
+  public void buildLayout(Workflow workFlow) {
+<span class="nc" id="L77">    this.workFlow = workFlow;</span>
+<span class="nc" id="L78">    this.setCaption(&quot;&lt;font color=#FF0000&gt; Set Parameter Values for Workflow Submission &lt;/font&gt;&quot;);</span>
+<span class="nc" id="L79">    this.setCaptionAsHtml(true);</span>
+<span class="nc" id="L80">    buildForm(workFlow);</span>
+<span class="nc" id="L81">  }</span>
+
+  public void buildForm(final Workflow workFlow) {
+
+<span class="nc" id="L85">    parameterForm.removeAllComponents();</span>
+<span class="nc" id="L86">    parameterFieldGroup = new FieldGroup();</span>
+<span class="nc" id="L87">    inputListFieldGroup = new FieldGroup();</span>
+
+    /*
+     * for (Map.Entry&lt;String, Parameter&gt; entry : workFlow.getData().getData().entrySet()) {
+     * FileParameter param = (FileParameter) entry.getValue(); FileNameValidator fileNameValidator =
+     * new FileNameValidator(&quot;Please provide a valid file path&quot;); TextField newField =
+     * createInputField(param, fileNameValidator);
+     * 
+     * parameterForm.addComponent(newField); inputListFieldGroup.bind(newField, entry.getKey()); //
+     * Have to set it here because field gets cleared upon binding
+     * newField.setValue(param.getValue().toString()); }
+     */
+
+<span class="nc bnc" id="L100" title="All 2 branches missed.">    for (Map.Entry&lt;String, Parameter&gt; entry : workFlow.getParameters().getParams().entrySet()) {</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">      if (entry.getValue() instanceof FloatParameter) {</span>
+<span class="nc" id="L102">        FloatParameter param = (FloatParameter) entry.getValue();</span>
+<span class="nc" id="L103">        FloatRangeValidator floatValidator =</span>
+<span class="nc" id="L104">            new FloatRangeValidator(String.format(&quot;Parameter has to be in the range of %s to %s&quot;,</span>
+<span class="nc" id="L105">                param.getMinimum(), param.getMaximum()), param.getMinimum(), param.getMaximum());</span>
+<span class="nc" id="L106">        TextField newField =</span>
+<span class="nc" id="L107">            createParameterField(param, floatValidator, new StringToFloatConverter());</span>
+
+<span class="nc" id="L109">        parameterForm.addComponent(newField);</span>
+<span class="nc" id="L110">        parameterFieldGroup.bind(newField, entry.getKey());</span>
+        // Have to set it here because field gets cleared upon binding
+<span class="nc" id="L112">        newField.setValue(param.getValue().toString());</span>
+<span class="nc" id="L113">        newField.setRequired(param.isRequired());</span>
+<span class="nc" id="L114">      }</span>
+
+<span class="nc bnc" id="L116" title="All 2 branches missed.">      else if (entry.getValue() instanceof IntParameter) {</span>
+<span class="nc" id="L117">        IntParameter param = (IntParameter) entry.getValue();</span>
+<span class="nc" id="L118">        IntegerRangeValidator intValidator =</span>
+<span class="nc" id="L119">            new IntegerRangeValidator(String.format(&quot;Parameter has to be in the range of %s to %s&quot;,</span>
+<span class="nc" id="L120">                param.getMinimum(), param.getMaximum()), param.getMinimum(), param.getMaximum());</span>
+<span class="nc" id="L121">        TextField newField =</span>
+<span class="nc" id="L122">            createParameterField(param, intValidator, new StringToIntegerConverter());</span>
+
+<span class="nc" id="L124">        parameterForm.addComponent(newField);</span>
+<span class="nc" id="L125">        parameterFieldGroup.bind(newField, entry.getKey());</span>
+        // Have to set it here because field gets cleared upon binding
+<span class="nc" id="L127">        newField.setValue(param.getValue().toString());</span>
+<span class="nc" id="L128">        newField.setRequired(param.isRequired());</span>
+<span class="nc" id="L129">      }</span>
+
+<span class="nc bnc" id="L131" title="All 2 branches missed.">      else if (entry.getValue() instanceof StringParameter) {</span>
+<span class="nc" id="L132">        StringParameter param = (StringParameter) entry.getValue();</span>
+        // necessary for Microarray QC to create ComboBox instead of TextField
+<span class="nc bnc" id="L134" title="All 4 branches missed.">        if (param.getRange().size() == 0 &amp;&amp; !workFlow.getName().equals(&quot;Microarray QC&quot;)) {</span>
+<span class="nc" id="L135">          TextField newField = createInputField(param, null);</span>
+
+<span class="nc" id="L137">          parameterForm.addComponent(newField);</span>
+<span class="nc" id="L138">          parameterFieldGroup.bind(newField, entry.getKey());</span>
+          // Have to set it here because field gets cleared upon binding
+<span class="nc" id="L140">          newField.setValue(param.getValue().toString());</span>
+<span class="nc" id="L141">          newField.setRequired(param.isRequired());</span>
+<span class="nc" id="L142">        } else {</span>
+<span class="nc" id="L143">          ComboBox newField = createStringSelectionParameterField(param);</span>
+<span class="nc" id="L144">          parameterForm.addComponent(newField);</span>
+<span class="nc" id="L145">          parameterFieldGroup.bind(newField, entry.getKey());</span>
+          // Have to set it here because field gets cleared upon binding
+<span class="nc" id="L147">          newField.setValue(param.getValue().toString());</span>
+<span class="nc" id="L148">          newField.setRequired(param.isRequired());</span>
+        }
+<span class="nc" id="L150">      }</span>
+
+<span class="nc bnc" id="L152" title="All 2 branches missed.">      else if (entry.getValue() instanceof BooleanParameter) {</span>
+<span class="nc" id="L153">        BooleanParameter param = (BooleanParameter) entry.getValue();</span>
+
+<span class="nc" id="L155">        CheckBox newField = createParameterCheckBox(param);</span>
+<span class="nc" id="L156">        newField.setValue((boolean) param.getValue());</span>
+<span class="nc" id="L157">        parameterForm.addComponent(newField);</span>
+<span class="nc" id="L158">        parameterFieldGroup.bind(newField, entry.getKey());</span>
+        // Have to set it here because field gets cleared upon binding
+<span class="nc" id="L160">        newField.setValue((Boolean) param.getValue());</span>
+<span class="nc" id="L161">        newField.setRequired(param.isRequired());</span>
+      }
+<span class="nc" id="L163">    }</span>
+<span class="nc" id="L164">  }</span>
+
+  @Override
+  public Workflow getWorkflow() {
+<span class="nc" id="L168">    boolean parametersValid = writeSetParameters();</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">    if (!parametersValid)</span>
+<span class="nc" id="L170">      return null;</span>
+<span class="nc" id="L171">    writetInputList();</span>
+<span class="nc" id="L172">    return this.workFlow;</span>
+  }
+
+  /**
+   * writes UI parameters to their model(workflow) equivalent returns true if all fields where set
+   * with meaningfull values.
+   * 
+   * @return
+   */
+  boolean writeSetParameters() {
+<span class="nc" id="L182">    Collection&lt;Field&lt;?&gt;&gt; registeredFields = parameterFieldGroup.getFields();</span>
+<span class="nc" id="L183">    ParameterSet paramSet = workFlow.getParameters();</span>
+
+<span class="nc bnc" id="L185" title="All 2 branches missed.">    for (Field&lt;?&gt; field : registeredFields) {</span>
+<span class="nc bnc" id="L186" title="All 4 branches missed.">      if (!field.isValid() || (field.isEmpty() &amp; field.isRequired())) {</span>
+<span class="nc" id="L187">        String errorMessage = &quot;Warning: Parameter &quot; + field.getDescription() + &quot;is invalid!&quot;;</span>
+<span class="nc" id="L188">        Utils</span>
+<span class="nc" id="L189">            .Notification(</span>
+                &quot;Invalid parameter setting.&quot;,
+                &quot;Value for parameter \&quot;&quot;
+<span class="nc" id="L192">                    + field.getDescription()</span>
+                    + String
+<span class="nc" id="L194">                        .format(</span>
+                            &quot;\&quot; is invalid or parameter field of required parameter (%s) must not be empty.&quot;,
+<span class="nc" id="L196">                            field.getDescription()), &quot;error&quot;);</span>
+<span class="nc" id="L197">        LOG.info(errorMessage);</span>
+<span class="nc" id="L198">        return false;</span>
+      }
+
+<span class="nc" id="L201">      String value = field.getValue().toString();</span>
+      // paramSet.getParam(field.getCaption()).setValue(value);
+<span class="nc" id="L203">      paramSet.getParam(field.getDescription()).setValue(value);</span>
+<span class="nc" id="L204">    }</span>
+<span class="nc" id="L205">    return true;</span>
+  }
+
+  /**
+   * Can be used to add Options to a Combobox that are only available at runtime (e.g. are created
+   * from openBIS metainformation
+   * 
+   * @param caption Caption of the field, normally wf name followed by port and parameter name, e.g.
+   *        &quot;Microarray QC.1.f&quot;
+   * @param params Set of options for this parameter
+   */
+  public void setComboboxOptions(String caption, Set&lt;String&gt; params) {
+<span class="nc bnc" id="L217" title="All 2 branches missed.">    for (Field&lt;?&gt; field : parameterFieldGroup.getFields()) {</span>
+<span class="nc bnc" id="L218" title="All 2 branches missed.">      if (field.getDescription().equals(caption)) {</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">        if (field instanceof ComboBox) {</span>
+<span class="nc" id="L220">          ((ComboBox) field).addItems(params);</span>
+        }
+      }
+<span class="nc" id="L223">    }</span>
+<span class="nc" id="L224">  }</span>
+
+  void writetInputList() {
+<span class="nc" id="L227">    Collection&lt;Field&lt;?&gt;&gt; registeredFields = inputListFieldGroup.getFields();</span>
+<span class="nc" id="L228">    InputList inpList = workFlow.getData();</span>
+
+<span class="nc bnc" id="L230" title="All 2 branches missed.">    for (Field&lt;?&gt; field : registeredFields) {</span>
+<span class="nc" id="L231">      inpList.getParam(field.getCaption()).setValue(field.getValue());</span>
+<span class="nc" id="L232">    }</span>
+<span class="nc" id="L233">  }</span>
+
+  @Override
+  public void resetParameters() {
+<span class="nc" id="L237">    Collection&lt;Field&lt;?&gt;&gt; registeredFields = parameterFieldGroup.getFields();</span>
+<span class="nc" id="L238">    ParameterSet paramSet = workFlow.getParameters();</span>
+
+<span class="nc bnc" id="L240" title="All 2 branches missed.">    for (Field field : registeredFields) {</span>
+      // String resetValue = paramSet.getParam(field.getCaption()).getValue().toString();
+<span class="nc" id="L242">      String resetValue = paramSet.getParam(field.getDescription()).getValue().toString();</span>
+<span class="nc" id="L243">      field.setValue(resetValue);</span>
+<span class="nc" id="L244">    }</span>
+<span class="nc" id="L245">  }</span>
+
+  public void resetInputList() {
+<span class="nc" id="L248">    Collection&lt;Field&lt;?&gt;&gt; registeredFields = inputListFieldGroup.getFields();</span>
+<span class="nc" id="L249">    InputList inpList = workFlow.getData();</span>
+
+<span class="nc bnc" id="L251" title="All 2 branches missed.">    for (Field&lt;?&gt; field : registeredFields) {</span>
+<span class="nc" id="L252">      TextField fieldToReset = (TextField) field;</span>
+<span class="nc" id="L253">      fieldToReset.setValue(inpList.getParam(field.getCaption()).getValue().toString());</span>
+<span class="nc" id="L254">    }</span>
+<span class="nc" id="L255">  }</span>
+
+  private TextField createParameterField(Parameter param, Validator validator, Converter converter) {
+    // TextField field = new TextField(param.getTitle());
+    // field.setDescription(param.getDescription());
+    String description;
+<span class="nc bnc" id="L261" title="All 2 branches missed.">    if (param.getDescription().contains(&quot;#br#&quot;)) {</span>
+<span class="nc" id="L262">      description = param.getDescription().split(&quot;#br#&quot;)[0];</span>
+    } else {
+<span class="nc" id="L264">      description = param.getDescription();</span>
+    }
+
+<span class="nc" id="L267">    TextField field = new TextField(description);</span>
+<span class="nc" id="L268">    field.setDescription(param.getTitle());</span>
+<span class="nc" id="L269">    field.addValidator(validator);</span>
+<span class="nc" id="L270">    field.setNullRepresentation(&quot;&quot;);</span>
+<span class="nc" id="L271">    field.setNullSettingAllowed(true);</span>
+<span class="nc" id="L272">    field.setImmediate(true);</span>
+<span class="nc" id="L273">    field.setConverter(converter);</span>
+<span class="nc" id="L274">    return field;</span>
+  }
+
+  private CheckBox createParameterCheckBox(Parameter param) {
+    String description;
+<span class="nc bnc" id="L279" title="All 2 branches missed.">    if (param.getDescription().contains(&quot;#br#&quot;)) {</span>
+<span class="nc" id="L280">      description = param.getDescription().split(&quot;#br#&quot;)[0];</span>
+    } else {
+<span class="nc" id="L282">      description = param.getDescription();</span>
+    }
+
+<span class="nc" id="L285">    CheckBox box = new CheckBox(description);</span>
+<span class="nc" id="L286">    box.setDescription(param.getTitle());</span>
+<span class="nc" id="L287">    box.setImmediate(true);</span>
+<span class="nc" id="L288">    return box;</span>
+  }
+
+  private TextField createInputField(Parameter param, Validator validator) {
+    String description;
+<span class="nc bnc" id="L293" title="All 2 branches missed.">    if (param.getDescription().contains(&quot;#br#&quot;)) {</span>
+<span class="nc" id="L294">      description = param.getDescription().split(&quot;#br#&quot;)[0];</span>
+    } else {
+<span class="nc" id="L296">      description = param.getDescription();</span>
+    }
+
+<span class="nc" id="L299">    TextField field = new TextField(description);</span>
+<span class="nc" id="L300">    field.setDescription(param.getTitle());</span>
+    // field.setWidth(&quot;50%&quot;);
+<span class="nc bnc" id="L302" title="All 2 branches missed.">    if (validator != null) {</span>
+<span class="nc" id="L303">      field.addValidator(validator);</span>
+    }
+
+<span class="nc" id="L306">    field.setImmediate(true);</span>
+<span class="nc" id="L307">    return field;</span>
+  }
+
+  private ComboBox createStringSelectionParameterField(StringParameter param) {
+    // ComboBox box = new ComboBox(param.getTitle());
+    // box.setDescription(param.getDescription());
+    // for openMS inis
+    String description;
+<span class="nc bnc" id="L315" title="All 2 branches missed.">    if (param.getDescription().contains(&quot;#br#&quot;)) {</span>
+<span class="nc" id="L316">      description = param.getDescription().split(&quot;#br#&quot;)[0];</span>
+    } else {
+<span class="nc" id="L318">      description = param.getDescription();</span>
+    }
+<span class="nc" id="L320">    ComboBox box = new ComboBox(description);</span>
+<span class="nc" id="L321">    box.setDescription(param.getTitle());</span>
+<span class="nc" id="L322">    box.setFilteringMode(FilteringMode.CONTAINS);</span>
+<span class="nc" id="L323">    box.addItems(param.getRange());</span>
+    // should only be the range.
+<span class="nc" id="L325">    box.setNullSelectionAllowed(false);</span>
+<span class="nc" id="L326">    box.setImmediate(true);</span>
+<span class="nc" id="L327">    return box;</span>
+  }
+
+  @Override
+  public void buildLayout() {
+    // TODO Auto-generated method stub
+
+<span class="nc" id="L334">  }</span>
+
+
+  @Override
+  public ParameterSet getParameters() {
+<span class="nc" id="L339">    Collection&lt;Field&lt;?&gt;&gt; registeredFields = parameterFieldGroup.getFields();</span>
+<span class="nc" id="L340">    ParameterSet paramSet = workFlow.getParameters();</span>
+
+<span class="nc" id="L342">    Map&lt;String, Parameter&gt; updatedParams = new HashMap&lt;String, Parameter&gt;();</span>
+
+<span class="nc bnc" id="L344" title="All 2 branches missed.">    for (Field&lt;?&gt; field : registeredFields) {</span>
+      // Parameter updatedParam = paramSet.getParam(field.getCaption());
+<span class="nc" id="L346">      Parameter updatedParam = paramSet.getParam(field.getDescription());</span>
+<span class="nc" id="L347">      updatedParam.setValue(field.getValue());</span>
+      // updatedParams.put(updatedParam.getTitle(), updatedParam);
+<span class="nc" id="L349">      updatedParams.put(updatedParam.getDescription(), updatedParam);</span>
+<span class="nc" id="L350">    }</span>
+
+<span class="nc" id="L352">    ParameterSet updatedParamSet =</span>
+<span class="nc" id="L353">        new ParameterSet(workFlow.getName(), workFlow.getDescription(), updatedParams);</span>
+<span class="nc" id="L354">    return updatedParamSet;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>
