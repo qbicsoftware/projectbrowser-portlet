@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/qbicsoftware/projectbrowser-portlet.svg?branch=development)](https://travis-ci.com/qbicsoftware/projectbrowser-portlet)[![Code Coverage]( https://codecov.io/gh/qbicsoftware/projectbrowser-portlet/branch/development/graph/badge.svg)](https://codecov.io/gh/qbicsoftware/projectbrowser-portlet)
 
-ProjectBrowser Portlet, version 1.9.1 - Browse and manage biomedical projects
+ProjectBrowser Portlet, version 1.9.2 - Browse and manage biomedical projects
 
 ## Author
 Created by 
@@ -11,7 +11,7 @@ Created by
 
 ## Description
 
-The portlet ProjectBrowser offers functionality to view, manage and edit projects that are stored in an [openBIS](https://wiki-bsse.ethz.ch/display/bis/Home) instance. Users may download project-specific data or run analysis pipelines on the available datasets. Currently the workflow system gUSE is supported by ProjectBrowser. An interface to [Nextflow](https://www.nextflow.io/) is currently **under development**. 
+The portlet ProjectBrowser offers functionality to view, manage and edit projects that are stored in an [openBIS](https://wiki-bsse.ethz.ch/display/bis/Home) instance. Users may download project-specific data or run analysis pipelines on the available datasets. Currently the workflow system gUSE is supported by ProjectBrowser.
 
 For further details please refer to:
 
