@@ -609,14 +609,13 @@ public class SampleView extends VerticalLayout implements View {
     // TODO updateContent only if currentExperiment is not equal to newExperiment
     // this.table.unselect(this.table.getValue());
     // this.setContainerDataSource(datahandler.getSample(currentValue));
-
-<span class="nc" id="L613">    this.currentBean = datahandler.getSample(currentValue);</span>
-<span class="nc" id="L614">    updateContent();</span>
-<span class="nc" id="L615">    sampview_tab.setSelectedTab(0);</span>
-<span class="nc" id="L616">  }</span>
+<span class="nc" id="L612">    this.currentBean = datahandler.getSample(currentValue);</span>
+<span class="nc" id="L613">    updateContent();</span>
+<span class="nc" id="L614">    sampview_tab.setSelectedTab(0);</span>
+<span class="nc" id="L615">  }</span>
 
   public SampleBean getCurrentBean() {
-<span class="nc" id="L619">    return currentBean;</span>
+<span class="nc" id="L618">    return currentBean;</span>
   }
 
 
@@ -626,12 +625,12 @@ public class SampleView extends VerticalLayout implements View {
    * are enabled by default.
    */
   public void setEnabled(boolean enabled) {
-<span class="nc" id="L629">    this.export.setEnabled(enabled);</span>
-<span class="nc" id="L630">    this.table.setEnabled(enabled);</span>
+<span class="nc" id="L628">    this.export.setEnabled(enabled);</span>
+<span class="nc" id="L629">    this.table.setEnabled(enabled);</span>
     // this.createBarcodesMenuItem.getParent().setEnabled(false);
     // this.downloadCompleteProjectMenuItem.getParent().setEnabled(false);
     //this.toolbar.setEnabled(enabled);
-<span class="nc" id="L634">  }</span>
+<span class="nc" id="L633">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

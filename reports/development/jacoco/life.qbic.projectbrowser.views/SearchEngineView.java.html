@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.*;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.validator.NullValidator;
@@ -43,12 +44,6 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Experiment;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Project;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SampleFetchOption;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SampleType;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria.MatchClause;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria.MatchClauseAttribute;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentFetchOption;
@@ -66,89 +61,89 @@ public class SearchEngineView extends CustomComponent {
    * 
    */
   private static final long serialVersionUID = 5371970241077786446L;
-<span class="nc" id="L69">  private static final Logger LOG = LogManager.getLogger(SearchEngineView.class);</span>
+<span class="nc" id="L64">  private static final Logger LOG = LogManager.getLogger(SearchEngineView.class);</span>
   private Panel mainlayout;
   private DataHandler datahandler;
-<span class="nc" id="L72">  private final String infotext = &quot;no info text&quot;;</span>
+<span class="nc" id="L67">  private final String infotext = &quot;no info text&quot;;</span>
 
   Map&lt;String, Map&lt;String, String&gt;&gt; samplePropertiesMapping;
 
   Set&lt;String&gt; visibleSpaces;
 
-<span class="nc" id="L78">  public SearchEngineView(DataHandler datahandler) {</span>
-<span class="nc" id="L79">    this.datahandler = datahandler;</span>
-<span class="nc" id="L80">    this.visibleSpaces = listSpacesOnBehalfOfUser();</span>
-<span class="nc" id="L81">    initSearchEngine();</span>
-<span class="nc" id="L82">    initUI();</span>
-<span class="nc" id="L83">  }</span>
+<span class="nc" id="L73">  public SearchEngineView(DataHandler datahandler) {</span>
+<span class="nc" id="L74">    this.datahandler = datahandler;</span>
+<span class="nc" id="L75">    this.visibleSpaces = listSpacesOnBehalfOfUser();</span>
+<span class="nc" id="L76">    initSearchEngine();</span>
+<span class="nc" id="L77">    initUI();</span>
+<span class="nc" id="L78">  }</span>
 
   private void initSearchEngine() {
     // TODO Auto-generated method stub
 
 
     // retrieve all relevant sample type search fields (properties/attributes)
-<span class="nc" id="L90">    Map&lt;String, SampleType&gt; sampleTypeMap = datahandler.getOpenBisClient().getSampleTypes();</span>
+<span class="nc" id="L85">    Map&lt;String, SampleType&gt; sampleTypeMap = datahandler.getOpenBisClient().getSampleTypes();</span>
 
-<span class="nc bnc" id="L92" title="All 2 branches missed.">    for (String key : sampleTypeMap.keySet()) {</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">    for (String key : sampleTypeMap.keySet()) {</span>
       // LOG.info(key);
-<span class="nc" id="L94">      Map&lt;String, String&gt; props =</span>
-<span class="nc" id="L95">          datahandler.getOpenBisClient().getLabelsofProperties(sampleTypeMap.get(key));</span>
+<span class="nc" id="L89">      Map&lt;String, String&gt; props =</span>
+<span class="nc" id="L90">          datahandler.getOpenBisClient().getLabelsofProperties(sampleTypeMap.get(key));</span>
       // LOG.info(props.toString());
       // samplePropertiesMapping.put(key, props);
-<span class="nc" id="L98">    }</span>
+<span class="nc" id="L93">    }</span>
 
-<span class="nc" id="L100">  }</span>
+<span class="nc" id="L95">  }</span>
 
   public void initUI() {
 
-<span class="nc" id="L104">    mainlayout = new Panel();</span>
-<span class="nc" id="L105">    mainlayout.addStyleName(ValoTheme.PANEL_BORDERLESS);</span>
+<span class="nc" id="L99">    mainlayout = new Panel();</span>
+<span class="nc" id="L100">    mainlayout.addStyleName(ValoTheme.PANEL_BORDERLESS);</span>
 
     // Search bar
     // *----------- search text field .... search button-----------*
-<span class="nc" id="L109">    VerticalLayout searchbar = new VerticalLayout();</span>
-<span class="nc" id="L110">    searchbar.setWidth(100, Unit.PERCENTAGE);</span>
-<span class="nc" id="L111">    setResponsive(true);</span>
-<span class="nc" id="L112">    searchbar.setResponsive(true);</span>
+<span class="nc" id="L104">    VerticalLayout searchbar = new VerticalLayout();</span>
+<span class="nc" id="L105">    searchbar.setWidth(100, Unit.PERCENTAGE);</span>
+<span class="nc" id="L106">    setResponsive(true);</span>
+<span class="nc" id="L107">    searchbar.setResponsive(true);</span>
     // searchbar.setWidth();
 
-<span class="nc" id="L115">    HorizontalLayout buttonLayout = new HorizontalLayout();</span>
-<span class="nc" id="L116">    buttonLayout.setResponsive(true);</span>
-<span class="nc" id="L117">    buttonLayout.setWidth(75, Unit.PERCENTAGE);</span>
+<span class="nc" id="L110">    HorizontalLayout buttonLayout = new HorizontalLayout();</span>
+<span class="nc" id="L111">    buttonLayout.setResponsive(true);</span>
+<span class="nc" id="L112">    buttonLayout.setWidth(75, Unit.PERCENTAGE);</span>
 
     // searchbar.setSpacing(true);
-<span class="nc" id="L120">    final TextField searchfield = new TextField();</span>
-<span class="nc" id="L121">    searchfield.setHeight(&quot;44px&quot;);</span>
-<span class="nc" id="L122">    searchfield.setImmediate(true);</span>
-<span class="nc" id="L123">    searchfield.setResponsive(true);</span>
-<span class="nc" id="L124">    searchfield.setWidth(75, Unit.PERCENTAGE);</span>
+<span class="nc" id="L115">    final TextField searchfield = new TextField();</span>
+<span class="nc" id="L116">    searchfield.setHeight(&quot;44px&quot;);</span>
+<span class="nc" id="L117">    searchfield.setImmediate(true);</span>
+<span class="nc" id="L118">    searchfield.setResponsive(true);</span>
+<span class="nc" id="L119">    searchfield.setWidth(75, Unit.PERCENTAGE);</span>
 
-<span class="nc" id="L126">    buttonLayout.setSpacing(true);</span>
+<span class="nc" id="L121">    buttonLayout.setSpacing(true);</span>
 
 
-<span class="nc" id="L129">    searchfield.setInputPrompt(&quot;search DB&quot;);</span>
+<span class="nc" id="L124">    searchfield.setInputPrompt(&quot;search DB&quot;);</span>
     // searchfield.setCaption(&quot;QSearch&quot;);
     // searchfield.setWidth(25.0f, Unit.EM);
     // searchfield.setWidth(60, Unit.PERCENTAGE);
 
     // TODO would be nice to have a autofill or something similar
     // searchFieldLayout.addComponent(searchfield);
-<span class="nc" id="L136">    searchbar.addComponent(searchfield);</span>
-<span class="nc" id="L137">    searchbar.setComponentAlignment(searchfield, Alignment.MIDDLE_RIGHT);</span>
+<span class="nc" id="L131">    searchbar.addComponent(searchfield);</span>
+<span class="nc" id="L132">    searchbar.setComponentAlignment(searchfield, Alignment.MIDDLE_RIGHT);</span>
 
 
-<span class="nc" id="L140">    final NativeSelect navsel = new NativeSelect();</span>
-<span class="nc" id="L141">    navsel.addItem(&quot;Whole DB&quot;);</span>
-<span class="nc" id="L142">    navsel.addItem(&quot;Projects Only&quot;);</span>
-<span class="nc" id="L143">    navsel.addItem(&quot;Experiments Only&quot;);</span>
-<span class="nc" id="L144">    navsel.addItem(&quot;Samples Only&quot;);</span>
-<span class="nc" id="L145">    navsel.setValue(&quot;Whole DB&quot;);</span>
-<span class="nc" id="L146">    navsel.setHeight(&quot;20px&quot;);</span>
-<span class="nc" id="L147">    navsel.setNullSelectionAllowed(false);</span>
-<span class="nc" id="L148">    navsel.setResponsive(true);</span>
-<span class="nc" id="L149">    navsel.setWidth(100, Unit.PERCENTAGE);</span>
+<span class="nc" id="L135">    final NativeSelect navsel = new NativeSelect();</span>
+<span class="nc" id="L136">    navsel.addItem(&quot;Whole DB&quot;);</span>
+<span class="nc" id="L137">    navsel.addItem(&quot;Projects Only&quot;);</span>
+<span class="nc" id="L138">    navsel.addItem(&quot;Experiments Only&quot;);</span>
+<span class="nc" id="L139">    navsel.addItem(&quot;Samples Only&quot;);</span>
+<span class="nc" id="L140">    navsel.setValue(&quot;Whole DB&quot;);</span>
+<span class="nc" id="L141">    navsel.setHeight(&quot;20px&quot;);</span>
+<span class="nc" id="L142">    navsel.setNullSelectionAllowed(false);</span>
+<span class="nc" id="L143">    navsel.setResponsive(true);</span>
+<span class="nc" id="L144">    navsel.setWidth(100, Unit.PERCENTAGE);</span>
 
-<span class="nc" id="L151">    navsel.addValueChangeListener(new Property.ValueChangeListener() {</span>
+<span class="nc" id="L146">    navsel.addValueChangeListener(new Property.ValueChangeListener() {</span>
 
       /**
        * 
@@ -158,255 +153,228 @@ public class SearchEngineView extends CustomComponent {
       @Override
       public void valueChange(ValueChangeEvent event) {
         // TODO Auto-generated method stub
-<span class="nc" id="L161">        Notification.show((String) navsel.getValue());</span>
+<span class="nc" id="L156">        Notification.show((String) navsel.getValue());</span>
 
-<span class="nc bnc" id="L163" title="All 5 branches missed.">        switch ((String) navsel.getValue()) {</span>
+<span class="nc bnc" id="L158" title="All 5 branches missed.">        switch ((String) navsel.getValue()) {</span>
           case &quot;Whole DB&quot;:
-<span class="nc" id="L165">            datahandler.setShowOptions(Arrays.asList(&quot;Projects&quot;, &quot;Experiments&quot;, &quot;Samples&quot;));</span>
-<span class="nc" id="L166">            break;</span>
+<span class="nc" id="L160">            datahandler.setShowOptions(Arrays.asList(&quot;Projects&quot;, &quot;Experiments&quot;, &quot;Samples&quot;));</span>
+<span class="nc" id="L161">            break;</span>
           case &quot;Projects Only&quot;:
-<span class="nc" id="L168">            datahandler.setShowOptions(Arrays.asList(&quot;Projects&quot;));</span>
-<span class="nc" id="L169">            break;</span>
+<span class="nc" id="L163">            datahandler.setShowOptions(Arrays.asList(&quot;Projects&quot;));</span>
+<span class="nc" id="L164">            break;</span>
           case &quot;Experiments Only&quot;:
-<span class="nc" id="L171">            datahandler.setShowOptions(Arrays.asList(&quot;Experiments&quot;));</span>
-<span class="nc" id="L172">            break;</span>
+<span class="nc" id="L166">            datahandler.setShowOptions(Arrays.asList(&quot;Experiments&quot;));</span>
+<span class="nc" id="L167">            break;</span>
           case &quot;Samples Only&quot;:
-<span class="nc" id="L174">            datahandler.setShowOptions(Arrays.asList(&quot;Samples&quot;));</span>
-<span class="nc" id="L175">            break;</span>
+<span class="nc" id="L169">            datahandler.setShowOptions(Arrays.asList(&quot;Samples&quot;));</span>
+<span class="nc" id="L170">            break;</span>
           default:
-<span class="nc" id="L177">            datahandler.setShowOptions(Arrays.asList(&quot;Projects&quot;, &quot;Experiments&quot;, &quot;Samples&quot;));</span>
+<span class="nc" id="L172">            datahandler.setShowOptions(Arrays.asList(&quot;Projects&quot;, &quot;Experiments&quot;, &quot;Samples&quot;));</span>
             break;
         }
 
 
-<span class="nc" id="L182">      }</span>
+<span class="nc" id="L177">      }</span>
     });
 
-<span class="nc" id="L185">    searchbar.addComponent(buttonLayout);</span>
-<span class="nc" id="L186">    searchbar.setComponentAlignment(buttonLayout, Alignment.MIDDLE_RIGHT);</span>
-<span class="nc" id="L187">    Button searchOk = new Button(&quot;&quot;);</span>
-<span class="nc" id="L188">    searchOk.setStyleName(ValoTheme.BUTTON_TINY);</span>
+<span class="nc" id="L180">    searchbar.addComponent(buttonLayout);</span>
+<span class="nc" id="L181">    searchbar.setComponentAlignment(buttonLayout, Alignment.MIDDLE_RIGHT);</span>
+<span class="nc" id="L182">    Button searchOk = new Button(&quot;&quot;);</span>
+<span class="nc" id="L183">    searchOk.setStyleName(ValoTheme.BUTTON_TINY);</span>
     // searchOk.addStyleName(ValoTheme.BUTTON_BORDERLESS);
-<span class="nc" id="L190">    searchOk.setIcon(FontAwesome.SEARCH);</span>
-<span class="nc" id="L191">    searchOk.setSizeUndefined();</span>
+<span class="nc" id="L185">    searchOk.setIcon(FontAwesome.SEARCH);</span>
+<span class="nc" id="L186">    searchOk.setSizeUndefined();</span>
     // searchOk.setWidth(15.0f, Unit.EM);
-<span class="nc" id="L193">    searchOk.setResponsive(true);</span>
-<span class="nc" id="L194">    searchOk.setHeight(&quot;20px&quot;);</span>
+<span class="nc" id="L188">    searchOk.setResponsive(true);</span>
+<span class="nc" id="L189">    searchOk.setHeight(&quot;20px&quot;);</span>
 
 
-<span class="nc" id="L197">    searchOk.addClickListener(new ClickListener() {</span>
+<span class="nc" id="L192">    searchOk.addClickListener(new ClickListener() {</span>
       private static final long serialVersionUID = -2409450448301908214L;
 
 
       @Override
       public void buttonClick(ClickEvent event) {
-<span class="nc" id="L203">        String queryString = (String) searchfield.getValue().toString();</span>
+<span class="nc" id="L198">        String queryString = (String) searchfield.getValue().toString();</span>
 
-<span class="nc" id="L205">        LOG.debug(&quot;the query was &quot; + queryString);</span>
+<span class="nc" id="L200">        LOG.debug(&quot;the query was &quot; + queryString);</span>
 
-<span class="nc bnc" id="L207" title="All 4 branches missed.">        if (searchfield.getValue() == null || searchfield.getValue().toString().equals(&quot;&quot;)</span>
-<span class="nc bnc" id="L208" title="All 2 branches missed.">            || searchfield.getValue().toString().trim().length() == 0) {</span>
-<span class="nc" id="L209">          Notification.show(&quot;Query field was empty!&quot;, Type.WARNING_MESSAGE);</span>
+<span class="nc bnc" id="L202" title="All 4 branches missed.">        if (searchfield.getValue() == null || searchfield.getValue().toString().equals(&quot;&quot;)</span>
+<span class="nc bnc" id="L203" title="All 2 branches missed.">            || searchfield.getValue().toString().trim().length() == 0) {</span>
+<span class="nc" id="L204">          Notification.show(&quot;Query field was empty!&quot;, Type.WARNING_MESSAGE);</span>
         } else {
 
           try {
-            /**
-             * Sample foundSample = datahandler.getOpenBisClient() .getSampleByIdentifier(
-             * matcher.group(0).toString());
-             */
 
-<span class="nc" id="L218">            datahandler.setSampleResults(querySamples(queryString));</span>
-<span class="nc" id="L219">            datahandler.setExpResults(queryExperiments(queryString));</span>
-<span class="nc" id="L220">            datahandler.setProjResults(queryProjects(queryString));</span>
-<span class="nc" id="L221">            datahandler.setLastQueryString(queryString);</span>
+<span class="nc bnc" id="L209" title="All 5 branches missed.">            switch ((String) navsel.getValue()) {</span>
+              case &quot;Whole DB&quot;:
+<span class="nc" id="L211">                datahandler.setSampleResults(querySamples(queryString));</span>
+<span class="nc" id="L212">                datahandler.setExpResults(queryExperiments(queryString));</span>
+<span class="nc" id="L213">                datahandler.setProjResults(queryProjects(queryString));</span>
+<span class="nc" id="L214">                break;</span>
+              case &quot;Projects Only&quot;:
+<span class="nc" id="L216">                datahandler.setProjResults(queryProjects(queryString));</span>
+<span class="nc" id="L217">                break;</span>
+              case &quot;Experiments Only&quot;:
+<span class="nc" id="L219">                datahandler.setExpResults(queryExperiments(queryString));</span>
+<span class="nc" id="L220">                break;</span>
+              case &quot;Samples Only&quot;:
+<span class="nc" id="L222">                datahandler.setSampleResults(querySamples(queryString));</span>
+<span class="nc" id="L223">                break;</span>
+              default:
+<span class="nc" id="L225">                datahandler.setSampleResults(querySamples(queryString));</span>
+<span class="nc" id="L226">                datahandler.setExpResults(queryExperiments(queryString));</span>
+<span class="nc" id="L227">                datahandler.setProjResults(queryProjects(queryString));</span>
+                break;
+            }
 
+<span class="nc" id="L231">            datahandler.setLastQueryString(queryString);</span>
 
-<span class="nc" id="L224">            State state = (State) UI.getCurrent().getSession().getAttribute(&quot;state&quot;);</span>
-<span class="nc" id="L225">            ArrayList&lt;String&gt; message = new ArrayList&lt;String&gt;();</span>
-<span class="nc" id="L226">            message.add(&quot;clicked&quot;);</span>
-<span class="nc" id="L227">            message.add(&quot;view&quot; + queryString);</span>
-<span class="nc" id="L228">            message.add(&quot;searchresults&quot;);</span>
-<span class="nc" id="L229">            state.notifyObservers(message);</span>
+<span class="nc" id="L233">            State state = (State) UI.getCurrent().getSession().getAttribute(&quot;state&quot;);</span>
+<span class="nc" id="L234">            ArrayList&lt;String&gt; message = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L235">            message.add(&quot;clicked&quot;);</span>
+<span class="nc" id="L236">            message.add(&quot;view&quot; + queryString + navsel.getValue().toString().replace(&quot; &quot;, &quot;&quot;));</span>
+<span class="nc" id="L237">            message.add(&quot;searchresults&quot;);</span>
+<span class="nc" id="L238">            state.notifyObservers(message);</span>
 
-<span class="nc" id="L231">          } catch (Exception e) {</span>
-<span class="nc" id="L232">            LOG.error(&quot;after query: &quot;, e);</span>
-<span class="nc" id="L233">            Notification.show(&quot;No Sample found for given barcode.&quot;, Type.WARNING_MESSAGE);</span>
-<span class="nc" id="L234">          }</span>
+<span class="nc" id="L240">          } catch (Exception e) {</span>
+<span class="nc" id="L241">            LOG.error(&quot;after query: &quot;, e);</span>
+<span class="nc" id="L242">            Notification.show(&quot;No entities found for given term.&quot;, Type.WARNING_MESSAGE);</span>
+<span class="nc" id="L243">          }</span>
         }
 
 
-<span class="nc" id="L238">      }</span>
+<span class="nc" id="L247">      }</span>
 
     });
 
     // setClickShortcut() would add global shortcut, instead we
     // 'scope' the shortcut to the panel:
-<span class="nc" id="L244">    mainlayout.addAction(new Button.ClickShortcut(searchOk, KeyCode.ENTER));</span>
+<span class="nc" id="L253">    mainlayout.addAction(new Button.ClickShortcut(searchOk, KeyCode.ENTER));</span>
     // searchfield.addItems(this.getSearchResults(&quot;Q&quot;));
-<span class="nc" id="L246">    searchfield.setDescription(infotext);</span>
-<span class="nc" id="L247">    searchfield.addValidator(new NullValidator(&quot;Field must not be empty&quot;, false));</span>
-<span class="nc" id="L248">    searchfield.setValidationVisible(false);</span>
+<span class="nc" id="L255">    searchfield.setDescription(infotext);</span>
+<span class="nc" id="L256">    searchfield.addValidator(new NullValidator(&quot;Field must not be empty&quot;, false));</span>
+<span class="nc" id="L257">    searchfield.setValidationVisible(false);</span>
 
-<span class="nc" id="L250">    buttonLayout.addComponent(navsel);</span>
+<span class="nc" id="L259">    buttonLayout.addComponent(navsel);</span>
     // buttonLayout.addComponent(new Label(&quot;&quot;));
-<span class="nc" id="L252">    buttonLayout.addComponent(searchOk);</span>
+<span class="nc" id="L261">    buttonLayout.addComponent(searchOk);</span>
 
     // searchFieldLayout.setComponentAlignment(searchOk, Alignment.TOP_RIGHT);
     // buttonLayout.setExpandRatio(searchOk, 1);
     // buttonLayout.setExpandRatio(navsel, 1);
 
     // searchFieldLayout.setSpacing(true);
-<span class="nc" id="L259">    buttonLayout.setComponentAlignment(searchOk, Alignment.BOTTOM_RIGHT);</span>
+<span class="nc" id="L268">    buttonLayout.setComponentAlignment(searchOk, Alignment.BOTTOM_RIGHT);</span>
     // buttonLayout.setComponentAlignment(navsel, Alignment.BOTTOM_LEFT);
 
-<span class="nc" id="L262">    buttonLayout.setExpandRatio(searchOk, 1);</span>
-<span class="nc" id="L263">    buttonLayout.setExpandRatio(navsel, 2);</span>
+<span class="nc" id="L271">    buttonLayout.setExpandRatio(searchOk, 1);</span>
+<span class="nc" id="L272">    buttonLayout.setExpandRatio(navsel, 2);</span>
 
 
     // searchbar.setMargin(new MarginInfo(true, false, true, false));
-<span class="nc" id="L267">    mainlayout.setContent(searchbar);</span>
+<span class="nc" id="L276">    mainlayout.setContent(searchbar);</span>
     // mainlayout.setComponentAlignment(searchbar, Alignment.MIDDLE_RIGHT);
     // mainlayout.setWidth(100, Unit.PERCENTAGE);
-<span class="nc" id="L270">    setCompositionRoot(mainlayout);</span>
-<span class="nc" id="L271">  }</span>
+<span class="nc" id="L279">    setCompositionRoot(mainlayout);</span>
+<span class="nc" id="L280">  }</span>
 
   public List&lt;Sample&gt; querySamples(String queryString) {
-<span class="nc" id="L274">    EnumSet&lt;SampleFetchOption&gt; fetchOptions = EnumSet.of(SampleFetchOption.PROPERTIES,</span>
-        SampleFetchOption.BASIC, SampleFetchOption.CONTAINED, SampleFetchOption.DESCENDANTS,
-        SampleFetchOption.PARENTS, SampleFetchOption.CHILDREN, SampleFetchOption.ANCESTORS);
+<span class="nc" id="L283">    EnumSet&lt;SampleFetchOption&gt; fetchOptions = EnumSet.of(SampleFetchOption.PROPERTIES,</span>
+            SampleFetchOption.BASIC);
 
-<span class="nc" id="L278">    SearchCriteria sc2 = new SearchCriteria();</span>
-<span class="nc" id="L279">    sc2.addMatchClause(MatchClause.createAnyFieldMatch(queryString));</span>
+            //, SampleFetchOption.CONTAINED, SampleFetchOption.DESCENDANTS,
+            //SampleFetchOption.PARENTS, SampleFetchOption.CHILDREN, SampleFetchOption.ANCESTORS);
 
-    // List&lt;Sample&gt; samples2 = datahandler.getOpenBisClient().getOpenbisInfoService()
-    // .searchForSamplesOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(), sc2,
-    // fetchOptions, LiferayAndVaadinUtils.getUser().getScreenName());
-<span class="nc" id="L284">    List&lt;Sample&gt; samples2 = datahandler.getOpenBisClient().getOpenbisInfoService()</span>
-<span class="nc" id="L285">        .searchForSamples(datahandler.getOpenBisClient().getSessionToken(), sc2, fetchOptions);</span>
+<span class="nc" id="L289">    SearchCriteria sc = new SearchCriteria();</span>
+<span class="nc" id="L290">    sc.addMatchClause(MatchClause.createAnyFieldMatch(&quot;*&quot; + queryString + &quot;*&quot;));</span>
 
-<span class="nc" id="L287">    return samples2;</span>
+<span class="nc" id="L292">    List&lt;Sample&gt; samples = datahandler.getOpenBisClient().getOpenbisInfoService().searchForSamplesOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(), sc, fetchOptions, PortalUtils.getNonNullScreenName());</span>
+
+<span class="nc" id="L294">    return samples;</span>
   }
-
-  /*
-   * public List&lt;DataSet&gt; queryDatasets(String queryString) { // EnumSet&lt;SampleFetchOption&gt;
-   * fetchOptions = EnumSet.of(DatasetF.PROPERTIES, // SampleFetchOption.BASIC,
-   * SampleFetchOption.CONTAINED, SampleFetchOption.DESCENDANTS, // SampleFetchOption.PARENTS,
-   * SampleFetchOption.CHILDREN, SampleFetchOption.ANCESTORS);
-   * 
-   * SearchCriteria sc2 = new SearchCriteria();
-   * sc2.addMatchClause(MatchClause.createAnyFieldMatch(queryString));
-   * 
-   * // List&lt;Sample&gt; samples2 = datahandler.getOpenBisClient().getOpenbisInfoService() //
-   * .searchForSamplesOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(), sc2, //
-   * fetchOptions, LiferayAndVaadinUtils.getUser().getScreenName());
-   * List&lt;ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet&gt; datasets =
-   * datahandler.getOpenBisClient().getOpenbisInfoService()
-   * .searchForDataSets(datahandler.getOpenBisClient().getSessionToken(), sc2);
-   * 
-   * return datasets; }
-   */
-
 
 
   public List&lt;Experiment&gt; queryExperiments(String queryString) {
-<span class="nc" id="L312">    EnumSet&lt;ExperimentFetchOption&gt; fetchOptions =</span>
-<span class="nc" id="L313">        EnumSet.of(ExperimentFetchOption.PROPERTIES, ExperimentFetchOption.BASIC);</span>
-    // SearchCriteria sc1 = new SearchCriteria();
-    // sc1.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.CODE, queryString));
+<span class="nc" id="L299">    EnumSet&lt;ExperimentFetchOption&gt; fetchOptions =</span>
+<span class="nc" id="L300">        EnumSet.of(ExperimentFetchOption.PROPERTIES, ExperimentFetchOption.BASIC);</span>
 
-<span class="nc" id="L317">    SearchCriteria sc2 = new SearchCriteria();</span>
-<span class="nc" id="L318">    sc2.addMatchClause(MatchClause.createAnyFieldMatch(queryString));</span>
+<span class="nc" id="L302">    SearchCriteria sc = new SearchCriteria();</span>
+<span class="nc" id="L303">    sc.addMatchClause(MatchClause.createAnyFieldMatch(&quot;*&quot; + queryString + &quot;*&quot;));</span>
 
-    // List&lt;Sample&gt; samples1 =
-    // datahandler.getOpenBisClient().getOpenbisInfoService().searchForSamplesOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(),
-    // sc1, fetchOptions,LiferayAndVaadinUtils.getUser().getScreenName());
+<span class="nc" id="L305">    List&lt;Experiment&gt; exps = datahandler.getOpenBisClient().getOpenbisInfoService()</span>
+<span class="nc" id="L306">        .searchForExperiments(datahandler.getOpenBisClient().getSessionToken(), sc);</span>
 
-    // List&lt;Sample&gt; samples2 =
-    // datahandler.getOpenBisClient().getOpenbisInfoService().searchForSamplesOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(),
-    // sc2, fetchOptions,LiferayAndVaadinUtils.getUser().getScreenName());
-<span class="nc" id="L327">    List&lt;Experiment&gt; exps = datahandler.getOpenBisClient().getOpenbisInfoService()</span>
-<span class="nc" id="L328">        .searchForExperiments(datahandler.getOpenBisClient().getSessionToken(), sc2);</span>
+<span class="nc" id="L308">    List&lt;Experiment&gt; expFilteredByUser = new ArrayList&lt;Experiment&gt;();</span>
 
+<span class="nc bnc" id="L310" title="All 2 branches missed.">    for (Experiment e : exps) {</span>
+<span class="nc" id="L311">      String[] splitstr = e.getIdentifier().split(&quot;/&quot;);</span>
+<span class="nc" id="L312">      String spaceCode = splitstr[1];</span>
 
-<span class="nc" id="L331">    List&lt;Experiment&gt; expFilteredByUser = new ArrayList&lt;Experiment&gt;();</span>
-
-
-<span class="nc bnc" id="L334" title="All 2 branches missed.">    for (Experiment e : exps) {</span>
-<span class="nc" id="L335">      String[] splitstr = e.getIdentifier().split(&quot;/&quot;);</span>
-<span class="nc" id="L336">      String spaceCode = splitstr[1];</span>
-
-<span class="nc bnc" id="L338" title="All 2 branches missed.">      if (visibleSpaces.contains(spaceCode)) {</span>
-<span class="nc" id="L339">        expFilteredByUser.add(e);</span>
+<span class="nc bnc" id="L314" title="All 2 branches missed.">      if (visibleSpaces.contains(spaceCode)) {</span>
+<span class="nc" id="L315">        expFilteredByUser.add(e);</span>
       }
-<span class="nc" id="L341">    }</span>
+<span class="nc" id="L317">    }</span>
 
-    // LOG.info(&quot;hits: &quot; + samples1.size() + &quot; &quot; + samples2.size());
-
-<span class="nc" id="L345">    return expFilteredByUser;</span>
+<span class="nc" id="L319">    return expFilteredByUser;</span>
   }
 
   public List&lt;Project&gt; queryProjects(String queryString) {
-<span class="nc" id="L349">    List&lt;Project&gt; result = new ArrayList&lt;Project&gt;();</span>
+<span class="nc" id="L323">    List&lt;Project&gt; result = new ArrayList&lt;Project&gt;();</span>
 
-<span class="nc" id="L351">    List&lt;Project&gt; projects =</span>
-<span class="nc" id="L352">        new ArrayList&lt;Project&gt;(datahandler.getOpenBisClient().getOpenbisInfoService()</span>
-<span class="nc" id="L353">            .listProjectsOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(),</span>
-<span class="nc" id="L354">                PortalUtils.getNonNullScreenName()));</span>
+<span class="nc" id="L325">    List&lt;Project&gt; projects =</span>
+<span class="nc" id="L326">        new ArrayList&lt;Project&gt;(datahandler.getOpenBisClient().getOpenbisInfoService()</span>
+<span class="nc" id="L327">            .listProjectsOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(),</span>
+<span class="nc" id="L328">                PortalUtils.getNonNullScreenName()));</span>
 
-<span class="nc bnc" id="L356" title="All 2 branches missed.">    for (Project p : projects) {</span>
-<span class="nc" id="L357">      String projectDesc = p.getDescription();</span>
+<span class="nc bnc" id="L330" title="All 2 branches missed.">    for (Project p : projects) {</span>
+<span class="nc" id="L331">      String projectDesc = p.getDescription();</span>
 
       // sometimes there is no description available (check for null entry)
-<span class="nc bnc" id="L360" title="All 2 branches missed.">      if (projectDesc == null) {</span>
-<span class="nc" id="L361">        continue;</span>
-
-      } else {
-<span class="nc" id="L364">        projectDesc = projectDesc.toLowerCase();</span>
-
-<span class="nc bnc" id="L366" title="All 2 branches missed.">        if (projectDesc.contains(queryString.toLowerCase())) {</span>
-<span class="nc" id="L367">          result.add(p);</span>
-        }
+<span class="nc bnc" id="L334" title="All 4 branches missed.">      if (projectDesc != null &amp;&amp; projectDesc.contains(queryString.toLowerCase())) {</span>
+<span class="nc" id="L335">        result.add(p);</span>
+<span class="nc bnc" id="L336" title="All 2 branches missed.">      } else if (p.getCode().contains(queryString)) {</span>
+<span class="nc" id="L337">        result.add(p);</span>
       }
-<span class="nc" id="L370">    }</span>
-
-<span class="nc" id="L372">    return result;</span>
+<span class="nc" id="L339">    }</span>
+<span class="nc" id="L340">    return result;</span>
   }
 
 
   public Set&lt;String&gt; listSpacesOnBehalfOfUser() {
     // first retrieve all projects belonging to the user
-<span class="nc" id="L378">    List&lt;Project&gt; projects =</span>
-<span class="nc" id="L379">        new ArrayList&lt;Project&gt;(datahandler.getOpenBisClient().getOpenbisInfoService()</span>
-<span class="nc" id="L380">            .listProjectsOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(),</span>
-<span class="nc" id="L381">                PortalUtils.getNonNullScreenName()));</span>
+<span class="nc" id="L346">    List&lt;Project&gt; projects =</span>
+<span class="nc" id="L347">        new ArrayList&lt;Project&gt;(datahandler.getOpenBisClient().getOpenbisInfoService()</span>
+<span class="nc" id="L348">            .listProjectsOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(),</span>
+<span class="nc" id="L349">                PortalUtils.getNonNullScreenName()));</span>
 
-<span class="nc" id="L383">    Set&lt;String&gt; resultSpaceNames = new HashSet&lt;String&gt;();</span>
+<span class="nc" id="L351">    Set&lt;String&gt; resultSpaceNames = new HashSet&lt;String&gt;();</span>
 
-<span class="nc bnc" id="L385" title="All 2 branches missed.">    for (Project p : projects) {</span>
-<span class="nc" id="L386">      resultSpaceNames.add(p.getSpaceCode());</span>
+<span class="nc bnc" id="L353" title="All 2 branches missed.">    for (Project p : projects) {</span>
+<span class="nc" id="L354">      resultSpaceNames.add(p.getSpaceCode());</span>
       // LOG.info(p.getSpaceCode());
-<span class="nc" id="L388">    }</span>
+<span class="nc" id="L356">    }</span>
 
     // LOG.info(resultSpaceNames.toString());
 
-<span class="nc" id="L392">    return resultSpaceNames;</span>
+<span class="nc" id="L360">    return resultSpaceNames;</span>
   }
 
 
   public List&lt;String&gt; getSearchResults(String samplecode) {
-<span class="nc" id="L397">    EnumSet&lt;SampleFetchOption&gt; fetchOptions = EnumSet.of(SampleFetchOption.PROPERTIES);</span>
-<span class="nc" id="L398">    SearchCriteria sc = new SearchCriteria();</span>
-<span class="nc" id="L399">    sc.addMatchClause(</span>
-<span class="nc" id="L400">        MatchClause.createAttributeMatch(MatchClauseAttribute.CODE, samplecode + &quot;*&quot;));</span>
+<span class="nc" id="L365">    EnumSet&lt;SampleFetchOption&gt; fetchOptions = EnumSet.of(SampleFetchOption.PROPERTIES);</span>
+<span class="nc" id="L366">    SearchCriteria sc = new SearchCriteria();</span>
+<span class="nc" id="L367">    sc.addMatchClause(</span>
+<span class="nc" id="L368">        MatchClause.createAttributeMatch(MatchClauseAttribute.CODE, samplecode + &quot;*&quot;));</span>
 
-<span class="nc" id="L402">    List&lt;Sample&gt; samples = datahandler.getOpenBisClient().getOpenbisInfoService()</span>
-<span class="nc" id="L403">        .searchForSamplesOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(), sc,</span>
-<span class="nc" id="L404">            fetchOptions, PortalUtils.getNonNullScreenName());</span>
-<span class="nc" id="L405">    List&lt;String&gt; ret = new ArrayList&lt;String&gt;(samples.size());</span>
-<span class="nc bnc" id="L406" title="All 2 branches missed.">    for (Sample sample : samples) {</span>
-<span class="nc" id="L407">      ret.add(sample.getCode());</span>
-<span class="nc" id="L408">    }</span>
-<span class="nc" id="L409">    return ret;</span>
+<span class="nc" id="L370">    List&lt;Sample&gt; samples = datahandler.getOpenBisClient().getOpenbisInfoService()</span>
+<span class="nc" id="L371">        .searchForSamplesOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(), sc,</span>
+<span class="nc" id="L372">            fetchOptions, PortalUtils.getNonNullScreenName());</span>
+<span class="nc" id="L373">    List&lt;String&gt; ret = new ArrayList&lt;String&gt;(samples.size());</span>
+<span class="nc bnc" id="L374" title="All 2 branches missed.">    for (Sample sample : samples) {</span>
+<span class="nc" id="L375">      ret.add(sample.getCode());</span>
+<span class="nc" id="L376">    }</span>
+<span class="nc" id="L377">    return ret;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

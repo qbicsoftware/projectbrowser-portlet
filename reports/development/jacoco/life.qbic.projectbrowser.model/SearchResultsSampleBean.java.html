@@ -50,141 +50,142 @@ public class SearchResultsSampleBean implements Comparable&lt;Object&gt;, Serial
 
 
 <span class="nc" id="L52">  public SearchResultsSampleBean(Sample s, String query) {</span>
-<span class="nc" id="L53">    sampleID = s.getCode();</span>
-<span class="nc" id="L54">    sampleName = this.extractSampleProperty(s, &quot;Q_SECONDARY_NAME&quot;);</span>
-<span class="nc" id="L55">    queryString = query;</span>
-<span class="nc" id="L56">    matchedField = findMatchedFields(s);</span>
-<span class="nc" id="L57">  }</span>
+    //sampleID = s.getCode();
+<span class="nc" id="L54">    sampleID = s.getIdentifier();</span>
+<span class="nc" id="L55">    sampleName = this.extractSampleProperty(s, &quot;Q_SECONDARY_NAME&quot;);</span>
+<span class="nc" id="L56">    queryString = query;</span>
+<span class="nc" id="L57">    matchedField = findMatchedFields(s);</span>
+<span class="nc" id="L58">  }</span>
 
   private String findMatchedFields(Sample s) {
 
-<span class="nc" id="L61">    StringBuilder strbuild = new StringBuilder();</span>
-<span class="nc" id="L62">    List&lt;String&gt; queryComponents = Arrays.asList(queryString.trim().split(&quot;\\s+&quot;));</span>
+<span class="nc" id="L62">    StringBuilder strbuild = new StringBuilder();</span>
+<span class="nc" id="L63">    List&lt;String&gt; queryComponents = Arrays.asList(queryString.trim().split(&quot;\\s+&quot;));</span>
 
-<span class="nc" id="L64">    Map&lt;String, String&gt; props = s.getProperties();</span>
+<span class="nc" id="L65">    Map&lt;String, String&gt; props = s.getProperties();</span>
 
-<span class="nc" id="L66">    String code = s.getCode();</span>
+<span class="nc" id="L67">    String code = s.getCode();</span>
 
-<span class="nc bnc" id="L68" title="All 2 branches missed.">    for (String str : queryComponents) {</span>
-<span class="nc" id="L69">      Pattern tmpPattern = Pattern.compile(str, Pattern.CASE_INSENSITIVE + Pattern.LITERAL);</span>
-<span class="nc" id="L70">      Matcher patternMatch = tmpPattern.matcher(code);</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">    for (String str : queryComponents) {</span>
+<span class="nc" id="L70">      Pattern tmpPattern = Pattern.compile(str, Pattern.CASE_INSENSITIVE + Pattern.LITERAL);</span>
+<span class="nc" id="L71">      Matcher patternMatch = tmpPattern.matcher(code);</span>
 
-<span class="nc bnc" id="L72" title="All 2 branches missed.">      if (patternMatch.find()) {</span>
-<span class="nc" id="L73">        strbuild.append(&quot;code: &quot; + code + &quot;,&quot;);</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">      if (patternMatch.find()) {</span>
+<span class="nc" id="L74">        strbuild.append(&quot;code: &quot; + code + &quot;,&quot;);</span>
       }
 
-<span class="nc bnc" id="L76" title="All 2 branches missed.">      for (String k : props.keySet()) {</span>
-<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (k.equals(&quot;Q_SECONDARY_NAME&quot;)) {</span>
-<span class="nc" id="L78">          continue;</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">      for (String k : props.keySet()) {</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        if (k.equals(&quot;Q_SECONDARY_NAME&quot;)) {</span>
+<span class="nc" id="L79">          continue;</span>
         }
 
-<span class="nc bnc" id="L81" title="All 2 branches missed.">        if (k.equals(&quot;Q_PROPERTIES&quot;)) {</span>
-<span class="nc" id="L82">          Map&lt;String, String&gt; xmlPropsMap = new HashMap&lt;String, String&gt;();</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        if (k.equals(&quot;Q_PROPERTIES&quot;)) {</span>
+<span class="nc" id="L83">          Map&lt;String, String&gt; xmlPropsMap = new HashMap&lt;String, String&gt;();</span>
           try {
-<span class="nc" id="L84">            xmlPropsMap = parseXMLString(props.get(k).trim());</span>
-<span class="nc" id="L85">          } catch (Exception e) {</span>
+<span class="nc" id="L85">            xmlPropsMap = parseXMLString(props.get(k).trim());</span>
+<span class="nc" id="L86">          } catch (Exception e) {</span>
             // TODO Auto-generated catch block
-<span class="nc" id="L87">            e.printStackTrace();</span>
-<span class="nc" id="L88">          }</span>
+<span class="nc" id="L88">            e.printStackTrace();</span>
+<span class="nc" id="L89">          }</span>
 
-<span class="nc bnc" id="L90" title="All 2 branches missed.">          for (String k2 : xmlPropsMap.keySet()) {</span>
-<span class="nc" id="L91">            patternMatch = tmpPattern.matcher(xmlPropsMap.get(k2).trim());</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">          for (String k2 : xmlPropsMap.keySet()) {</span>
+<span class="nc" id="L92">            patternMatch = tmpPattern.matcher(xmlPropsMap.get(k2).trim());</span>
 
-<span class="nc bnc" id="L93" title="All 2 branches missed.">            if (patternMatch.find()) {</span>
-<span class="nc bnc" id="L94" title="All 2 branches missed.">              if (!&quot;&quot;.equals(strbuild.toString())) {</span>
-<span class="nc" id="L95">                strbuild.append(&quot;, &quot;);</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">            if (patternMatch.find()) {</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">              if (!&quot;&quot;.equals(strbuild.toString())) {</span>
+<span class="nc" id="L96">                strbuild.append(&quot;, &quot;);</span>
               }
-<span class="nc" id="L97">              strbuild.append(k2 + &quot;: &quot; + xmlPropsMap.get(k2));</span>
+<span class="nc" id="L98">              strbuild.append(k2 + &quot;: &quot; + xmlPropsMap.get(k2));</span>
             }
-<span class="nc" id="L99">          }</span>
-<span class="nc" id="L100">        } else {</span>
-<span class="nc" id="L101">          patternMatch = tmpPattern.matcher(props.get(k));</span>
+<span class="nc" id="L100">          }</span>
+<span class="nc" id="L101">        } else {</span>
+<span class="nc" id="L102">          patternMatch = tmpPattern.matcher(props.get(k));</span>
 
-<span class="nc bnc" id="L103" title="All 2 branches missed.">          if (patternMatch.find()) {</span>
-<span class="nc bnc" id="L104" title="All 2 branches missed.">            if (!&quot;&quot;.equals(strbuild.toString())) {</span>
-<span class="nc" id="L105">              strbuild.append(&quot;, &quot;);</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">          if (patternMatch.find()) {</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">            if (!&quot;&quot;.equals(strbuild.toString())) {</span>
+<span class="nc" id="L106">              strbuild.append(&quot;, &quot;);</span>
             }
 
-<span class="nc" id="L108">            strbuild.append(k + &quot;: &quot; + props.get(k));</span>
+<span class="nc" id="L109">            strbuild.append(k + &quot;: &quot; + props.get(k));</span>
           }
         }
-<span class="nc" id="L111">      }</span>
-<span class="nc" id="L112">    }</span>
+<span class="nc" id="L112">      }</span>
+<span class="nc" id="L113">    }</span>
 
-<span class="nc" id="L114">    String result = strbuild.toString();</span>
+<span class="nc" id="L115">    String result = strbuild.toString();</span>
 
-<span class="nc" id="L116">    return result;</span>
+<span class="nc" id="L117">    return result;</span>
   }
 
   private Map&lt;String, String&gt; parseXMLString(String input) throws Exception {
 
-<span class="nc" id="L121">    Map&lt;String, String&gt; xmlProps = new HashMap&lt;String, String&gt;();</span>
-<span class="nc" id="L122">    Document xmlDoc = null;</span>
+<span class="nc" id="L122">    Map&lt;String, String&gt; xmlProps = new HashMap&lt;String, String&gt;();</span>
+<span class="nc" id="L123">    Document xmlDoc = null;</span>
     try {
-<span class="nc" id="L124">      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();</span>
-<span class="nc" id="L125">      DocumentBuilder builder = factory.newDocumentBuilder();</span>
-<span class="nc" id="L126">      InputSource is = new InputSource(new StringReader(input));</span>
-<span class="nc" id="L127">      xmlDoc = builder.parse(is);</span>
+<span class="nc" id="L125">      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();</span>
+<span class="nc" id="L126">      DocumentBuilder builder = factory.newDocumentBuilder();</span>
+<span class="nc" id="L127">      InputSource is = new InputSource(new StringReader(input));</span>
+<span class="nc" id="L128">      xmlDoc = builder.parse(is);</span>
 
-<span class="nc" id="L129">    } catch (Exception e) {</span>
+<span class="nc" id="L130">    } catch (Exception e) {</span>
       // TODO Auto-generated catch block
-<span class="nc" id="L131">      e.printStackTrace();</span>
-<span class="nc" id="L132">    }</span>
+<span class="nc" id="L132">      e.printStackTrace();</span>
+<span class="nc" id="L133">    }</span>
 
-<span class="nc bnc" id="L134" title="All 2 branches missed.">    if (xmlDoc != null) {</span>
-<span class="nc" id="L135">      NodeList nodes = xmlDoc.getElementsByTagName(&quot;qcategorical&quot;);</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">    if (xmlDoc != null) {</span>
+<span class="nc" id="L136">      NodeList nodes = xmlDoc.getElementsByTagName(&quot;qcategorical&quot;);</span>
 
-<span class="nc bnc" id="L137" title="All 2 branches missed.">      for (int i = 0; i &lt; nodes.getLength(); ++i) {</span>
-<span class="nc" id="L138">        Element element = (Element) nodes.item(i);</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">      for (int i = 0; i &lt; nodes.getLength(); ++i) {</span>
+<span class="nc" id="L139">        Element element = (Element) nodes.item(i);</span>
 
-<span class="nc" id="L140">        String factorName = element.getAttribute(&quot;label&quot;);</span>
-<span class="nc" id="L141">        String factorValue = element.getAttribute(&quot;value&quot;);</span>
+<span class="nc" id="L141">        String factorName = element.getAttribute(&quot;label&quot;);</span>
+<span class="nc" id="L142">        String factorValue = element.getAttribute(&quot;value&quot;);</span>
         // System.out.println(&quot;Name: &quot; + factorName + &quot; &quot; + factorValue);
-<span class="nc" id="L143">        xmlProps.put(factorName, factorValue);</span>
+<span class="nc" id="L144">        xmlProps.put(factorName, factorValue);</span>
       }
 
     }
 
-<span class="nc" id="L148">    return xmlProps;</span>
+<span class="nc" id="L149">    return xmlProps;</span>
   }
 
   private String extractSampleProperty(Sample s, String propertyKey) {
-<span class="nc" id="L152">    Map&lt;String, String&gt; props = s.getProperties();</span>
-<span class="nc" id="L153">    String property = props.get(propertyKey);</span>
+<span class="nc" id="L153">    Map&lt;String, String&gt; props = s.getProperties();</span>
+<span class="nc" id="L154">    String property = props.get(propertyKey);</span>
 
-<span class="nc" id="L155">    return property;</span>
+<span class="nc" id="L156">    return property;</span>
   }
 
   public String getSampleID() {
-<span class="nc" id="L159">    return sampleID;</span>
+<span class="nc" id="L160">    return sampleID;</span>
   }
 
   public void setSampleID(String sampleID) {
-<span class="nc" id="L163">    this.sampleID = sampleID;</span>
-<span class="nc" id="L164">  }</span>
+<span class="nc" id="L164">    this.sampleID = sampleID;</span>
+<span class="nc" id="L165">  }</span>
 
   public String getSampleName() {
-<span class="nc" id="L167">    return sampleName;</span>
+<span class="nc" id="L168">    return sampleName;</span>
   }
 
   public void setSampleName(String sampleName) {
-<span class="nc" id="L171">    this.sampleName = sampleName;</span>
-<span class="nc" id="L172">  }</span>
+<span class="nc" id="L172">    this.sampleName = sampleName;</span>
+<span class="nc" id="L173">  }</span>
 
 
 
   public String getMatchedField() {
-<span class="nc" id="L177">    return matchedField;</span>
+<span class="nc" id="L178">    return matchedField;</span>
   }
 
   public void setMatchedField(String matchedField) {
-<span class="nc" id="L181">    this.matchedField = matchedField;</span>
-<span class="nc" id="L182">  }</span>
+<span class="nc" id="L182">    this.matchedField = matchedField;</span>
+<span class="nc" id="L183">  }</span>
 
   @Override
   public int compareTo(Object o) {
     // TODO Auto-generated method stub
-<span class="nc" id="L187">    return 0;</span>
+<span class="nc" id="L188">    return 0;</span>
   }
 
 }
