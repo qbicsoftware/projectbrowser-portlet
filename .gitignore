@@ -25,3 +25,6 @@ logs/
 
 # compiled Vaadin widgetsets
 src/main/webapp/VAADIN/widgetsets
+
+# properties for local testing
+src/main/resources/developer.properties
