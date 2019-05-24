@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DatasetBeanWithInfos.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.model</a> &gt; <span class="el_source">DatasetBeanWithInfos.java</span></div><h1>DatasetBeanWithInfos.java</h1><pre class="source lang-java linenums">package life.qbic.projectbrowser.model;
+
+import java.util.Map;
+
+import de.uni_tuebingen.qbic.beans.DatasetBean;
+
+/**
+ * Used to fix Vaadin Grid Filter bug without touching guse workflow project code
+ * 
+ * @author Andreas Friedrich
+ *
+ */
+public class DatasetBeanWithInfos extends DatasetBean {
+
+  private String additionalInfo;
+
+  public DatasetBeanWithInfos(String fileName, String fileType, String openbisCode, String fullPath,
+      String sampleIdentifier, Map&lt;String, String&gt; properties) {
+<span class="nc" id="L19">    super(fileName, fileType, openbisCode, fullPath, sampleIdentifier);</span>
+<span class="nc bnc" id="L20" title="All 2 branches missed.">    if (properties != null) {</span>
+<span class="nc" id="L21">      setProperties(properties);</span>
+<span class="nc bnc" id="L22" title="All 2 branches missed.">      if (properties.containsKey(&quot;Q_ADDITIONAL_INFO&quot;)) {</span>
+<span class="nc" id="L23">        additionalInfo = properties.get(&quot;Q_ADDITIONAL_INFO&quot;);</span>
+      }
+    }
+<span class="nc" id="L26">  }</span>
+
+  public String getAdditionalInfo() {
+<span class="nc" id="L29">    return additionalInfo;</span>
+  }
+
+  public void setAdditionalInfo(String additionalInfo) {
+<span class="nc" id="L33">    this.additionalInfo = additionalInfo;</span>
+<span class="nc" id="L34">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

@@ -1747,84 +1747,84 @@ public class DataHandler implements Serializable {
    * 
    * return dataset_container; }
    */
-
-  public void registerDatasetInTable(DataSet d, FileInfoDssDTO[] filelist,
-      HierarchicalContainer dataset_container, String project, String sample, Timestamp ts,
-      String sampleType, Object parent) {
-<span class="nc bnc" id="L1754" title="All 2 branches missed.">    if (filelist[0].isDirectory()) {</span>
-
-<span class="nc" id="L1756">      Object new_ds = dataset_container.addItem();</span>
-
-<span class="nc" id="L1758">      String folderPath = filelist[0].getPathInDataSet();</span>
-<span class="nc" id="L1759">      FileInfoDssDTO[] subList = d.listFiles(folderPath, false);</span>
-
-<span class="nc" id="L1761">      dataset_container.setChildrenAllowed(new_ds, true);</span>
-<span class="nc" id="L1762">      String download_link = filelist[0].getPathInDataSet();</span>
-<span class="nc" id="L1763">      String[] splitted_link = download_link.split(&quot;/&quot;);</span>
-<span class="nc" id="L1764">      String file_name = download_link.split(&quot;/&quot;)[splitted_link.length - 1];</span>
-
-<span class="nc" id="L1766">      dataset_container.getContainerProperty(new_ds, &quot;Select&quot;).setValue(new CheckBox());</span>
-
-<span class="nc" id="L1768">      dataset_container.getContainerProperty(new_ds, &quot;Project&quot;).setValue(project);</span>
-<span class="nc" id="L1769">      dataset_container.getContainerProperty(new_ds, &quot;Sample&quot;).setValue(sample);</span>
-<span class="nc" id="L1770">      dataset_container.getContainerProperty(new_ds, &quot;Sample Type&quot;)</span>
-<span class="nc" id="L1771">          .setValue(this.getOpenBisClient().getSampleByIdentifier(sample).getSampleTypeCode());</span>
-<span class="nc" id="L1772">      dataset_container.getContainerProperty(new_ds, &quot;File Name&quot;).setValue(file_name);</span>
-<span class="nc" id="L1773">      dataset_container.getContainerProperty(new_ds, &quot;File Type&quot;).setValue(&quot;Folder&quot;);</span>
-<span class="nc" id="L1774">      dataset_container.getContainerProperty(new_ds, &quot;Dataset Type&quot;).setValue(&quot;-&quot;);</span>
-<span class="nc" id="L1775">      dataset_container.getContainerProperty(new_ds, &quot;Registration Date&quot;).setValue(ts);</span>
-<span class="nc" id="L1776">      dataset_container.getContainerProperty(new_ds, &quot;Validated&quot;).setValue(true);</span>
-<span class="nc" id="L1777">      dataset_container.getContainerProperty(new_ds, &quot;dl_link&quot;).setValue(</span>
-<span class="nc" id="L1778">          d.getDataSetDss().tryGetInternalPathInDataStore() + &quot;/&quot; + filelist[0].getPathInDataSet());</span>
-<span class="nc" id="L1779">      dataset_container.getContainerProperty(new_ds, &quot;CODE&quot;).setValue(d.getCode());</span>
-<span class="nc" id="L1780">      dataset_container.getContainerProperty(new_ds, &quot;file_size_bytes&quot;)</span>
-<span class="nc" id="L1781">          .setValue(filelist[0].getFileSize());</span>
-
-      // System.out.println(&quot;Now it should be a folder: &quot; + filelist[0].getPathInDataSet());
-
-<span class="nc bnc" id="L1785" title="All 2 branches missed.">      if (parent != null) {</span>
-<span class="nc" id="L1786">        dataset_container.setParent(new_ds, parent);</span>
-      }
-
-<span class="nc bnc" id="L1789" title="All 2 branches missed.">      for (FileInfoDssDTO file : subList) {</span>
-<span class="nc" id="L1790">        FileInfoDssDTO[] childList = {file};</span>
-<span class="nc" id="L1791">        registerDatasetInTable(d, childList, dataset_container, project, sample, ts, sampleType,</span>
-            new_ds);
-      }
-
-<span class="nc" id="L1795">    } else {</span>
-      // System.out.println(&quot;Now it should be a file: &quot; + filelist[0].getPathInDataSet());
-
-<span class="nc" id="L1798">      Object new_file = dataset_container.addItem();</span>
-<span class="nc" id="L1799">      dataset_container.setChildrenAllowed(new_file, false);</span>
-<span class="nc" id="L1800">      String download_link = filelist[0].getPathInDataSet();</span>
-<span class="nc" id="L1801">      String[] splitted_link = download_link.split(&quot;/&quot;);</span>
-<span class="nc" id="L1802">      String file_name = download_link.split(&quot;/&quot;)[splitted_link.length - 1];</span>
-      // String file_name = download_link.split(&quot;/&quot;)[1];
-<span class="nc" id="L1804">      String fileSize = PortalUtils.humanReadableByteCount(filelist[0].getFileSize(), true);</span>
-
-<span class="nc" id="L1806">      dataset_container.getContainerProperty(new_file, &quot;Select&quot;).setValue(new CheckBox());</span>
-<span class="nc" id="L1807">      dataset_container.getContainerProperty(new_file, &quot;Project&quot;).setValue(project);</span>
-<span class="nc" id="L1808">      dataset_container.getContainerProperty(new_file, &quot;Sample&quot;).setValue(sample);</span>
-<span class="nc" id="L1809">      dataset_container.getContainerProperty(new_file, &quot;Sample Type&quot;).setValue(sampleType);</span>
-<span class="nc" id="L1810">      dataset_container.getContainerProperty(new_file, &quot;File Name&quot;).setValue(file_name);</span>
-<span class="nc" id="L1811">      dataset_container.getContainerProperty(new_file, &quot;File Type&quot;)</span>
-<span class="nc" id="L1812">          .setValue(d.getDataSetTypeCode());</span>
-<span class="nc" id="L1813">      dataset_container.getContainerProperty(new_file, &quot;Dataset Type&quot;)</span>
-<span class="nc" id="L1814">          .setValue(d.getDataSetTypeCode());</span>
-<span class="nc" id="L1815">      dataset_container.getContainerProperty(new_file, &quot;Registration Date&quot;).setValue(ts);</span>
-<span class="nc" id="L1816">      dataset_container.getContainerProperty(new_file, &quot;Validated&quot;).setValue(true);</span>
-<span class="nc" id="L1817">      dataset_container.getContainerProperty(new_file, &quot;File Size&quot;).setValue(fileSize);</span>
-<span class="nc" id="L1818">      dataset_container.getContainerProperty(new_file, &quot;dl_link&quot;).setValue(</span>
-<span class="nc" id="L1819">          d.getDataSetDss().tryGetInternalPathInDataStore() + &quot;/&quot; + filelist[0].getPathInDataSet());</span>
-<span class="nc" id="L1820">      dataset_container.getContainerProperty(new_file, &quot;CODE&quot;).setValue(d.getCode());</span>
-<span class="nc" id="L1821">      dataset_container.getContainerProperty(new_file, &quot;file_size_bytes&quot;)</span>
-<span class="nc" id="L1822">          .setValue(filelist[0].getFileSize());</span>
-<span class="nc bnc" id="L1823" title="All 2 branches missed.">      if (parent != null) {</span>
-<span class="nc" id="L1824">        dataset_container.setParent(new_file, parent);</span>
-      }
-    }
-<span class="nc" id="L1827">  }</span>
+//
+//  public void registerDatasetInTable(DataSet d, FileInfoDssDTO[] filelist,
+//      HierarchicalContainer dataset_container, String project, String sample, Timestamp ts,
+//      String sampleType, Object parent) {
+//    if (filelist[0].isDirectory()) {
+//
+//      Object new_ds = dataset_container.addItem();
+//
+//      String folderPath = filelist[0].getPathInDataSet();
+//      FileInfoDssDTO[] subList = d.listFiles(folderPath, false);
+//
+//      dataset_container.setChildrenAllowed(new_ds, true);
+//      String download_link = filelist[0].getPathInDataSet();
+//      String[] splitted_link = download_link.split(&quot;/&quot;);
+//      String file_name = download_link.split(&quot;/&quot;)[splitted_link.length - 1];
+//
+//      dataset_container.getContainerProperty(new_ds, &quot;Select&quot;).setValue(new CheckBox());
+//
+//      dataset_container.getContainerProperty(new_ds, &quot;Project&quot;).setValue(project);
+//      dataset_container.getContainerProperty(new_ds, &quot;Sample&quot;).setValue(sample);
+//      dataset_container.getContainerProperty(new_ds, &quot;Sample Type&quot;)
+//          .setValue(this.getOpenBisClient().getSampleByIdentifier(sample).getSampleTypeCode());
+//      dataset_container.getContainerProperty(new_ds, &quot;File Name&quot;).setValue(file_name);
+//      dataset_container.getContainerProperty(new_ds, &quot;File Type&quot;).setValue(&quot;Folder&quot;);
+//      dataset_container.getContainerProperty(new_ds, &quot;Dataset Type&quot;).setValue(&quot;-&quot;);
+//      dataset_container.getContainerProperty(new_ds, &quot;Registration Date&quot;).setValue(ts);
+//      dataset_container.getContainerProperty(new_ds, &quot;Validated&quot;).setValue(true);
+//      dataset_container.getContainerProperty(new_ds, &quot;dl_link&quot;).setValue(
+//          d.getDataSetDss().tryGetInternalPathInDataStore() + &quot;/&quot; + filelist[0].getPathInDataSet());
+//      dataset_container.getContainerProperty(new_ds, &quot;CODE&quot;).setValue(d.getCode());
+//      dataset_container.getContainerProperty(new_ds, &quot;file_size_bytes&quot;)
+//          .setValue(filelist[0].getFileSize());
+//
+//      // System.out.println(&quot;Now it should be a folder: &quot; + filelist[0].getPathInDataSet());
+//
+//      if (parent != null) {
+//        dataset_container.setParent(new_ds, parent);
+//      }
+//
+//      for (FileInfoDssDTO file : subList) {
+//        FileInfoDssDTO[] childList = {file};
+//        registerDatasetInTable(d, childList, dataset_container, project, sample, ts, sampleType,
+//            new_ds);
+//      }
+//
+//    } else {
+//      // System.out.println(&quot;Now it should be a file: &quot; + filelist[0].getPathInDataSet());
+//
+//      Object new_file = dataset_container.addItem();
+//      dataset_container.setChildrenAllowed(new_file, false);
+//      String download_link = filelist[0].getPathInDataSet();
+//      String[] splitted_link = download_link.split(&quot;/&quot;);
+//      String file_name = download_link.split(&quot;/&quot;)[splitted_link.length - 1];
+//      // String file_name = download_link.split(&quot;/&quot;)[1];
+//      String fileSize = PortalUtils.humanReadableByteCount(filelist[0].getFileSize(), true);
+//
+//      dataset_container.getContainerProperty(new_file, &quot;Select&quot;).setValue(new CheckBox());
+//      dataset_container.getContainerProperty(new_file, &quot;Project&quot;).setValue(project);
+//      dataset_container.getContainerProperty(new_file, &quot;Sample&quot;).setValue(sample);
+//      dataset_container.getContainerProperty(new_file, &quot;Sample Type&quot;).setValue(sampleType);
+//      dataset_container.getContainerProperty(new_file, &quot;File Name&quot;).setValue(file_name);
+//      dataset_container.getContainerProperty(new_file, &quot;File Type&quot;)
+//          .setValue(d.getDataSetTypeCode());
+//      dataset_container.getContainerProperty(new_file, &quot;Dataset Type&quot;)
+//          .setValue(d.getDataSetTypeCode());
+//      dataset_container.getContainerProperty(new_file, &quot;Registration Date&quot;).setValue(ts);
+//      dataset_container.getContainerProperty(new_file, &quot;Validated&quot;).setValue(true);
+//      dataset_container.getContainerProperty(new_file, &quot;File Size&quot;).setValue(fileSize);
+//      dataset_container.getContainerProperty(new_file, &quot;dl_link&quot;).setValue(
+//          d.getDataSetDss().tryGetInternalPathInDataStore() + &quot;/&quot; + filelist[0].getPathInDataSet());
+//      dataset_container.getContainerProperty(new_file, &quot;CODE&quot;).setValue(d.getCode());
+//      dataset_container.getContainerProperty(new_file, &quot;file_size_bytes&quot;)
+//          .setValue(filelist[0].getFileSize());
+//      if (parent != null) {
+//        dataset_container.setParent(new_file, parent);
+//      }
+//    }
+//  }
 
   /**
    * Function to fill tree container and collect statistical information of spaces. Should replace

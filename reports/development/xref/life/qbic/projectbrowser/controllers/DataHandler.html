@@ -1755,84 +1755,84 @@
 <a class="jxr_linenumber" name="L1747" href="#L1747">1747</a> <em class="jxr_comment">   * </em>
 <a class="jxr_linenumber" name="L1748" href="#L1748">1748</a> <em class="jxr_comment">   * return dataset_container; }</em>
 <a class="jxr_linenumber" name="L1749" href="#L1749">1749</a> <em class="jxr_comment">   */</em>
-<a class="jxr_linenumber" name="L1750" href="#L1750">1750</a> 
-<a class="jxr_linenumber" name="L1751" href="#L1751">1751</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> registerDatasetInTable(DataSet d, FileInfoDssDTO[] filelist,
-<a class="jxr_linenumber" name="L1752" href="#L1752">1752</a>       HierarchicalContainer dataset_container, String project, String sample, Timestamp ts,
-<a class="jxr_linenumber" name="L1753" href="#L1753">1753</a>       String sampleType, Object parent) {
-<a class="jxr_linenumber" name="L1754" href="#L1754">1754</a>     <strong class="jxr_keyword">if</strong> (filelist[0].isDirectory()) {
-<a class="jxr_linenumber" name="L1755" href="#L1755">1755</a> 
-<a class="jxr_linenumber" name="L1756" href="#L1756">1756</a>       Object <strong class="jxr_keyword">new</strong>_ds = dataset_container.addItem();
-<a class="jxr_linenumber" name="L1757" href="#L1757">1757</a> 
-<a class="jxr_linenumber" name="L1758" href="#L1758">1758</a>       String folderPath = filelist[0].getPathInDataSet();
-<a class="jxr_linenumber" name="L1759" href="#L1759">1759</a>       FileInfoDssDTO[] subList = d.listFiles(folderPath, false);
-<a class="jxr_linenumber" name="L1760" href="#L1760">1760</a> 
-<a class="jxr_linenumber" name="L1761" href="#L1761">1761</a>       dataset_container.setChildrenAllowed(<strong class="jxr_keyword">new</strong>_ds, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L1762" href="#L1762">1762</a>       String download_link = filelist[0].getPathInDataSet();
-<a class="jxr_linenumber" name="L1763" href="#L1763">1763</a>       String[] splitted_link = download_link.split(<span class="jxr_string">"/"</span>);
-<a class="jxr_linenumber" name="L1764" href="#L1764">1764</a>       String file_name = download_link.split(<span class="jxr_string">"/"</span>)[splitted_link.length - 1];
-<a class="jxr_linenumber" name="L1765" href="#L1765">1765</a> 
-<a class="jxr_linenumber" name="L1766" href="#L1766">1766</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_ds, <span class="jxr_string">"Select"</span>).setValue(<strong class="jxr_keyword">new</strong> CheckBox());
-<a class="jxr_linenumber" name="L1767" href="#L1767">1767</a> 
-<a class="jxr_linenumber" name="L1768" href="#L1768">1768</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_ds, <span class="jxr_string">"Project"</span>).setValue(project);
-<a class="jxr_linenumber" name="L1769" href="#L1769">1769</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_ds, <span class="jxr_string">"Sample"</span>).setValue(sample);
-<a class="jxr_linenumber" name="L1770" href="#L1770">1770</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_ds, <span class="jxr_string">"Sample Type"</span>)
-<a class="jxr_linenumber" name="L1771" href="#L1771">1771</a>           .setValue(<strong class="jxr_keyword">this</strong>.getOpenBisClient().getSampleByIdentifier(sample).getSampleTypeCode());
-<a class="jxr_linenumber" name="L1772" href="#L1772">1772</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_ds, <span class="jxr_string">"File Name"</span>).setValue(file_name);
-<a class="jxr_linenumber" name="L1773" href="#L1773">1773</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_ds, <span class="jxr_string">"File Type"</span>).setValue(<span class="jxr_string">"Folder"</span>);
-<a class="jxr_linenumber" name="L1774" href="#L1774">1774</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_ds, <span class="jxr_string">"Dataset Type"</span>).setValue(<span class="jxr_string">"-"</span>);
-<a class="jxr_linenumber" name="L1775" href="#L1775">1775</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_ds, <span class="jxr_string">"Registration Date"</span>).setValue(ts);
-<a class="jxr_linenumber" name="L1776" href="#L1776">1776</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_ds, <span class="jxr_string">"Validated"</span>).setValue(<strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L1777" href="#L1777">1777</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_ds, <span class="jxr_string">"dl_link"</span>).setValue(
-<a class="jxr_linenumber" name="L1778" href="#L1778">1778</a>           d.getDataSetDss().tryGetInternalPathInDataStore() + <span class="jxr_string">"/"</span> + filelist[0].getPathInDataSet());
-<a class="jxr_linenumber" name="L1779" href="#L1779">1779</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_ds, <span class="jxr_string">"CODE"</span>).setValue(d.getCode());
-<a class="jxr_linenumber" name="L1780" href="#L1780">1780</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_ds, <span class="jxr_string">"file_size_bytes"</span>)
-<a class="jxr_linenumber" name="L1781" href="#L1781">1781</a>           .setValue(filelist[0].getFileSize());
-<a class="jxr_linenumber" name="L1782" href="#L1782">1782</a> 
-<a class="jxr_linenumber" name="L1783" href="#L1783">1783</a>       <em class="jxr_comment">// System.out.println("Now it should be a folder: " + filelist[0].getPathInDataSet());</em>
-<a class="jxr_linenumber" name="L1784" href="#L1784">1784</a> 
-<a class="jxr_linenumber" name="L1785" href="#L1785">1785</a>       <strong class="jxr_keyword">if</strong> (parent != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L1786" href="#L1786">1786</a>         dataset_container.setParent(<strong class="jxr_keyword">new</strong>_ds, parent);
-<a class="jxr_linenumber" name="L1787" href="#L1787">1787</a>       }
-<a class="jxr_linenumber" name="L1788" href="#L1788">1788</a> 
-<a class="jxr_linenumber" name="L1789" href="#L1789">1789</a>       <strong class="jxr_keyword">for</strong> (FileInfoDssDTO file : subList) {
-<a class="jxr_linenumber" name="L1790" href="#L1790">1790</a>         FileInfoDssDTO[] childList = {file};
-<a class="jxr_linenumber" name="L1791" href="#L1791">1791</a>         registerDatasetInTable(d, childList, dataset_container, project, sample, ts, sampleType,
-<a class="jxr_linenumber" name="L1792" href="#L1792">1792</a>             <strong class="jxr_keyword">new</strong>_ds);
-<a class="jxr_linenumber" name="L1793" href="#L1793">1793</a>       }
-<a class="jxr_linenumber" name="L1794" href="#L1794">1794</a> 
-<a class="jxr_linenumber" name="L1795" href="#L1795">1795</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L1796" href="#L1796">1796</a>       <em class="jxr_comment">// System.out.println("Now it should be a file: " + filelist[0].getPathInDataSet());</em>
-<a class="jxr_linenumber" name="L1797" href="#L1797">1797</a> 
-<a class="jxr_linenumber" name="L1798" href="#L1798">1798</a>       Object <strong class="jxr_keyword">new</strong>_file = dataset_container.addItem();
-<a class="jxr_linenumber" name="L1799" href="#L1799">1799</a>       dataset_container.setChildrenAllowed(<strong class="jxr_keyword">new</strong>_file, false);
-<a class="jxr_linenumber" name="L1800" href="#L1800">1800</a>       String download_link = filelist[0].getPathInDataSet();
-<a class="jxr_linenumber" name="L1801" href="#L1801">1801</a>       String[] splitted_link = download_link.split(<span class="jxr_string">"/"</span>);
-<a class="jxr_linenumber" name="L1802" href="#L1802">1802</a>       String file_name = download_link.split(<span class="jxr_string">"/"</span>)[splitted_link.length - 1];
-<a class="jxr_linenumber" name="L1803" href="#L1803">1803</a>       <em class="jxr_comment">// String file_name = download_link.split("/")[1];</em>
-<a class="jxr_linenumber" name="L1804" href="#L1804">1804</a>       String fileSize = PortalUtils.humanReadableByteCount(filelist[0].getFileSize(), <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L1805" href="#L1805">1805</a> 
-<a class="jxr_linenumber" name="L1806" href="#L1806">1806</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_file, <span class="jxr_string">"Select"</span>).setValue(<strong class="jxr_keyword">new</strong> CheckBox());
-<a class="jxr_linenumber" name="L1807" href="#L1807">1807</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_file, <span class="jxr_string">"Project"</span>).setValue(project);
-<a class="jxr_linenumber" name="L1808" href="#L1808">1808</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_file, <span class="jxr_string">"Sample"</span>).setValue(sample);
-<a class="jxr_linenumber" name="L1809" href="#L1809">1809</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_file, <span class="jxr_string">"Sample Type"</span>).setValue(sampleType);
-<a class="jxr_linenumber" name="L1810" href="#L1810">1810</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_file, <span class="jxr_string">"File Name"</span>).setValue(file_name);
-<a class="jxr_linenumber" name="L1811" href="#L1811">1811</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_file, <span class="jxr_string">"File Type"</span>)
-<a class="jxr_linenumber" name="L1812" href="#L1812">1812</a>           .setValue(d.getDataSetTypeCode());
-<a class="jxr_linenumber" name="L1813" href="#L1813">1813</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_file, <span class="jxr_string">"Dataset Type"</span>)
-<a class="jxr_linenumber" name="L1814" href="#L1814">1814</a>           .setValue(d.getDataSetTypeCode());
-<a class="jxr_linenumber" name="L1815" href="#L1815">1815</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_file, <span class="jxr_string">"Registration Date"</span>).setValue(ts);
-<a class="jxr_linenumber" name="L1816" href="#L1816">1816</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_file, <span class="jxr_string">"Validated"</span>).setValue(<strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L1817" href="#L1817">1817</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_file, <span class="jxr_string">"File Size"</span>).setValue(fileSize);
-<a class="jxr_linenumber" name="L1818" href="#L1818">1818</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_file, <span class="jxr_string">"dl_link"</span>).setValue(
-<a class="jxr_linenumber" name="L1819" href="#L1819">1819</a>           d.getDataSetDss().tryGetInternalPathInDataStore() + <span class="jxr_string">"/"</span> + filelist[0].getPathInDataSet());
-<a class="jxr_linenumber" name="L1820" href="#L1820">1820</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_file, <span class="jxr_string">"CODE"</span>).setValue(d.getCode());
-<a class="jxr_linenumber" name="L1821" href="#L1821">1821</a>       dataset_container.getContainerProperty(<strong class="jxr_keyword">new</strong>_file, <span class="jxr_string">"file_size_bytes"</span>)
-<a class="jxr_linenumber" name="L1822" href="#L1822">1822</a>           .setValue(filelist[0].getFileSize());
-<a class="jxr_linenumber" name="L1823" href="#L1823">1823</a>       <strong class="jxr_keyword">if</strong> (parent != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L1824" href="#L1824">1824</a>         dataset_container.setParent(<strong class="jxr_keyword">new</strong>_file, parent);
-<a class="jxr_linenumber" name="L1825" href="#L1825">1825</a>       }
-<a class="jxr_linenumber" name="L1826" href="#L1826">1826</a>     }
-<a class="jxr_linenumber" name="L1827" href="#L1827">1827</a>   }
+<a class="jxr_linenumber" name="L1750" href="#L1750">1750</a> <em class="jxr_comment">//</em>
+<a class="jxr_linenumber" name="L1751" href="#L1751">1751</a> <em class="jxr_comment">//  public void registerDatasetInTable(DataSet d, FileInfoDssDTO[] filelist,</em>
+<a class="jxr_linenumber" name="L1752" href="#L1752">1752</a> <em class="jxr_comment">//      HierarchicalContainer dataset_container, String project, String sample, Timestamp ts,</em>
+<a class="jxr_linenumber" name="L1753" href="#L1753">1753</a> <em class="jxr_comment">//      String sampleType, Object parent) {</em>
+<a class="jxr_linenumber" name="L1754" href="#L1754">1754</a> <em class="jxr_comment">//    if (filelist[0].isDirectory()) {</em>
+<a class="jxr_linenumber" name="L1755" href="#L1755">1755</a> <em class="jxr_comment">//</em>
+<a class="jxr_linenumber" name="L1756" href="#L1756">1756</a> <em class="jxr_comment">//      Object new_ds = dataset_container.addItem();</em>
+<a class="jxr_linenumber" name="L1757" href="#L1757">1757</a> <em class="jxr_comment">//</em>
+<a class="jxr_linenumber" name="L1758" href="#L1758">1758</a> <em class="jxr_comment">//      String folderPath = filelist[0].getPathInDataSet();</em>
+<a class="jxr_linenumber" name="L1759" href="#L1759">1759</a> <em class="jxr_comment">//      FileInfoDssDTO[] subList = d.listFiles(folderPath, false);</em>
+<a class="jxr_linenumber" name="L1760" href="#L1760">1760</a> <em class="jxr_comment">//</em>
+<a class="jxr_linenumber" name="L1761" href="#L1761">1761</a> <em class="jxr_comment">//      dataset_container.setChildrenAllowed(new_ds, true);</em>
+<a class="jxr_linenumber" name="L1762" href="#L1762">1762</a> <em class="jxr_comment">//      String download_link = filelist[0].getPathInDataSet();</em>
+<a class="jxr_linenumber" name="L1763" href="#L1763">1763</a> <em class="jxr_comment">//      String[] splitted_link = download_link.split("/");</em>
+<a class="jxr_linenumber" name="L1764" href="#L1764">1764</a> <em class="jxr_comment">//      String file_name = download_link.split("/")[splitted_link.length - 1];</em>
+<a class="jxr_linenumber" name="L1765" href="#L1765">1765</a> <em class="jxr_comment">//</em>
+<a class="jxr_linenumber" name="L1766" href="#L1766">1766</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_ds, "Select").setValue(new CheckBox());</em>
+<a class="jxr_linenumber" name="L1767" href="#L1767">1767</a> <em class="jxr_comment">//</em>
+<a class="jxr_linenumber" name="L1768" href="#L1768">1768</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_ds, "Project").setValue(project);</em>
+<a class="jxr_linenumber" name="L1769" href="#L1769">1769</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_ds, "Sample").setValue(sample);</em>
+<a class="jxr_linenumber" name="L1770" href="#L1770">1770</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_ds, "Sample Type")</em>
+<a class="jxr_linenumber" name="L1771" href="#L1771">1771</a> <em class="jxr_comment">//          .setValue(this.getOpenBisClient().getSampleByIdentifier(sample).getSampleTypeCode());</em>
+<a class="jxr_linenumber" name="L1772" href="#L1772">1772</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_ds, "File Name").setValue(file_name);</em>
+<a class="jxr_linenumber" name="L1773" href="#L1773">1773</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_ds, "File Type").setValue("Folder");</em>
+<a class="jxr_linenumber" name="L1774" href="#L1774">1774</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_ds, "Dataset Type").setValue("-");</em>
+<a class="jxr_linenumber" name="L1775" href="#L1775">1775</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_ds, "Registration Date").setValue(ts);</em>
+<a class="jxr_linenumber" name="L1776" href="#L1776">1776</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_ds, "Validated").setValue(true);</em>
+<a class="jxr_linenumber" name="L1777" href="#L1777">1777</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_ds, "dl_link").setValue(</em>
+<a class="jxr_linenumber" name="L1778" href="#L1778">1778</a> <em class="jxr_comment">//          d.getDataSetDss().tryGetInternalPathInDataStore() + "/" + filelist[0].getPathInDataSet());</em>
+<a class="jxr_linenumber" name="L1779" href="#L1779">1779</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_ds, "CODE").setValue(d.getCode());</em>
+<a class="jxr_linenumber" name="L1780" href="#L1780">1780</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_ds, "file_size_bytes")</em>
+<a class="jxr_linenumber" name="L1781" href="#L1781">1781</a> <em class="jxr_comment">//          .setValue(filelist[0].getFileSize());</em>
+<a class="jxr_linenumber" name="L1782" href="#L1782">1782</a> <em class="jxr_comment">//</em>
+<a class="jxr_linenumber" name="L1783" href="#L1783">1783</a> <em class="jxr_comment">//      // System.out.println("Now it should be a folder: " + filelist[0].getPathInDataSet());</em>
+<a class="jxr_linenumber" name="L1784" href="#L1784">1784</a> <em class="jxr_comment">//</em>
+<a class="jxr_linenumber" name="L1785" href="#L1785">1785</a> <em class="jxr_comment">//      if (parent != null) {</em>
+<a class="jxr_linenumber" name="L1786" href="#L1786">1786</a> <em class="jxr_comment">//        dataset_container.setParent(new_ds, parent);</em>
+<a class="jxr_linenumber" name="L1787" href="#L1787">1787</a> <em class="jxr_comment">//      }</em>
+<a class="jxr_linenumber" name="L1788" href="#L1788">1788</a> <em class="jxr_comment">//</em>
+<a class="jxr_linenumber" name="L1789" href="#L1789">1789</a> <em class="jxr_comment">//      for (FileInfoDssDTO file : subList) {</em>
+<a class="jxr_linenumber" name="L1790" href="#L1790">1790</a> <em class="jxr_comment">//        FileInfoDssDTO[] childList = {file};</em>
+<a class="jxr_linenumber" name="L1791" href="#L1791">1791</a> <em class="jxr_comment">//        registerDatasetInTable(d, childList, dataset_container, project, sample, ts, sampleType,</em>
+<a class="jxr_linenumber" name="L1792" href="#L1792">1792</a> <em class="jxr_comment">//            new_ds);</em>
+<a class="jxr_linenumber" name="L1793" href="#L1793">1793</a> <em class="jxr_comment">//      }</em>
+<a class="jxr_linenumber" name="L1794" href="#L1794">1794</a> <em class="jxr_comment">//</em>
+<a class="jxr_linenumber" name="L1795" href="#L1795">1795</a> <em class="jxr_comment">//    } else {</em>
+<a class="jxr_linenumber" name="L1796" href="#L1796">1796</a> <em class="jxr_comment">//      // System.out.println("Now it should be a file: " + filelist[0].getPathInDataSet());</em>
+<a class="jxr_linenumber" name="L1797" href="#L1797">1797</a> <em class="jxr_comment">//</em>
+<a class="jxr_linenumber" name="L1798" href="#L1798">1798</a> <em class="jxr_comment">//      Object new_file = dataset_container.addItem();</em>
+<a class="jxr_linenumber" name="L1799" href="#L1799">1799</a> <em class="jxr_comment">//      dataset_container.setChildrenAllowed(new_file, false);</em>
+<a class="jxr_linenumber" name="L1800" href="#L1800">1800</a> <em class="jxr_comment">//      String download_link = filelist[0].getPathInDataSet();</em>
+<a class="jxr_linenumber" name="L1801" href="#L1801">1801</a> <em class="jxr_comment">//      String[] splitted_link = download_link.split("/");</em>
+<a class="jxr_linenumber" name="L1802" href="#L1802">1802</a> <em class="jxr_comment">//      String file_name = download_link.split("/")[splitted_link.length - 1];</em>
+<a class="jxr_linenumber" name="L1803" href="#L1803">1803</a> <em class="jxr_comment">//      // String file_name = download_link.split("/")[1];</em>
+<a class="jxr_linenumber" name="L1804" href="#L1804">1804</a> <em class="jxr_comment">//      String fileSize = PortalUtils.humanReadableByteCount(filelist[0].getFileSize(), true);</em>
+<a class="jxr_linenumber" name="L1805" href="#L1805">1805</a> <em class="jxr_comment">//</em>
+<a class="jxr_linenumber" name="L1806" href="#L1806">1806</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_file, "Select").setValue(new CheckBox());</em>
+<a class="jxr_linenumber" name="L1807" href="#L1807">1807</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_file, "Project").setValue(project);</em>
+<a class="jxr_linenumber" name="L1808" href="#L1808">1808</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_file, "Sample").setValue(sample);</em>
+<a class="jxr_linenumber" name="L1809" href="#L1809">1809</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_file, "Sample Type").setValue(sampleType);</em>
+<a class="jxr_linenumber" name="L1810" href="#L1810">1810</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_file, "File Name").setValue(file_name);</em>
+<a class="jxr_linenumber" name="L1811" href="#L1811">1811</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_file, "File Type")</em>
+<a class="jxr_linenumber" name="L1812" href="#L1812">1812</a> <em class="jxr_comment">//          .setValue(d.getDataSetTypeCode());</em>
+<a class="jxr_linenumber" name="L1813" href="#L1813">1813</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_file, "Dataset Type")</em>
+<a class="jxr_linenumber" name="L1814" href="#L1814">1814</a> <em class="jxr_comment">//          .setValue(d.getDataSetTypeCode());</em>
+<a class="jxr_linenumber" name="L1815" href="#L1815">1815</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_file, "Registration Date").setValue(ts);</em>
+<a class="jxr_linenumber" name="L1816" href="#L1816">1816</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_file, "Validated").setValue(true);</em>
+<a class="jxr_linenumber" name="L1817" href="#L1817">1817</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_file, "File Size").setValue(fileSize);</em>
+<a class="jxr_linenumber" name="L1818" href="#L1818">1818</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_file, "dl_link").setValue(</em>
+<a class="jxr_linenumber" name="L1819" href="#L1819">1819</a> <em class="jxr_comment">//          d.getDataSetDss().tryGetInternalPathInDataStore() + "/" + filelist[0].getPathInDataSet());</em>
+<a class="jxr_linenumber" name="L1820" href="#L1820">1820</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_file, "CODE").setValue(d.getCode());</em>
+<a class="jxr_linenumber" name="L1821" href="#L1821">1821</a> <em class="jxr_comment">//      dataset_container.getContainerProperty(new_file, "file_size_bytes")</em>
+<a class="jxr_linenumber" name="L1822" href="#L1822">1822</a> <em class="jxr_comment">//          .setValue(filelist[0].getFileSize());</em>
+<a class="jxr_linenumber" name="L1823" href="#L1823">1823</a> <em class="jxr_comment">//      if (parent != null) {</em>
+<a class="jxr_linenumber" name="L1824" href="#L1824">1824</a> <em class="jxr_comment">//        dataset_container.setParent(new_file, parent);</em>
+<a class="jxr_linenumber" name="L1825" href="#L1825">1825</a> <em class="jxr_comment">//      }</em>
+<a class="jxr_linenumber" name="L1826" href="#L1826">1826</a> <em class="jxr_comment">//    }</em>
+<a class="jxr_linenumber" name="L1827" href="#L1827">1827</a> <em class="jxr_comment">//  }</em>
 <a class="jxr_linenumber" name="L1828" href="#L1828">1828</a> 
 <a class="jxr_linenumber" name="L1829" href="#L1829">1829</a>   <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L1830" href="#L1830">1830</a> <em class="jxr_javadoccomment">   * Function to fill tree container and collect statistical information of spaces. Should replace</em>

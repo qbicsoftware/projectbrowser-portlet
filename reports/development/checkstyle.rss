@@ -25,9 +25,9 @@ under the License.
     <language>en-us</language>
     <copyright>&#169;2019</copyright>
     <item>
-      <title>File: 124,
+      <title>File: 125,
              Errors: 0,
-             Warnings: 4242,
+             Warnings: 4243,
              Infos: 0
       </title>
             <link>http://github.com/qbicsoftware/projectbrowser-portlet/checkstyle.html</link>
@@ -346,7 +346,7 @@ under the License.
                   0
                 </td>
                 <td>
-                  197
+                  189
                 </td>
                 <td>
                   0
@@ -836,7 +836,7 @@ under the License.
                   0
                 </td>
                 <td>
-                  3
+                  12
                 </td>
                 <td>
                   0
@@ -893,6 +893,20 @@ under the License.
                 </td>
                 <td>
                   11
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="http://github.com/qbicsoftware/projectbrowser-portlet/checkstyle.html#life.qbic.projectbrowser.model.DatasetBeanWithInfos.java">life/qbic/projectbrowser/model/DatasetBeanWithInfos.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  3
                 </td>
                 <td>
                   0
@@ -1004,7 +1018,7 @@ under the License.
                   0
                 </td>
                 <td>
-                  66
+                  69
                 </td>
                 <td>
                   0
@@ -1144,7 +1158,7 @@ under the License.
                   0
                 </td>
                 <td>
-                  63
+                  57
                 </td>
                 <td>
                   0

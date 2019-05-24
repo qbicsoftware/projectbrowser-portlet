@@ -15,6 +15,9 @@
  *******************************************************************************/
 package life.qbic.projectbrowser.helpers;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.vaadin.data.Container.Filter;
 import com.vaadin.data.util.GeneratedPropertyContainer;
 import com.vaadin.data.util.filter.SimpleStringFilter;
@@ -23,42 +26,45 @@ import com.vaadin.event.FieldEvents.TextChangeListener;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.HeaderCell;
 import com.vaadin.ui.Grid.HeaderRow;
+
 import com.vaadin.ui.TextField;
 
-<span class="nc" id="L28">public class GridFunctions {</span>
+<span class="nc" id="L32">public class GridFunctions {</span>
   // Set up a filter for all columns
 
-  public static void addColumnFilters(Grid grid, final GeneratedPropertyContainer gpcBio) {
-<span class="nc" id="L32">    HeaderRow filterRow = grid.appendHeaderRow();</span>
+<span class="nc" id="L35">  private static final Logger LOGGER = LogManager.getLogger(GridFunctions.class);</span>
 
-<span class="nc bnc" id="L34" title="All 2 branches missed.">    for (final Object pid : grid.getContainerDataSource().getContainerPropertyIds()) {</span>
-<span class="nc" id="L35">      HeaderCell cell = filterRow.getCell(pid);</span>
+  public static void addColumnFilters(Grid grid, final GeneratedPropertyContainer gpcBio) {
+<span class="nc" id="L38">    HeaderRow filterRow = grid.appendHeaderRow();</span>
+    
+<span class="nc bnc" id="L40" title="All 2 branches missed.">    for (final Object pid : grid.getContainerDataSource().getContainerPropertyIds()) {</span>
+<span class="nc" id="L41">      HeaderCell cell = filterRow.getCell(pid);</span>
 
       // Have an input field to use for filter
-<span class="nc" id="L38">      final TextField filterField = new TextField();</span>
-<span class="nc" id="L39">      filterField.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L44">      final TextField filterField = new TextField();</span>
+<span class="nc" id="L45">      filterField.setWidth(&quot;100%&quot;);</span>
 
       // filterField.setColumns(8);
 
       // Update filter When the filter input is changed
-<span class="nc" id="L44">      filterField.addTextChangeListener(new TextChangeListener() {</span>
+<span class="nc" id="L50">      filterField.addTextChangeListener(new TextChangeListener() {</span>
 
         /**
          * 
          */
         private static final long serialVersionUID = 7670817216478146116L;
-<span class="nc" id="L50">        Filter currentFilter = null;</span>
+<span class="nc" id="L56">        Filter currentFilter = null;</span>
 
         @Override
         public void textChange(TextChangeEvent event) {
-<span class="nc bnc" id="L54" title="All 2 branches missed.">          if (currentFilter != null) {</span>
-<span class="nc" id="L55">            gpcBio.removeContainerFilter(currentFilter);</span>
-<span class="nc" id="L56">            currentFilter = null;</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">          if (currentFilter != null) {</span>
+<span class="nc" id="L61">            gpcBio.removeContainerFilter(currentFilter);</span>
+<span class="nc" id="L62">            currentFilter = null;</span>
           }
 
-<span class="nc bnc" id="L59" title="All 2 branches missed.">          if (!event.getText().isEmpty()) {</span>
-<span class="nc" id="L60">            currentFilter = new SimpleStringFilter(pid, event.getText(), true, false);</span>
-<span class="nc" id="L61">            gpcBio.addContainerFilter(currentFilter);</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">          if (!event.getText().isEmpty()) {</span>
+<span class="nc" id="L66">            currentFilter = new SimpleStringFilter(pid, event.getText(), true, false);</span>
+<span class="nc" id="L67">            gpcBio.addContainerFilter(currentFilter);</span>
           }
           // (Re)create the filter if necessary
           // if (!filterField.getValue().equals(&quot;&quot;)) {
@@ -66,10 +72,10 @@ import com.vaadin.ui.TextField;
           // gpcBio.addContainerFilter(currentFilter);
           // }
 
-<span class="nc" id="L69">        }</span>
+<span class="nc" id="L75">        }</span>
       });
-<span class="nc" id="L71">      cell.setComponent(filterField);</span>
-<span class="nc" id="L72">    }</span>
-<span class="nc" id="L73">  }</span>
+<span class="nc" id="L77">      cell.setComponent(filterField);</span>
+<span class="nc" id="L78">    }</span>
+<span class="nc" id="L79">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>
