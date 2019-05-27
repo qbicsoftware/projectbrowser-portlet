@@ -33,23 +33,17 @@ import java.util.List;
 import javax.portlet.PortletSession;
 import javax.servlet.http.HttpServletResponse;
 
-import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.theme.ThemeDisplay;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.View;
-import com.vaadin.server.ExternalResource;
 import com.vaadin.server.FontAwesome;
-import com.vaadin.server.ThemeResource;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.WrappedPortletSession;
-import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Link;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
@@ -86,8 +80,6 @@ public class ProjectBrowserPortlet extends QBiCPortletUI {
   private ConfigurationManager manager;
 
   private static final Logger LOG = LogManager.getLogger(ProjectBrowserPortlet.class);
-  private String version = "1.6.3";
-  private String revision = "da6891a";
   private String resUrl;
   protected View currentView;
 

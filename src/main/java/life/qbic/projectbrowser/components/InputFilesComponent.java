@@ -32,6 +32,7 @@ import com.vaadin.data.util.PropertyValueGenerator;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Grid;
+import com.vaadin.ui.Grid.Column;
 import com.vaadin.ui.Grid.SelectionMode;
 import com.vaadin.ui.Grid.SingleSelectionModel;
 import com.vaadin.ui.HorizontalLayout;
@@ -43,6 +44,7 @@ import com.vaadin.ui.themes.ValoTheme;
 
 import life.qbic.projectbrowser.controllers.WorkflowViewController;
 import life.qbic.projectbrowser.helpers.Utils;
+import life.qbic.projectbrowser.model.DatasetBeanWithInfos;
 import life.qbic.projectbrowser.helpers.GridFunctions;
 
 // from workflow API
@@ -72,7 +74,6 @@ public class InputFilesComponent extends WorkflowParameterComponent {
 
   private static final Logger LOG = LogManager.getLogger(InputFilesComponent.class);
   private Map<String, Parameter> wfmap = new HashMap<String, Parameter>();;
-
 
   public InputFilesComponent(Map<String, Parameter> parameters) {
     super();
@@ -113,6 +114,9 @@ public class InputFilesComponent extends WorkflowParameterComponent {
    */
   public void buildLayout(Map<String, Parameter> wfparameters,
       BeanItemContainer<DatasetBean> datasets) {
+
+    BeanItemContainer<DatasetBeanWithInfos> updatedData = addInfoPropertyToDatasets(datasets);
+
     wfmap = wfparameters;
     for (Entry<String, Parameter> entry : wfmap.entrySet()) {
       GeneratedPropertyContainer gpcontainer = null;
@@ -133,7 +137,7 @@ public class InputFilesComponent extends WorkflowParameterComponent {
         } else if (range.contains("shRNAlibrary")) {
           gpcontainer = fastaContainerFiltered("shRNAlibrary");
         } else {
-          gpcontainer = filter(datasets, range);
+          gpcontainer = filter(updatedData, range);
         }
         newGrid.setContainerDataSource(gpcontainer);
         newGrid.setSelectionMode(getSelectionMode(entry.getValue()));
@@ -145,6 +149,28 @@ public class InputFilesComponent extends WorkflowParameterComponent {
       HorizontalLayout layout = new HorizontalLayout();
       layout.setMargin(new MarginInfo(true, true, true, true));
       layout.setSizeFull();
+
+      // since we added a new additional info column to the bean, we have to reorder columns
+      List<Column> cols = newGrid.getColumns();
+      Object[] props = new Object[cols.size()];
+      int i = 0;
+      boolean infoColExists = false;
+      for (Column c : cols) {
+        Object prop = c.getPropertyId();
+        // copy all the other columns in their previous order
+        if (!prop.equals("additionalInfo")) {
+          props[i] = prop;
+          i++;
+        } else {
+          infoColExists = true;
+        }
+      }
+      // add additional info last, as it used to be before this update
+      if (infoColExists) {
+        props[cols.size() - 1] = "additionalInfo";
+      }
+      // set the new order
+      newGrid.setColumnOrder(props);
 
       newGrid.setWidth("100%");
       layout.addComponent(newGrid);
@@ -161,12 +187,24 @@ public class InputFilesComponent extends WorkflowParameterComponent {
       // "Workflow submission might not be possible because no dataset of type %s is available in
       // this project",
       // entry.getKey()), "warning");
-      layout.addComponent(newGrid);
       // }
 
       GridFunctions.addColumnFilters(newGrid, gpcontainer);
       inputFileForm.addTab(layout, entry.getKey());
     }
+  }
+
+  private BeanItemContainer<DatasetBeanWithInfos> addInfoPropertyToDatasets(
+      BeanItemContainer<DatasetBean> datasets) {
+    BeanItemContainer<DatasetBeanWithInfos> beans =
+        new BeanItemContainer<DatasetBeanWithInfos>(DatasetBeanWithInfos.class);
+    for (java.util.Iterator<DatasetBean> i = datasets.getItemIds().iterator(); i.hasNext();) {
+      DatasetBean dataset = i.next();
+      beans.addBean(new DatasetBeanWithInfos(dataset.getFileName(), dataset.getFileType(),
+          dataset.getOpenbisCode(), dataset.getFullPath(), dataset.getSampleIdentifier(),
+          dataset.getProperties()));
+    }
+    return beans;
   }
 
   private SelectionMode getSelectionMode(Parameter param) {
@@ -249,17 +287,18 @@ public class InputFilesComponent extends WorkflowParameterComponent {
   /**
    * filters all DataSetBeans which are NOT in the filter and returns a new Container
    * 
-   * @param datasets
+   * @param updatedData
    * @param filter
    * @return
    */
-  public GeneratedPropertyContainer filter(BeanItemContainer<DatasetBean> datasets,
+  public GeneratedPropertyContainer filter(BeanItemContainer<DatasetBeanWithInfos> updatedData,
       List<String> filter) {
-    BeanItemContainer<DatasetBean> subContainer =
-        new BeanItemContainer<DatasetBean>(DatasetBean.class);
+    BeanItemContainer<DatasetBeanWithInfos> subContainer =
+        new BeanItemContainer<DatasetBeanWithInfos>(DatasetBeanWithInfos.class);
 
-    for (java.util.Iterator<DatasetBean> i = datasets.getItemIds().iterator(); i.hasNext();) {
-      DatasetBean dataset = i.next();
+    for (java.util.Iterator<DatasetBeanWithInfos> i = updatedData.getItemIds().iterator(); i
+        .hasNext();) {
+      DatasetBeanWithInfos dataset = i.next();
 
       // We dont' want to show html and zip files as workflow input (for now). In general we should
       // use the filter[1] which is the filetype.
@@ -287,27 +326,30 @@ public class InputFilesComponent extends WorkflowParameterComponent {
     gpcontainer.removeContainerProperty("openbisCode");
     gpcontainer.removeContainerProperty("properties");
 
-    gpcontainer.addGeneratedProperty("Additional Info", new PropertyValueGenerator<String>() {
-
-      @Override
-      public Class<String> getType() {
-        return String.class;
-      }
-
-      @Override
-      public String getValue(Item item, Object itemId, Object propertyId) {
-        Map<String, String> properties =
-            (Map<String, String>) item.getItemProperty("properties").getValue();
-
-        String additionalInfo = "";
-        if (properties != null) {
-          if (properties.containsKey("Q_ADDITIONAL_INFO")) {
-            additionalInfo = properties.get("Q_ADDITIONAL_INFO");
-          }
-        }
-        return additionalInfo;
-      }
-    });
+    // LOG.info("adding additional info property");
+    //
+    // gpcontainer.addGeneratedProperty("Additional Info", new PropertyValueGenerator<String>() {
+    //
+    // @Override
+    // public Class<String> getType() {
+    // return String.class;
+    // }
+    //
+    // @Override
+    // public String getValue(Item item, Object itemId, Object propertyId) {
+    // LOG.info("get value listener called");
+    // Map<String, String> properties =
+    // (Map<String, String>) item.getItemProperty("properties").getValue();
+    //
+    // String additionalInfo = "";
+    // if (properties != null) {
+    // if (properties.containsKey("Q_ADDITIONAL_INFO")) {
+    // additionalInfo = properties.get("Q_ADDITIONAL_INFO");
+    // }
+    // }
+    // return additionalInfo;
+    // }
+    // });
     return gpcontainer;
   }
 
@@ -317,6 +359,7 @@ public class InputFilesComponent extends WorkflowParameterComponent {
    * BeanItemContainer<DatasetBean> datasets) { this.wfparameters = wfparameters;
    * buildForm(wfparameters, datasets); }
    */
+  @Deprecated
   public void buildForm(Set<Entry<String, Parameter>> wfparameters,
       BeanItemContainer<DatasetBean> datasets) {
 
@@ -414,7 +457,6 @@ public class InputFilesComponent extends WorkflowParameterComponent {
       layout.setSizeFull();
 
       newGrid.setWidth("100%");
-      layout.addComponent(newGrid);
 
       // if (newGrid.getContainerDataSource().size() == 0) {
       // helpers.Utils
@@ -474,8 +516,7 @@ public class InputFilesComponent extends WorkflowParameterComponent {
       }
     }
     if (selectedDatasets.size() == 0) {
-      Utils.Notification("No dataset selected", "Please select at least one dataset.",
-          "error");
+      Utils.Notification("No dataset selected", "Please select at least one dataset.", "error");
     }
     return selectedDatasets;
   }
@@ -511,8 +552,7 @@ public class InputFilesComponent extends WorkflowParameterComponent {
       selectedDatasets.put(tab.getCaption(), tempList);
     }
     if (selectedDatasets.size() == 0) {
-      Utils.Notification("No dataset selected", "Please select at least one dataset.",
-          "error");
+      Utils.Notification("No dataset selected", "Please select at least one dataset.", "error");
     }
     return selectedDatasets;
   }
