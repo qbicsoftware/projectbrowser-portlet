@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MaxquantDigestionModeToNameConverter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.model.maxquant</a> &gt; <span class="el_source">MaxquantDigestionModeToNameConverter.java</span></div><h1>MaxquantDigestionModeToNameConverter.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects.
+ * Copyright (C) &quot;2016”  Christopher Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.model.maxquant;
+
+import java.util.HashMap;
+import java.util.Locale;
+
+import com.vaadin.data.util.converter.Converter;
+
+/**
+ * converts maxquant digestion modes from digestionMode(integer) to a user readable string and vice versa.
+ * @author wojnar
+ *
+ */
+public class MaxquantDigestionModeToNameConverter implements Converter&lt;String, DigestionMode&gt; {
+  private static final long serialVersionUID = 8425874280007470256L;
+
+<span class="nc" id="L33">  HashMap&lt;Integer, String&gt; modeToName = new HashMap&lt;Integer, String&gt;();</span>
+<span class="nc" id="L34">  HashMap&lt;String, Integer&gt; nameToMode = new HashMap&lt;String, Integer&gt;();</span>
+
+<span class="nc" id="L36">  public MaxquantDigestionModeToNameConverter() {</span>
+<span class="nc" id="L37">    add(0, &quot;Specific&quot;);</span>
+<span class="nc" id="L38">  }</span>
+
+  public void add(int mode, String name) {
+<span class="nc" id="L41">    modeToName.put(mode, name);</span>
+<span class="nc" id="L42">    nameToMode.put(name, mode);</span>
+<span class="nc" id="L43">  }</span>
+
+  @Override
+  public DigestionMode convertToModel(String value, Class&lt;? extends DigestionMode&gt; targetType,
+      Locale locale) throws ConversionException {
+<span class="nc bnc" id="L48" title="All 2 branches missed.">    if (nameToMode.containsKey(value)) {</span>
+<span class="nc" id="L49">      return new DigestionMode(nameToMode.get(value));</span>
+    } else {
+<span class="nc" id="L51">      throw new ConversionException(</span>
+          &quot;Unknown digestion mode: &quot; + value);
+    }
+  }
+
+  @Override
+  public String convertToPresentation(DigestionMode value, Class&lt;? extends String&gt; targetType,
+      Locale locale) throws ConversionException {
+<span class="nc bnc" id="L59" title="All 2 branches missed.">    if (modeToName.containsKey(value.getValue())) {</span>
+<span class="nc" id="L60">      return modeToName.get(value.getValue());</span>
+    } else {
+<span class="nc" id="L62">      throw new ConversionException(</span>
+          &quot;Unknown digestion mode: &quot; + value);
+    }
+  }
+
+  @Override
+  public Class&lt;DigestionMode&gt; getModelType() {
+<span class="nc" id="L69">    return DigestionMode.class;</span>
+  }
+
+  @Override
+  public Class&lt;String&gt; getPresentationType() {
+    // TODO Auto-generated method stub
+<span class="nc" id="L75">    return String.class;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

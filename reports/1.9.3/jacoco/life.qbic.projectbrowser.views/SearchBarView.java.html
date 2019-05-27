@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchBarView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.views</a> &gt; <span class="el_source">SearchBarView.java</span></div><h1>SearchBarView.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.views;
+
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.vaadin.data.validator.NullValidator;
+import com.vaadin.event.ShortcutAction.KeyCode;
+import com.vaadin.server.FontAwesome;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Notification;
+import com.vaadin.ui.Notification.Type;
+import com.vaadin.ui.Panel;
+import com.vaadin.ui.TextField;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.themes.ValoTheme;
+
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SampleFetchOption;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria.MatchClause;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria.MatchClauseAttribute;
+
+import life.qbic.portal.utils.PortalUtils;
+import life.qbic.projectbrowser.controllers.*;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+public class SearchBarView extends CustomComponent {
+
+
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 5371970241077786446L;
+<span class="nc" id="L58">  private static final Logger LOG = LogManager.getLogger(SearchBarView.class);</span>
+  private Panel mainlayout;
+  private DataHandler datahandler;
+<span class="nc" id="L61">  private final String infotext =</span>
+      &quot;This search box lets you search for qbic barcodes. If a barcode exits, comments/notes for that barcode will be displayed. You can as well add notes/comments to a barcode.&quot;;
+
+<span class="nc" id="L64">  public SearchBarView(DataHandler datahandler) {</span>
+<span class="nc" id="L65">    this.datahandler = datahandler;</span>
+<span class="nc" id="L66">    initUI();</span>
+<span class="nc" id="L67">  }</span>
+
+  public void initUI() {
+<span class="nc" id="L70">    mainlayout = new Panel();</span>
+<span class="nc" id="L71">    mainlayout.addStyleName(ValoTheme.PANEL_BORDERLESS);</span>
+
+    // static information for the user
+    // Label info = new Label();
+    // info.setValue(infotext);
+    // info.setStyleName(ValoTheme.LABEL_LIGHT);
+    // info.setStyleName(ValoTheme.LABEL_H4);
+    // mainlayout.addComponent(info);
+
+    // Search bar
+    // *----------- search text field .... search button-----------*
+<span class="nc" id="L82">    HorizontalLayout searchbar = new HorizontalLayout();</span>
+<span class="nc" id="L83">    searchbar.setSpacing(true);</span>
+<span class="nc" id="L84">    final TextField searchfield = new TextField();</span>
+<span class="nc" id="L85">    searchfield.setHeight(&quot;44px&quot;);</span>
+<span class="nc" id="L86">    searchfield.setImmediate(true);</span>
+
+<span class="nc" id="L88">    searchfield.setInputPrompt(&quot;search for sample&quot;);</span>
+    // TODO would be nice to have a autofill or something similar
+<span class="nc" id="L90">    searchbar.addComponent(searchfield);</span>
+<span class="nc" id="L91">    Button searchOk = new Button(&quot;GoTo&quot;);</span>
+<span class="nc" id="L92">    searchOk.addStyleName(ValoTheme.BUTTON_BORDERLESS);</span>
+<span class="nc" id="L93">    searchOk.setIcon(FontAwesome.SEARCH);</span>
+<span class="nc" id="L94">    searchOk.addClickListener(new ClickListener() {</span>
+      private static final long serialVersionUID = -2409450448301908214L;
+
+      @Override
+      public void buttonClick(ClickEvent event) {
+        // TODO how to deal with entities
+<span class="nc" id="L100">        Pattern pattern = Pattern.compile(&quot;Q[A-Z0-9]{4}[0-9]{3}[A-Z0-9]{2}&quot;);</span>
+<span class="nc" id="L101">        Pattern pattern2 = Pattern.compile(&quot;Q[A-Z0-9]{4}ENTITY-[0-9]+&quot;);</span>
+
+<span class="nc" id="L103">        LOG.info(&quot;searching for sample: &quot; + (String) searchfield.getValue());</span>
+
+<span class="nc bnc" id="L105" title="All 4 branches missed.">        if (searchfield.getValue() == null || searchfield.getValue().toString().equals(&quot;&quot;)) {</span>
+<span class="nc" id="L106">          Notification.show(&quot;Please provide a Barcode before clicking GoTo.&quot;, Type.WARNING_MESSAGE);</span>
+        }
+
+        else {
+<span class="nc" id="L110">          String entity = (String) searchfield.getValue().toString();</span>
+
+<span class="nc" id="L112">          Matcher matcher = pattern.matcher(entity);</span>
+<span class="nc" id="L113">          Matcher matcher2 = pattern2.matcher(entity);</span>
+
+<span class="nc" id="L115">          Boolean patternFound1 = matcher.find();</span>
+<span class="nc" id="L116">          Boolean patternFound2 = matcher2.find();</span>
+
+<span class="nc bnc" id="L118" title="All 2 branches missed.">          if (patternFound1) {</span>
+            try {
+<span class="nc" id="L120">              Sample foundSample =</span>
+<span class="nc" id="L121">                  datahandler.getOpenBisClient().getSampleByIdentifier(matcher.group(0).toString());</span>
+<span class="nc" id="L122">              String identifier = foundSample.getIdentifier();</span>
+
+<span class="nc" id="L124">              State state = (State) UI.getCurrent().getSession().getAttribute(&quot;state&quot;);</span>
+<span class="nc" id="L125">              ArrayList&lt;String&gt; message = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L126">              message.add(&quot;clicked&quot;);</span>
+<span class="nc" id="L127">              message.add(identifier);</span>
+<span class="nc" id="L128">              message.add(&quot;sample&quot;);</span>
+<span class="nc" id="L129">              state.notifyObservers(message);</span>
+<span class="nc" id="L130">            } catch (Exception e) {</span>
+<span class="nc" id="L131">              Notification.show(&quot;No Sample found for given barcode.&quot;, Type.WARNING_MESSAGE);</span>
+<span class="nc" id="L132">            }</span>
+          }
+
+<span class="nc bnc" id="L135" title="All 2 branches missed.">          else if (patternFound2) {</span>
+            try {
+<span class="nc" id="L137">              Sample foundSample = datahandler.getOpenBisClient()</span>
+<span class="nc" id="L138">                  .getSampleByIdentifier(matcher2.group(0).toString());</span>
+<span class="nc" id="L139">              String identifier = foundSample.getIdentifier();</span>
+
+<span class="nc" id="L141">              State state = (State) UI.getCurrent().getSession().getAttribute(&quot;state&quot;);</span>
+<span class="nc" id="L142">              ArrayList&lt;String&gt; message = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L143">              message.add(&quot;clicked&quot;);</span>
+<span class="nc" id="L144">              message.add(identifier);</span>
+<span class="nc" id="L145">              message.add(&quot;sample&quot;);</span>
+<span class="nc" id="L146">              state.notifyObservers(message);</span>
+<span class="nc" id="L147">            } catch (Exception e) {</span>
+<span class="nc" id="L148">              Notification.show(&quot;No Sample found for given barcode.&quot;, Type.WARNING_MESSAGE);</span>
+<span class="nc" id="L149">            }</span>
+          } else {
+<span class="nc" id="L151">            Notification.show(&quot;Please provide a valid Sample Barcode.&quot;, Type.WARNING_MESSAGE);</span>
+          }
+        }
+<span class="nc" id="L154">      }</span>
+    });
+
+    // setClickShortcut() would add global shortcut, instead we
+    // 'scope' the shortcut to the panel:
+<span class="nc" id="L159">    mainlayout.addAction(new Button.ClickShortcut(searchOk, KeyCode.ENTER));</span>
+    // searchfield.addItems(this.getSearchResults(&quot;Q&quot;));
+<span class="nc" id="L161">    searchfield.setDescription(infotext);</span>
+<span class="nc" id="L162">    searchfield.addValidator(new NullValidator(&quot;Field must not be empty&quot;, false));</span>
+<span class="nc" id="L163">    searchfield.setValidationVisible(false);</span>
+
+<span class="nc" id="L165">    searchbar.addComponent(searchOk);</span>
+    // searchbar.setMargin(new MarginInfo(true, false, true, false));
+<span class="nc" id="L167">    mainlayout.setContent(searchbar);</span>
+    // mainlayout.setComponentAlignment(searchbar, Alignment.MIDDLE_RIGHT);
+    // mainlayout.setWidth(100, Unit.PERCENTAGE);
+<span class="nc" id="L170">    setCompositionRoot(mainlayout);</span>
+<span class="nc" id="L171">  }</span>
+
+  public List&lt;String&gt; getSearchResults(String samplecode) {
+<span class="nc" id="L174">    EnumSet&lt;SampleFetchOption&gt; fetchOptions = EnumSet.of(SampleFetchOption.PROPERTIES);</span>
+<span class="nc" id="L175">    SearchCriteria sc = new SearchCriteria();</span>
+<span class="nc" id="L176">    sc.addMatchClause(</span>
+<span class="nc" id="L177">        MatchClause.createAttributeMatch(MatchClauseAttribute.CODE, samplecode + &quot;*&quot;));</span>
+<span class="nc" id="L178">    List&lt;Sample&gt; samples = datahandler.getOpenBisClient().getOpenbisInfoService()</span>
+<span class="nc" id="L179">        .searchForSamplesOnBehalfOfUser(datahandler.getOpenBisClient().getSessionToken(), sc,</span>
+<span class="nc" id="L180">            fetchOptions, PortalUtils.getNonNullScreenName());</span>
+<span class="nc" id="L181">    List&lt;String&gt; ret = new ArrayList&lt;String&gt;(samples.size());</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">    for (Sample sample : samples) {</span>
+<span class="nc" id="L183">      ret.add(sample.getCode());</span>
+<span class="nc" id="L184">    }</span>
+<span class="nc" id="L185">    return ret;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

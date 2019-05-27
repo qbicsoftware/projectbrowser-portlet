@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ChangeProjectMetadataComponent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.components</a> &gt; <span class="el_source">ChangeProjectMetadataComponent.java</span></div><h1>ChangeProjectMetadataComponent.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.components;
+
+import java.util.Collection;
+import java.util.HashMap;
+
+import com.vaadin.data.fieldgroup.FieldGroup;
+import com.vaadin.server.Page;
+import com.vaadin.shared.ui.MarginInfo;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.Field;
+import com.vaadin.ui.FormLayout;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.TextArea;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.themes.ValoTheme;
+
+import life.qbic.portal.utils.PortalUtils;
+import life.qbic.projectbrowser.helpers.Utils;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import life.qbic.projectbrowser.model.ProjectBean;
+import life.qbic.projectbrowser.controllers.*;
+
+
+public class ChangeProjectMetadataComponent extends CustomComponent {
+  /**
+   * TODO generic component for experiments and samples
+   */
+  private static final long serialVersionUID = -5318223225284123020L;
+
+<span class="nc" id="L51">  private static final Logger LOG = LogManager.getLogger(ChangeProjectMetadataComponent.class);</span>
+
+  private DataHandler datahandler;
+  private String resourceUrl;
+  private State state;
+  private VerticalLayout properties;
+
+  private FormLayout form;
+  private FieldGroup fieldGroup;
+  VerticalLayout vert;
+
+  private String currentDescription;
+
+<span class="nc" id="L64">  public ChangeProjectMetadataComponent(DataHandler dh, State state, String resourceurl) {</span>
+<span class="nc" id="L65">    this.datahandler = dh;</span>
+<span class="nc" id="L66">    this.resourceUrl = resourceurl;</span>
+<span class="nc" id="L67">    this.state = state;</span>
+
+    // this.setCaption(&quot;Metadata&quot;);
+
+<span class="nc" id="L71">    this.initUI();</span>
+<span class="nc" id="L72">  }</span>
+
+  private void initUI() {
+<span class="nc" id="L75">    properties = new VerticalLayout();</span>
+<span class="nc" id="L76">    properties.setWidth(100.0f, Unit.PERCENTAGE);</span>
+<span class="nc" id="L77">    properties.setMargin(new MarginInfo(true, false, true, true));</span>
+<span class="nc" id="L78">    properties.setSpacing(true);</span>
+
+<span class="nc" id="L80">    this.setWidth(Page.getCurrent().getBrowserWindowWidth() * 0.8f, Unit.PIXELS);</span>
+<span class="nc" id="L81">    this.setCompositionRoot(properties);</span>
+<span class="nc" id="L82">  }</span>
+
+  public void updateUI(final ProjectBean projectBean) {
+<span class="nc" id="L85">    properties.removeAllComponents();</span>
+<span class="nc" id="L86">    Button saveButton = new Button(&quot;Submit Changes&quot;);</span>
+<span class="nc" id="L87">    saveButton.setStyleName(ValoTheme.BUTTON_FRIENDLY);</span>
+
+<span class="nc" id="L89">    currentDescription = projectBean.getDescription();</span>
+
+<span class="nc" id="L91">    saveButton.addClickListener(new ClickListener() {</span>
+      @Override
+      public void buttonClick(final ClickEvent event) {
+<span class="nc" id="L94">        HashMap&lt;String, Object&gt; parameters = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L95">        Collection&lt;Field&lt;?&gt;&gt; registeredFields = fieldGroup.getFields();</span>
+
+        // List&lt;Property&gt; factors = new ArrayList&lt;Property&gt;();
+
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        for (Field&lt;?&gt; field : registeredFields) {</span>
+<span class="nc" id="L100">          parameters.put(&quot;description&quot;, field.getValue());</span>
+<span class="nc" id="L101">        }</span>
+
+<span class="nc" id="L103">        parameters.put(&quot;identifier&quot;, projectBean.getId());</span>
+<span class="nc" id="L104">        parameters.put(&quot;user&quot;, PortalUtils.getNonNullScreenName());</span>
+<span class="nc" id="L105">        datahandler.getOpenBisClient().triggerIngestionService(&quot;update-project-metadata&quot;,</span>
+            parameters);
+<span class="nc" id="L107">        Utils.Notification(&quot;Project details changed succesfully&quot;, String</span>
+<span class="nc" id="L108">            .format(&quot;Details of project %s have been commited successfully.&quot;, projectBean.getId()),</span>
+            &quot;success&quot;);
+<span class="nc" id="L110">      }</span>
+    });
+
+<span class="nc" id="L113">    buildFormLayout();</span>
+<span class="nc" id="L114">    Label desc = new Label(String.format(</span>
+        &quot;This view shows project details and can be used to change the corresponding values. \nIdentifier: %s&quot;,
+<span class="nc" id="L116">        projectBean.getId()), Label.CONTENT_PREFORMATTED);</span>
+<span class="nc" id="L117">    desc.setWidth(&quot;50%&quot;);</span>
+<span class="nc" id="L118">    properties.addComponent(desc);</span>
+
+<span class="nc" id="L120">    properties.addComponent(this.form);</span>
+<span class="nc" id="L121">    properties.addComponent(saveButton);</span>
+<span class="nc" id="L122">  }</span>
+
+
+  private void buildFormLayout() {
+<span class="nc" id="L126">    final FieldGroup fieldGroup = new FieldGroup();</span>
+<span class="nc" id="L127">    final FormLayout form2 = new FormLayout();</span>
+
+<span class="nc" id="L129">    TextArea tf = new TextArea(&quot;Description&quot;);</span>
+<span class="nc" id="L130">    tf.setWidth(&quot;50%&quot;);</span>
+<span class="nc" id="L131">    tf.setHeight(&quot;50%&quot;);</span>
+<span class="nc" id="L132">    fieldGroup.bind(tf, &quot;Description&quot;);</span>
+<span class="nc" id="L133">    tf.setCaption(&quot;Description&quot;);</span>
+<span class="nc" id="L134">    tf.setDescription(&quot;Description of this project.&quot;);</span>
+<span class="nc" id="L135">    tf.setValue(currentDescription);</span>
+<span class="nc" id="L136">    form2.addComponent(tf);</span>
+
+<span class="nc" id="L138">    this.fieldGroup = fieldGroup;</span>
+<span class="nc" id="L139">    this.form = form2;</span>
+<span class="nc" id="L140">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

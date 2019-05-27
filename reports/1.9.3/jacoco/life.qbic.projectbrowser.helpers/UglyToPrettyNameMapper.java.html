@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UglyToPrettyNameMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.helpers</a> &gt; <span class="el_source">UglyToPrettyNameMapper.java</span></div><h1>UglyToPrettyNameMapper.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016”
+ * Christopher Mohr, David Wojnar, Andreas Friedrich
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.helpers;
+
+import org.apache.commons.collections4.BidiMap;
+import org.apache.commons.collections4.bidimap.DualHashBidiMap;
+
+public class UglyToPrettyNameMapper {
+  // private Map&lt;String,String&gt; namesMapping = new HashMap&lt;String, String&gt;();
+<span class="nc" id="L23">  private BidiMap&lt;String, String&gt; namesMapping = new DualHashBidiMap&lt;String, String&gt;();</span>
+
+<span class="nc" id="L25">  public UglyToPrettyNameMapper() {</span>
+
+    // openBIS experiment types translated
+<span class="nc" id="L28">    namesMapping.put(&quot;Q_NGS_MEASUREMENT&quot;, &quot;Next Generation Sequencing Run&quot;);</span>
+<span class="nc" id="L29">    namesMapping.put(&quot;Q_EXPERIMENTAL_DESIGN&quot;, &quot;Sampling Units&quot;);</span>
+<span class="nc" id="L30">    namesMapping.put(&quot;Q_SAMPLE_EXTRACTION&quot;, &quot;Sample Extraction&quot;);</span>
+<span class="nc" id="L31">    namesMapping.put(&quot;Q_SAMPLE_PREPARATION&quot;, &quot;Sample Preparation&quot;);</span>
+<span class="nc" id="L32">    namesMapping.put(&quot;Q_PROJECT_DETAILS&quot;, &quot;Project Details&quot;);</span>
+<span class="nc" id="L33">    namesMapping.put(&quot;UNKNOWN&quot;, &quot;Experiment Unknown&quot;);</span>
+<span class="nc" id="L34">    namesMapping.put(&quot;Q_EXT_MS_QUALITYCONTROL&quot;, &quot;MS Quality Control&quot;);</span>
+<span class="nc" id="L35">    namesMapping.put(&quot;Q_EXT_NGS_QUALITYCONTROL&quot;, &quot;NGS Quality Control&quot;);</span>
+<span class="nc" id="L36">    namesMapping.put(&quot;Q_MICROARRAY_MEASUREMENT&quot;, &quot;Microarray Measurement&quot;);</span>
+<span class="nc" id="L37">    namesMapping.put(&quot;Q_MS_MEASUREMENT&quot;, &quot;MS Measurement&quot;);</span>
+<span class="nc" id="L38">    namesMapping.put(&quot;Q_NGS_EPITOPE_PREDICTION&quot;, &quot;Prediction of MHC binding Epitopes&quot;);</span>
+<span class="nc" id="L39">    namesMapping.put(&quot;Q_NGS_FLOWCELL_RUN&quot;, &quot;Flowcell Run&quot;);</span>
+<span class="nc" id="L40">    namesMapping.put(&quot;Q_NGS_HLATYPING&quot;, &quot;HLA Typing&quot;);</span>
+<span class="nc" id="L41">    namesMapping.put(&quot;Q_NGS_IMMUNE_MONITORING&quot;, &quot;Immune Monitoring&quot;);</span>
+<span class="nc" id="L42">    namesMapping.put(&quot;Q_NGS_MAPPING&quot;, &quot;Mapping of NGS Reads&quot;);</span>
+<span class="nc" id="L43">    namesMapping.put(&quot;Q_NGS_SINGLE_SAMPLE_RUN&quot;, &quot;Next-Generation Sequencing Run&quot;);</span>
+<span class="nc" id="L44">    namesMapping.put(&quot;Q_NGS_VARIANT_CALLING&quot;, &quot;Variant Calling&quot;);</span>
+<span class="nc" id="L45">    namesMapping.put(&quot;Q_WF_MA_QUALITYCONTROL&quot;, &quot;Microarray Quality Control Workflow&quot;);</span>
+<span class="nc" id="L46">    namesMapping.put(&quot;Q_WF_MS_MAXQUANT&quot;, &quot;MaxQuant Workflow&quot;);</span>
+<span class="nc" id="L47">    namesMapping.put(&quot;Q_WF_MS_PEPTIDEID&quot;, &quot;Peptide Identification Workflow&quot;);</span>
+<span class="nc" id="L48">    namesMapping.put(&quot;Q_WF_MS_QUALITYCONTROL&quot;, &quot;MS Quality Control Worfklow&quot;);</span>
+<span class="nc" id="L49">    namesMapping.put(&quot;Q_WF_NGS_EPITOPE_PREDICTION&quot;, &quot;Prediction of MHC binding Epitopes Workflow&quot;);</span>
+<span class="nc" id="L50">    namesMapping.put(&quot;Q_WF_NGS_HLATYPING&quot;, &quot;HLA Typing Workflow&quot;);</span>
+<span class="nc" id="L51">    namesMapping.put(&quot;Q_WF_NGS_MERGE&quot;, &quot;Merging of NGS Reads&quot;);</span>
+<span class="nc" id="L52">    namesMapping.put(&quot;Q_WF_NGS_QUALITYCONTROL&quot;, &quot;NGS Quality Control Workflow&quot;);</span>
+<span class="nc" id="L53">    namesMapping.put(&quot;Q_WF_NGS_RNA_EXPRESSION_ANALYSIS&quot;, &quot;RNA Expression Analysis Workflow&quot;);</span>
+<span class="nc" id="L54">    namesMapping.put(&quot;Q_WF_NGS_VARIANT_ANNOTATION&quot;, &quot;Variant Annotation Workflow&quot;);</span>
+<span class="nc" id="L55">    namesMapping.put(&quot;Q_WF_NGS_VARIANT_CALLING&quot;, &quot;Variant Calling Workflow&quot;);</span>
+<span class="nc" id="L56">    namesMapping.put(&quot;Q_WF_NGS_MAPPING&quot;, &quot;NGS Read Alignment Workflow&quot;);</span>
+<span class="nc" id="L57">    namesMapping.put(&quot;Q_WF_MS_INDIVIDUALIZED_PROTEOME&quot;, &quot;Individualized Proteins Workflow&quot;);</span>
+<span class="nc" id="L58">    namesMapping.put(&quot;Q_WF_MS_LIGANDOMICS_ID&quot;, &quot;Ligandomics Identification Workflow&quot;);</span>
+<span class="nc" id="L59">    namesMapping.put(&quot;Q_WF_MS_LIGANDOMICS_QC&quot;, &quot;Ligandomics Quality Control Workflow&quot;);</span>
+<span class="nc" id="L60">    namesMapping.put(&quot;Q_MHC_LIGAND_EXTRACTION&quot;, &quot;MHC Ligand Extraction&quot;);</span>
+<span class="nc" id="L61">    namesMapping.put(&quot;Q_WF_NGS_SHRNA_COUNTING&quot;, &quot;shRNA Counting Workflow&quot;);</span>
+<span class="nc" id="L62">    namesMapping.put(&quot;Q_WF_NGS_16S_TAXONOMIC_PROFILING&quot;, &quot;16S Taxonomic Profiling Workflow&quot;);</span>
+<span class="nc" id="L63">    namesMapping.put(&quot;Q_HT_QPCR&quot;, &quot;High-Throughput Quantitative Real-Time PCR&quot;);</span>
+<span class="nc" id="L64">    namesMapping.put(&quot;Q_BMI_GENERIC_IMAGING&quot;, &quot;Imaging&quot;);</span>
+<span class="nc" id="L65">    namesMapping.put(&quot;Q_NGS_READ_MATCH_ALIGNMENT&quot;, &quot;Read-Match Alignment&quot;);</span>
+
+
+    // deprecated experiment types
+<span class="nc" id="L69">    namesMapping.put(&quot;INFO_EXPERIMENT&quot;, &quot;Info (deprecated)&quot;);</span>
+<span class="nc" id="L70">    namesMapping.put(&quot;METABOLOMICS&quot;, &quot;Metabolomics (deprecated)&quot;);</span>
+<span class="nc" id="L71">    namesMapping.put(&quot;MS_INJECT&quot;, &quot;MS Inject (deprecated)&quot;);</span>
+<span class="nc" id="L72">    namesMapping.put(&quot;MS_QUANT&quot;, &quot;MS Quantification (deprecated)&quot;);</span>
+<span class="nc" id="L73">    namesMapping.put(&quot;MS_SEARCH&quot;, &quot;MS Search (deprecated)&quot;);</span>
+<span class="nc" id="L74">    namesMapping.put(&quot;NGS_ANNOTATION&quot;, &quot;Variant Annotation (deprecated)&quot;);</span>
+<span class="nc" id="L75">    namesMapping.put(&quot;NGS_MAPPING&quot;, &quot;NGS Read Mapping (deprecated)&quot;);</span>
+<span class="nc" id="L76">    namesMapping.put(&quot;NGS_QUANTIFICATION&quot;, &quot;NGS Quantification (deprecated)&quot;);</span>
+<span class="nc" id="L77">    namesMapping.put(&quot;NGS_SEQUENCING&quot;, &quot;NGS Measurement (deprecated)&quot;);</span>
+<span class="nc" id="L78">    namesMapping.put(&quot;NGS_SUBSTRACTION&quot;, &quot;Substraction (deprecated)&quot;);</span>
+<span class="nc" id="L79">    namesMapping.put(&quot;NGS_VARIANT_CALLING&quot;, &quot;Variant Calling (deprecated)&quot;);</span>
+<span class="nc" id="L80">    namesMapping.put(&quot;NMR&quot;, &quot;NMR (deprecated)&quot;);</span>
+<span class="nc" id="L81">    namesMapping.put(&quot;RNA_MICROARRAY&quot;, &quot;Microarray Measurement (deprecated)&quot;);</span>
+<span class="nc" id="L82">    namesMapping.put(&quot;SAMPLE_EXTRACTION&quot;, &quot;Sample Extraction (deprecated)&quot;);</span>
+<span class="nc" id="L83">    namesMapping.put(&quot;IMMUNE_MONITORING&quot;, &quot;Immune Monitoring (deprecated)&quot;);</span>
+<span class="nc" id="L84">    namesMapping.put(&quot;HLA_TYPING&quot;, &quot;HLA Typing (deprecated)&quot;);</span>
+<span class="nc" id="L85">    namesMapping.put(&quot;EPITOPE_PREDICTION&quot;, &quot;Eptiope Prediction (deprecated)&quot;);</span>
+<span class="nc" id="L86">    namesMapping.put(&quot;CLINICAL_SAMPLE&quot;, &quot;Clinical Sample (deprecated)&quot;);</span>
+<span class="nc" id="L87">    namesMapping.put(&quot;BIOLOGICAL_EXPERIMENT&quot;, &quot;Biological Experiment (deprecated)&quot;);</span>
+<span class="nc" id="L88">    namesMapping.put(&quot;PATIENT_INFORMATION&quot;, &quot;Patient Information (deprecated)&quot;);</span>
+
+    // openBIS sample types translated
+<span class="nc" id="L91">    namesMapping.put(&quot;Q_BIOLOGICAL_ENTITY&quot;, &quot;Experimental Unit&quot;);</span>
+<span class="nc" id="L92">    namesMapping.put(&quot;Q_BIOLOGICAL_SAMPLE&quot;, &quot;Extracted Sample&quot;);</span>
+<span class="nc" id="L93">    namesMapping.put(&quot;Q_TEST_SAMPLE&quot;, &quot;Prepared Sample&quot;);</span>
+<span class="nc" id="L94">    namesMapping.put(&quot;Q_ATTACHMENT_SAMPLE&quot;, &quot;Project Attachment&quot;);</span>
+<span class="nc" id="L95">    namesMapping.put(&quot;Q_EXT_MS_QUALITYCONTROL_RUN&quot;, &quot;External MS Quality Control Run&quot;);</span>
+<span class="nc" id="L96">    namesMapping.put(&quot;Q_EXT_NGS_QUALITYCONTROL_RUN&quot;, &quot;External NGS Quality Control Run&quot;);</span>
+<span class="nc" id="L97">    namesMapping.put(&quot;Q_MICROARRAY_RUN&quot;, &quot;Microarray Run&quot;);</span>
+<span class="nc" id="L98">    namesMapping.put(&quot;Q_MS_RUN&quot;, &quot;Mass Spectrometry Run&quot;);</span>
+<span class="nc" id="L99">    namesMapping.put(&quot;Q_NGS_EPITOPES&quot;, &quot;MHC Binding Epitopes&quot;);</span>
+<span class="nc" id="L100">    namesMapping.put(&quot;Q_NGS_FLOWCELL_RUN&quot;, &quot;Flowcell Run&quot;);</span>
+<span class="nc" id="L101">    namesMapping.put(&quot;Q_NGS_HLATYPING&quot;, &quot;HLA Typing Run&quot;);</span>
+<span class="nc" id="L102">    namesMapping.put(&quot;Q_NGS_IMMUNE_MONITORING&quot;, &quot;Immune Monitoring&quot;);</span>
+<span class="nc" id="L103">    namesMapping.put(&quot;Q_NGS_MAPPING&quot;, &quot;Mapping of NGS Reads&quot;);</span>
+<span class="nc" id="L104">    namesMapping.put(&quot;Q_NGS_SINGLE_SAMPLE_RUN&quot;, &quot;Next-Generation Sequencing Run&quot;);</span>
+<span class="nc" id="L105">    namesMapping.put(&quot;Q_NGS_VARIANT_CALLING&quot;, &quot;Variant Calling Run&quot;);</span>
+<span class="nc" id="L106">    namesMapping.put(&quot;Q_WF_MA_QUALITYCONTROL_RUN&quot;, &quot;Microarray Quality Control Workflow Run&quot;);</span>
+<span class="nc" id="L107">    namesMapping.put(&quot;Q_WF_MS_MAXQUANT_RUN&quot;, &quot;MaxQuant Workflow Run&quot;);</span>
+<span class="nc" id="L108">    namesMapping.put(&quot;Q_WF_MS_PEPTIDEID_RUN&quot;, &quot;Peptide Identification Workflow Run&quot;);</span>
+<span class="nc" id="L109">    namesMapping.put(&quot;Q_WF_MS_QUALITYCONTROL_RUN&quot;, &quot;MS Quality Control Workflow Run&quot;);</span>
+<span class="nc" id="L110">    namesMapping.put(&quot;Q_WF_NGS_EPITOPE_PREDICTION_RUN&quot;, &quot;Epitope Prediction Workflow Run&quot;);</span>
+<span class="nc" id="L111">    namesMapping.put(&quot;Q_WF_NGS_HLATYPING_RUN&quot;, &quot;HLA Typing Workflow Run&quot;);</span>
+<span class="nc" id="L112">    namesMapping.put(&quot;Q_WF_NGS_QUALITYCONTROL_RUN&quot;, &quot;NGS Quality Control Workflow Run&quot;);</span>
+<span class="nc" id="L113">    namesMapping.put(&quot;Q_WF_NGS_RNA_EXPRESSION_ANALYSIS_RUN&quot;, &quot;RNA Expression Workflow Run&quot;);</span>
+<span class="nc" id="L114">    namesMapping.put(&quot;Q_WF_NGS_VARIANT_ANNOTATION_RUN&quot;, &quot;Variant Annotation Workflow Run&quot;);</span>
+<span class="nc" id="L115">    namesMapping.put(&quot;Q_WF_NGS_VARIANT_CALLING_RUN&quot;, &quot;Variant Calling Workflow Run&quot;);</span>
+<span class="nc" id="L116">    namesMapping.put(&quot;Q_WF_NGS_MAPPING_RUN&quot;, &quot;NGS Read Alignment Workflow Run&quot;);</span>
+<span class="nc" id="L117">    namesMapping.put(&quot;Q_WF_MS_INDIVIDUALIZED_PROTEOME_RUN&quot;, &quot;Individualized Proteins Workflow Run&quot;);</span>
+<span class="nc" id="L118">    namesMapping.put(&quot;Q_WF_MS_LIGANDOMICS_ID_RUN&quot;, &quot;Ligandomics Identification Workflow Run&quot;);</span>
+<span class="nc" id="L119">    namesMapping.put(&quot;Q_WF_MS_LIGANDOMICS_QC_RUN&quot;, &quot;Ligandomics Quality Control Workflow Run&quot;);</span>
+<span class="nc" id="L120">    namesMapping.put(&quot;Q_MHC_LIGAND_EXTRACT&quot;, &quot;MHC Ligand Extract&quot;);</span>
+<span class="nc" id="L121">    namesMapping.put(&quot;Q_WF_NGS_SHRNA_COUNTING_RUN&quot;, &quot;shRNA Counting Workflow Run&quot;);</span>
+<span class="nc" id="L122">    namesMapping</span>
+<span class="nc" id="L123">        .put(&quot;Q_WF_NGS_16S_TAXONOMIC_PROFILING_RUN&quot;, &quot;16S Taxonomic Profiling Workflow Run&quot;);</span>
+<span class="nc" id="L124">    namesMapping.put(&quot;Q_HT_QPCR_RUN&quot;, &quot;High-Throughput qPCR Run&quot;);</span>
+<span class="nc" id="L125">    namesMapping.put(&quot;Q_BMI_GENERIC_IMAGING_RUN&quot;, &quot;Imaging Run&quot;);</span>
+<span class="nc" id="L126">    namesMapping.put(&quot;Q_NGS_READ_MATCH_ALIGNMENT_RUN&quot;, &quot;Read-Match Alignment Run&quot;);</span>
+
+
+    // deprecated sample types
+<span class="nc" id="L130">    namesMapping.put(&quot;BIOLOGICAL&quot;, &quot;Biological Sample (deprecated)&quot;);</span>
+<span class="nc" id="L131">    namesMapping.put(&quot;BLOOD_SAMPLE&quot;, &quot;Blood Sample (deprecated)&quot;);</span>
+<span class="nc" id="L132">    namesMapping.put(&quot;DNA&quot;, &quot;DNA Sample (deprecated)&quot;);</span>
+<span class="nc" id="L133">    namesMapping.put(&quot;EPITOPE_PREDICTION&quot;, &quot;Epitope Prediction Sample (deprecated)&quot;);</span>
+<span class="nc" id="L134">    namesMapping.put(&quot;HCC_SAMPLE&quot;, &quot;HCC Sample (deprecated)&quot;);</span>
+<span class="nc" id="L135">    namesMapping.put(&quot;HLA_TYPING&quot;, &quot;HLA Typing Sample (deprecated)&quot;);</span>
+<span class="nc" id="L136">    namesMapping.put(&quot;IMMUNE_MONITORING&quot;, &quot;Immune Monitoring Sample (deprecated)&quot;);</span>
+<span class="nc" id="L137">    namesMapping.put(&quot;IMMUNO_MONITORING&quot;, &quot;Immuno Monitoring Sample (deprecated)&quot;);</span>
+<span class="nc" id="L138">    namesMapping.put(&quot;LIGANDOMICS&quot;, &quot;Ligandomics Sample (deprecated)&quot;);</span>
+<span class="nc" id="L139">    namesMapping.put(&quot;MS_INJECTION&quot;, &quot;MS Injection Sample (deprecated)&quot;);</span>
+<span class="nc" id="L140">    namesMapping.put(&quot;NGS&quot;, &quot;NGS Sample (deprecated)&quot;);</span>
+<span class="nc" id="L141">    namesMapping.put(&quot;MS_QUANT&quot;, &quot;MS Quantification Sample (deprecated)&quot;);</span>
+<span class="nc" id="L142">    namesMapping.put(&quot;NGS_ANNO&quot;, &quot;Variant Annotation Sample (deprecated)&quot;);</span>
+<span class="nc" id="L143">    namesMapping.put(&quot;NGS_MAP&quot;, &quot;NGS Mapping Sample (deprecated)&quot;);</span>
+<span class="nc" id="L144">    namesMapping.put(&quot;NGS_QUANT&quot;, &quot;NGS Quantification Sample (deprecated)&quot;);</span>
+<span class="nc" id="L145">    namesMapping.put(&quot;NGS_SEQ&quot;, &quot;NGS Sequencing Sample (deprecated)&quot;);</span>
+<span class="nc" id="L146">    namesMapping.put(&quot;NGS_SEQUENCING&quot;, &quot;NGS Measurement Sample (deprecated)&quot;);</span>
+<span class="nc" id="L147">    namesMapping.put(&quot;NGS_SUBSTRACT&quot;, &quot;NGS Substraction Sample (deprecated)&quot;);</span>
+<span class="nc" id="L148">    namesMapping.put(&quot;NGS_VARIANT_CALLING&quot;, &quot;Variant Calling Sample (deprecated)&quot;);</span>
+<span class="nc" id="L149">    namesMapping.put(&quot;NMR_INJECTION&quot;, &quot;NMR Injection Sample (deprecated)&quot;);</span>
+<span class="nc" id="L150">    namesMapping.put(&quot;NORMAL_SAMPLE&quot;, &quot;Normal TIssue Sample (deprecated)&quot;);</span>
+<span class="nc" id="L151">    namesMapping.put(&quot;PLASMA&quot;, &quot;Plasma Sample (deprecated)&quot;);</span>
+<span class="nc" id="L152">    namesMapping.put(&quot;PROJECT_INFORMATION&quot;, &quot;Project Information (deprecated)&quot;);</span>
+<span class="nc" id="L153">    namesMapping.put(&quot;PROTEIN&quot;, &quot;Protein Sample (deprecated)&quot;);</span>
+<span class="nc" id="L154">    namesMapping.put(&quot;RNA&quot;, &quot;RNA Sample (deprecated)&quot;);</span>
+<span class="nc" id="L155">    namesMapping.put(&quot;SEARCH&quot;, &quot;Search Sample (deprecated)&quot;);</span>
+<span class="nc" id="L156">    namesMapping.put(&quot;TUMOR_SAMPLE&quot;, &quot;Tumor Sample (deprecated)&quot;);</span>
+<span class="nc" id="L157">    namesMapping.put(&quot;NGS_QUANT&quot;, &quot;NGS Quantification Sample (deprecated)&quot;);</span>
+
+    // openBIS dataset types translated
+<span class="nc" id="L160">    namesMapping.put(&quot;Q_NGS_HLATYPING_DATA&quot;, &quot;HLA Typing Results&quot;);</span>
+<span class="nc" id="L161">    namesMapping.put(&quot;UNKNOWN&quot;, &quot;Unknown Sample&quot;);</span>
+<span class="nc" id="L162">    namesMapping.put(&quot;Q_EXT_MS_QUALITYCONTROL_RESULTS&quot;,</span>
+        &quot;Mass Spectrometry Quality Control (External)&quot;);
+<span class="nc" id="L164">    namesMapping.put(&quot;Q_EXT_NGS_QUALITYCONTROL_RESULTS&quot;, &quot;NGS Quality Control (External)&quot;);</span>
+<span class="nc" id="L165">    namesMapping.put(&quot;Q_MA_RAW_DATA&quot;, &quot;Microarray Raw Data&quot;);</span>
+<span class="nc" id="L166">    namesMapping.put(&quot;Q_MS_RAW_DATA&quot;, &quot;Mass Spectrometry Raw Data&quot;);</span>
+<span class="nc" id="L167">    namesMapping.put(&quot;Q_NGS_IMMUNE_MONITORING_DATA&quot;, &quot;Immune Monitoring Data&quot;);</span>
+<span class="nc" id="L168">    namesMapping.put(&quot;Q_NGS_MAPPING_DATA&quot;, &quot;Mapped NGS Reads&quot;);</span>
+<span class="nc" id="L169">    namesMapping.put(&quot;Q_NGS_RAW_DATA&quot;, &quot;NGS Raw Data&quot;);</span>
+<span class="nc" id="L170">    namesMapping.put(&quot;Q_NGS_VARIANT_CALLING_DATA&quot;, &quot;Variant Calling Data&quot;);</span>
+<span class="nc" id="L171">    namesMapping.put(&quot;Q_PROJECT_DATA&quot;, &quot;Project related Data&quot;);</span>
+<span class="nc" id="L172">    namesMapping.put(&quot;Q_WF_MA_QUALITYCONTROL_LOGS&quot;, &quot;Microarray Quality Control Logs&quot;);</span>
+<span class="nc" id="L173">    namesMapping.put(&quot;Q_WF_MA_QUALITYCONTROL_RESULTS&quot;, &quot;Microarray Quality Control&quot;);</span>
+<span class="nc" id="L174">    namesMapping.put(&quot;Q_WF_MS_MAXQUANT_ORIGINAL_OUT&quot;, &quot;MaxQuant Outfile&quot;);</span>
+<span class="nc" id="L175">    namesMapping.put(&quot;Q_WF_MS_MAXQUANT_RESULTS&quot;, &quot;MaxQuant Results&quot;);</span>
+<span class="nc" id="L176">    namesMapping.put(&quot;Q_WF_MS_MAXQUANT_LOGS&quot;, &quot;MaxQuant Logs&quot;);</span>
+<span class="nc" id="L177">    namesMapping.put(&quot;Q_WF_MS_PEPTIDEID_LOGS&quot;, &quot;Peptide Identification Logs&quot;);</span>
+<span class="nc" id="L178">    namesMapping.put(&quot;Q_WF_MS_PEPTIDEID_RESULTS&quot;, &quot;Peptide Identification Results&quot;);</span>
+<span class="nc" id="L179">    namesMapping.put(&quot;Q_WF_MS_QUALITYCONTROL_LOGS&quot;, &quot;Mass Spectrometry Quality Control Logs&quot;);</span>
+<span class="nc" id="L180">    namesMapping.put(&quot;Q_WF_MS_QUALITYCONTROL_RESULTS&quot;, &quot;Mass Spectrometry Quality Control Results&quot;);</span>
+<span class="nc" id="L181">    namesMapping.put(&quot;Q_WF_NGS_EPITOPE_PREDICTION_LOGS&quot;, &quot;Epitope Prediction Logs&quot;);</span>
+<span class="nc" id="L182">    namesMapping.put(&quot;Q_WF_NGS_EPITOPE_PREDICTION_RESULTS&quot;, &quot;Epitope Prediction Results&quot;);</span>
+<span class="nc" id="L183">    namesMapping.put(&quot;Q_WF_NGS_HLATYPING_LOGS&quot;, &quot;HLA Typing Workflow Logs&quot;);</span>
+<span class="nc" id="L184">    namesMapping.put(&quot;Q_WF_NGS_HLATYPING_RESULTS&quot;, &quot;HLA Typing Workflow Results&quot;);</span>
+<span class="nc" id="L185">    namesMapping.put(&quot;Q_WF_NGS_QUALITYCONTROL_RESULTS&quot;, &quot;NGS Quality Control Results&quot;);</span>
+<span class="nc" id="L186">    namesMapping.put(&quot;Q_WF_NGS_QUALITYCONTROL_LOGS&quot;, &quot;NGS Quality Control Logs&quot;);</span>
+<span class="nc" id="L187">    namesMapping.put(&quot;Q_WF_NGS_RNAEXPRESSIONANALYSIS_LOGS&quot;, &quot;Gene Expression Analysis Logs&quot;);</span>
+<span class="nc" id="L188">    namesMapping.put(&quot;Q_WF_NGS_RNAEXPRESSIONANALYSIS_RESULTS&quot;, &quot;Gene Expression Analysis Results&quot;);</span>
+<span class="nc" id="L189">    namesMapping.put(&quot;Q_WF_NGS_VARIANT_ANNOTATION_LOGS&quot;, &quot;Variant Annotation Logs&quot;);</span>
+<span class="nc" id="L190">    namesMapping.put(&quot;Q_WF_NGS_VARIANT_ANNOTATION_RESULTS&quot;, &quot;Variant Annotation Results&quot;);</span>
+<span class="nc" id="L191">    namesMapping.put(&quot;Q_WF_NGS_VARIANT_CALLING_LOGS&quot;, &quot;Variant Calling Logs&quot;);</span>
+<span class="nc" id="L192">    namesMapping.put(&quot;Q_WF_NGS_VARIANT_CALLING_RESULTS&quot;, &quot;Variant Calling Results&quot;);</span>
+<span class="nc" id="L193">    namesMapping.put(&quot;Q_WF_NGS_MAPPING_LOGS&quot;, &quot;NGS Read Alignment Logs&quot;);</span>
+<span class="nc" id="L194">    namesMapping.put(&quot;Q_WF_NGS_MAPPING_RESULTS&quot;, &quot;NGS Read Alignment Results&quot;);</span>
+<span class="nc" id="L195">    namesMapping.put(&quot;MZML&quot;, &quot;Mass Spectrometry Raw Data (MZML)&quot;);</span>
+<span class="nc" id="L196">    namesMapping.put(&quot;Q_MS_MZML_DATA&quot;, &quot;Mass Spectrometry Raw Data (MZML)&quot;);</span>
+<span class="nc" id="L197">    namesMapping.put(&quot;Q_WF_MS_INDIVIDUALIZED_PROTEOME_RESULTS&quot;, &quot;Individualized Proteins Results&quot;);</span>
+<span class="nc" id="L198">    namesMapping.put(&quot;Q_WF_MS_INDIVIDUALIZED_PROTEOME_LOGS&quot;, &quot;Individualized Proteins Logs&quot;);</span>
+<span class="nc" id="L199">    namesMapping.put(&quot;Q_WF_MS_LIGANDOMICS_QC_LOGS&quot;, &quot;Ligandomics Quality Control Workflow Logs&quot;);</span>
+<span class="nc" id="L200">    namesMapping.put(&quot;Q_WF_MS_LIGANDOMICS_QC_RESULTS&quot;,</span>
+        &quot;Ligandomics Quality Control Workflow Results&quot;);
+<span class="nc" id="L202">    namesMapping.put(&quot;Q_WF_MS_LIGANDOMICS_ID_LOGS&quot;, &quot;Ligandomics Identification Workflow Logs&quot;);</span>
+<span class="nc" id="L203">    namesMapping.put(&quot;Q_WF_MS_LIGANDOMICS_ID_RESULTS&quot;,</span>
+        &quot;Ligandomics Identification Workflow Results&quot;);
+<span class="nc" id="L205">    namesMapping.put(&quot;Q_WF_NGS_SHRNA_COUNTING_LOGS&quot;, &quot;shRNA Counting Workflow Logs&quot;);</span>
+<span class="nc" id="L206">    namesMapping.put(&quot;Q_WF_NGS_SHRNA_COUNTING_RESULTS&quot;, &quot;shRNA Counting Workflow Results&quot;);</span>
+<span class="nc" id="L207">    namesMapping.put(&quot;Q_WF_NGS_16S_TAXONOMIC_PROFILING_LOGS&quot;, &quot;16S Taxonomic Profiling Logs&quot;);</span>
+<span class="nc" id="L208">    namesMapping.put(&quot;Q_NGS_READ_MATCH_ARCHIVE&quot;, &quot;Read-Match Archive&quot;);</span>
+<span class="nc" id="L209">    namesMapping.put(&quot;Q_BMI_IMAGING_DATA&quot;, &quot;Imaging Data&quot;);</span>
+<span class="nc" id="L210">    namesMapping.put(&quot;Q_PEPTIDE_DATA&quot;, &quot;Peptide Data&quot;);</span>
+<span class="nc" id="L211">    namesMapping.put(&quot;Q_HT_QPCR_DATA&quot;, &quot;High-Throughput qPCR Data&quot;);</span>
+
+
+
+    // deprecated dataset types
+<span class="nc" id="L216">    namesMapping.put(&quot;ARR&quot;, &quot;ARR Data (deprecated)&quot;);</span>
+<span class="nc" id="L217">    namesMapping.put(&quot;AUDIT&quot;, &quot;AUDIT Data (deprecated)&quot;);</span>
+<span class="nc" id="L218">    namesMapping.put(&quot;BAI&quot;, &quot;BAI Data (deprecated)&quot;);</span>
+<span class="nc" id="L219">    namesMapping.put(&quot;BAM&quot;, &quot;BAM Data (deprecated)&quot;);</span>
+<span class="nc" id="L220">    namesMapping.put(&quot;CEL&quot;, &quot;CEL Data (deprecated)&quot;);</span>
+<span class="nc" id="L221">    namesMapping.put(&quot;CSV&quot;, &quot;CSV Data (deprecated)&quot;);</span>
+<span class="nc" id="L222">    namesMapping.put(&quot;EXPERIMENTAL_DESIGN&quot;, &quot;Experimental Design Data (deprecated)&quot;);</span>
+<span class="nc" id="L223">    namesMapping.put(&quot;EXPRESSION_MATRIX&quot;, &quot;Expression Data (deprecated)&quot;);</span>
+<span class="nc" id="L224">    namesMapping.put(&quot;FASTQ&quot;, &quot;Fastq Data (deprecated)&quot;);</span>
+<span class="nc" id="L225">    namesMapping.put(&quot;FASTQC&quot;, &quot;Fastq Data (deprecated)&quot;);</span>
+<span class="nc" id="L226">    namesMapping.put(&quot;FEATUREXML&quot;, &quot;FeatureXML Data (deprecated)&quot;);</span>
+<span class="nc" id="L227">    namesMapping.put(&quot;GZ&quot;, &quot;Gzipped Data (deprecated)&quot;);</span>
+<span class="nc" id="L228">    namesMapping.put(&quot;IDXML&quot;, &quot;IDXML Data (deprecated)&quot;);</span>
+<span class="nc" id="L229">    namesMapping.put(&quot;JPG&quot;, &quot;JPG Data (deprecated)&quot;);</span>
+<span class="nc" id="L230">    namesMapping.put(&quot;MAT&quot;, &quot;MAT Data (deprecated)&quot;);</span>
+<span class="nc" id="L231">    namesMapping.put(&quot;PDF&quot;, &quot;PDF Data (deprecated)&quot;);</span>
+<span class="nc" id="L232">    namesMapping.put(&quot;PNG&quot;, &quot;PNG Data (deprecated)&quot;);</span>
+<span class="nc" id="L233">    namesMapping.put(&quot;PROT_RESULT&quot;, &quot;Protein Data (deprecated)&quot;);</span>
+<span class="nc" id="L234">    namesMapping.put(&quot;RAW&quot;, &quot;Mass Spectrometry Raw Data (deprecated)&quot;);</span>
+<span class="nc" id="L235">    namesMapping.put(&quot;SAM&quot;, &quot;SAM Data (deprecated)&quot;);</span>
+<span class="nc" id="L236">    namesMapping.put(&quot;SHA256SUM&quot;, &quot;Checksum (deprecated)&quot;);</span>
+<span class="nc" id="L237">    namesMapping.put(&quot;SRA&quot;, &quot;SRA Data (deprecated)&quot;);</span>
+<span class="nc" id="L238">    namesMapping.put(&quot;TAR&quot;, &quot;TAR Data (deprecated)&quot;);</span>
+<span class="nc" id="L239">    namesMapping.put(&quot;TSV&quot;, &quot;TSV Data (deprecated)&quot;);</span>
+<span class="nc" id="L240">    namesMapping.put(&quot;UNKNOWN&quot;, &quot;Type of Data unknown&quot;);</span>
+<span class="nc" id="L241">    namesMapping.put(&quot;VCF&quot;, &quot;VCF Data (deprecated)&quot;);</span>
+<span class="nc" id="L242">    namesMapping.put(&quot;XSQ&quot;, &quot;XSQ Data (deprecated)&quot;);</span>
+<span class="nc" id="L243">    namesMapping.put(&quot;ZIP&quot;, &quot;ZIP Data (deprecated)&quot;);</span>
+
+    // Mulstiscale HCC specific stuff
+<span class="nc" id="L246">    namesMapping.put(&quot;MSH_UNDEFINED_STATE&quot;, &quot;Sample not yet part of the MultiscaleHCC workflow&quot;);</span>
+<span class="nc" id="L247">    namesMapping.put(&quot;MSH_SURGERY_SAMPLE_TAKEN&quot;, &quot;Liver tumor biopsy finished&quot;);</span>
+<span class="nc" id="L248">    namesMapping.put(&quot;MSH_SENT_TO_PATHOLOGY&quot;, &quot;Tumor sample sent to pathology&quot;);</span>
+<span class="nc" id="L249">    namesMapping.put(&quot;MSH_PATHOLOGY_REVIEW_STARTED&quot;, &quot;Tumor sample is under review&quot;);</span>
+<span class="nc" id="L250">    namesMapping.put(&quot;MSH_PATHOLOGY_REVIEW_FINISHED&quot;, &quot;Tumor sample review completed.&quot;);</span>
+<span class="nc" id="L251">    namesMapping</span>
+<span class="nc" id="L252">        .put(&quot;MSH_SENT_TO_HUMAN_GENETICS&quot;, &quot;Tumor sample sent to Human Genetics department&quot;);</span>
+
+<span class="nc" id="L254">  }</span>
+
+  public String getPrettyName(String uglyName) {
+<span class="nc" id="L257">    String prettyName = uglyName;</span>
+
+<span class="nc bnc" id="L259" title="All 2 branches missed.">    if (namesMapping.containsKey(uglyName)) {</span>
+<span class="nc" id="L260">      prettyName = namesMapping.get(uglyName);</span>
+    }
+<span class="nc" id="L262">    return prettyName;</span>
+  }
+
+  public String getOpenBisName(String prettyName) {
+<span class="nc" id="L266">    String uglyName = prettyName;</span>
+
+<span class="nc bnc" id="L268" title="All 2 branches missed.">    if (namesMapping.containsValue(prettyName)) {</span>
+<span class="nc" id="L269">      uglyName = namesMapping.getKey(prettyName);</span>
+    }
+<span class="nc" id="L271">    return uglyName;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

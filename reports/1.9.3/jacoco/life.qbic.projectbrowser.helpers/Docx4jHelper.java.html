@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Docx4jHelper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.helpers</a> &gt; <span class="el_source">Docx4jHelper.java</span></div><h1>Docx4jHelper.java</h1><pre class="source lang-java linenums">package life.qbic.projectbrowser.helpers;
+
+import java.math.BigInteger;
+import java.util.List;
+
+import org.docx4j.wml.BooleanDefaultTrue;
+import org.docx4j.wml.CTBorder;
+import org.docx4j.wml.CTShd;
+import org.docx4j.wml.CTSignedTwipsMeasure;
+import org.docx4j.wml.CTTblPrBase.TblStyle;
+import org.docx4j.wml.CTVerticalJc;
+import org.docx4j.wml.Color;
+import org.docx4j.wml.HpsMeasure;
+import org.docx4j.wml.Jc;
+import org.docx4j.wml.JcEnumeration;
+import org.docx4j.wml.ObjectFactory;
+import org.docx4j.wml.P;
+import org.docx4j.wml.PPr;
+import org.docx4j.wml.PPrBase.Spacing;
+import org.docx4j.wml.R;
+import org.docx4j.wml.RFonts;
+import org.docx4j.wml.RPr;
+import org.docx4j.wml.STBorder;
+import org.docx4j.wml.STVerticalJc;
+import org.docx4j.wml.Tbl;
+import org.docx4j.wml.TblPr;
+import org.docx4j.wml.TblWidth;
+import org.docx4j.wml.Tc;
+import org.docx4j.wml.TcMar;
+import org.docx4j.wml.TcPr;
+import org.docx4j.wml.TcPrInner.GridSpan;
+import org.docx4j.wml.TcPrInner.TcBorders;
+import org.docx4j.wml.TcPrInner.VMerge;
+import org.docx4j.wml.Text;
+import org.docx4j.wml.Tr;
+import org.docx4j.wml.U;
+import org.docx4j.wml.UnderlineEnumeration;
+
+public class Docx4jHelper {
+
+  private ObjectFactory factory;
+
+<span class="nc" id="L43">  public Docx4jHelper() {</span>
+<span class="nc" id="L44">    this.factory = new ObjectFactory();</span>
+<span class="nc" id="L45">  }</span>
+
+  public Tbl createTableWithContent(List&lt;String&gt; header, List&lt;List&lt;String&gt;&gt; data) {
+
+<span class="nc" id="L49">    Tbl table = factory.createTbl();</span>
+
+<span class="nc" id="L51">    TblPr tblPr = new TblPr();</span>
+<span class="nc" id="L52">    TblStyle tblStyle = new TblStyle();</span>
+<span class="nc" id="L53">    tblStyle.setVal(&quot;TableGrid&quot;);</span>
+<span class="nc" id="L54">    tblPr.setTblStyle(tblStyle);</span>
+<span class="nc" id="L55">    table.setTblPr(tblPr);</span>
+
+<span class="nc" id="L57">    Tr tableRow = factory.createTr();</span>
+
+    // a default table cell style
+<span class="nc" id="L60">    DocxStyle defStyle = new DocxStyle();</span>
+<span class="nc" id="L61">    defStyle.setBold(false);</span>
+<span class="nc" id="L62">    defStyle.setItalic(false);</span>
+<span class="nc" id="L63">    defStyle.setUnderline(false);</span>
+<span class="nc" id="L64">    defStyle.setFontSize(&quot;28&quot;);</span>
+<span class="nc" id="L65">    defStyle.setHorizAlignment(JcEnumeration.CENTER);</span>
+
+    // header row style
+<span class="nc" id="L68">    DocxStyle headerStyle = new DocxStyle();</span>
+<span class="nc" id="L69">    headerStyle.setBold(true);</span>
+<span class="nc" id="L70">    headerStyle.setFontSize(&quot;28&quot;);</span>
+<span class="nc" id="L71">    headerStyle.setHorizAlignment(JcEnumeration.CENTER);</span>
+
+<span class="nc bnc" id="L73" title="All 2 branches missed.">    for (String cell : header) {</span>
+<span class="nc" id="L74">      addTableCell(tableRow, cell, 2000, headerStyle, 1, null);</span>
+<span class="nc" id="L75">    }</span>
+    // addTableCell(tableRow, &quot;Code&quot;, 2200, style, 1, null);
+    // addTableCell(tableRow, &quot;Name&quot;, 3200, style, 1, null);
+    // addTableCell(tableRow, &quot;External ID&quot;, 2100, style, 1, null);
+    // addTableCell(tableRow, &quot;Species&quot;, 2200, style, 1, null);
+    // if (datasets)
+    // addTableCell(tableRow, &quot;Datasets&quot;, 1000, style, 1, null);
+<span class="nc" id="L82">    table.getContent().add(tableRow);</span>
+
+<span class="nc bnc" id="L84" title="All 2 branches missed.">    for (List&lt;String&gt; row : data) {</span>
+<span class="nc" id="L85">      tableRow = factory.createTr();</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">      for (String cell : row) {</span>
+<span class="nc" id="L87">        addTableCell(tableRow, cell, 2000, defStyle, 1, null);</span>
+<span class="nc" id="L88">      }</span>
+      // addTableCell(tableRow, row.get(1), 3200, defStyle, 1, null);
+      // addTableCell(tableRow, row.get(2), 2100, defStyle, 1, null);
+      // addTableCell(tableRow, row.get(3), 2200, defStyle, 1, null);
+      // if (datasets)
+      // addTableCell(tableRow, row.get(4), 1000, defStyle, 1, null);
+<span class="nc" id="L94">      table.getContent().add(tableRow);</span>
+<span class="nc" id="L95">    }</span>
+<span class="nc" id="L96">    return table;</span>
+  }
+
+  private void addTableCell(Tr tableRow, String content, int width,
+
+      DocxStyle style, int horizontalMergedCells, String verticalMergedVal) {
+<span class="nc" id="L102">    Tc tableCell = factory.createTc();</span>
+<span class="nc" id="L103">    addCellStyle(tableCell, content, style);</span>
+<span class="nc" id="L104">    setCellWidth(tableCell, width);</span>
+<span class="nc" id="L105">    setCellVMerge(tableCell, verticalMergedVal);</span>
+<span class="nc" id="L106">    setCellHMerge(tableCell, horizontalMergedCells);</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">    if (style.isNoWrap()) {</span>
+<span class="nc" id="L108">      setCellNoWrap(tableCell);</span>
+    }
+<span class="nc" id="L110">    tableRow.getContent().add(tableCell);</span>
+<span class="nc" id="L111">  }</span>
+
+  public P createParagraph(String content, boolean bold, boolean underlined, String fontSize) {
+<span class="nc" id="L114">    P paragraph = factory.createP();</span>
+
+<span class="nc" id="L116">    Text text = factory.createText();</span>
+<span class="nc" id="L117">    text.setValue(content);</span>
+
+<span class="nc" id="L119">    R run = factory.createR();</span>
+<span class="nc" id="L120">    run.getContent().add(text);</span>
+
+<span class="nc" id="L122">    paragraph.getContent().add(run);</span>
+
+<span class="nc" id="L124">    RPr runProperties = factory.createRPr();</span>
+
+<span class="nc bnc" id="L126" title="All 2 branches missed.">    if (bold)</span>
+<span class="nc" id="L127">      addBoldStyle(runProperties);</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">    if (underlined)</span>
+<span class="nc" id="L129">      addUnderlineStyle(runProperties);</span>
+
+<span class="nc" id="L131">    setFontSize(runProperties, fontSize);</span>
+<span class="nc" id="L132">    run.setRPr(runProperties);</span>
+
+<span class="nc" id="L134">    return paragraph;</span>
+  }
+
+  private void addCellStyle(Tc tableCell, String content, DocxStyle style) {
+<span class="nc bnc" id="L138" title="All 2 branches missed.">    if (style != null) {</span>
+
+<span class="nc" id="L140">      P paragraph = factory.createP();</span>
+
+<span class="nc" id="L142">      Text text = factory.createText();</span>
+<span class="nc" id="L143">      text.setValue(content);</span>
+
+<span class="nc" id="L145">      R run = factory.createR();</span>
+<span class="nc" id="L146">      run.getContent().add(text);</span>
+
+<span class="nc" id="L148">      paragraph.getContent().add(run);</span>
+
+<span class="nc" id="L150">      setHorizontalAlignment(paragraph, style.getHorizAlignment());</span>
+
+<span class="nc" id="L152">      RPr runProperties = factory.createRPr();</span>
+
+<span class="nc bnc" id="L154" title="All 2 branches missed.">      if (style.isBold()) {</span>
+<span class="nc" id="L155">        addBoldStyle(runProperties);</span>
+      }
+<span class="nc bnc" id="L157" title="All 2 branches missed.">      if (style.isItalic()) {</span>
+<span class="nc" id="L158">        addItalicStyle(runProperties);</span>
+      }
+<span class="nc bnc" id="L160" title="All 2 branches missed.">      if (style.isUnderline()) {</span>
+<span class="nc" id="L161">        addUnderlineStyle(runProperties);</span>
+      }
+
+<span class="nc" id="L164">      setFontSize(runProperties, style.getFontSize());</span>
+<span class="nc" id="L165">      setFontColor(runProperties, style.getFontColor());</span>
+<span class="nc" id="L166">      setFontFamily(runProperties, style.getFontFamily());</span>
+
+<span class="nc" id="L168">      setCellMargins(tableCell, style.getTop(), style.getRight(),</span>
+
+<span class="nc" id="L170">          style.getBottom(), style.getLeft());</span>
+<span class="nc" id="L171">      setCellColor(tableCell, style.getBackground());</span>
+<span class="nc" id="L172">      setVerticalAlignment(tableCell, style.getVerticalAlignment());</span>
+
+<span class="nc" id="L174">      setCellBorders(tableCell, style.isBorderTop(), style.isBorderRight(),</span>
+
+<span class="nc" id="L176">          style.isBorderBottom(), style.isBorderLeft());</span>
+
+<span class="nc" id="L178">      run.setRPr(runProperties);</span>
+
+<span class="nc" id="L180">      tableCell.getContent().add(paragraph);</span>
+    }
+<span class="nc" id="L182">  }</span>
+
+  private void setCellBorders(Tc tableCell, boolean borderTop, boolean borderRight,
+
+      boolean borderBottom, boolean borderLeft) {
+
+<span class="nc" id="L188">    TcPr tableCellProperties = tableCell.getTcPr();</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">    if (tableCellProperties == null) {</span>
+<span class="nc" id="L190">      tableCellProperties = new TcPr();</span>
+<span class="nc" id="L191">      tableCell.setTcPr(tableCellProperties);</span>
+    }
+
+<span class="nc" id="L194">    CTBorder border = new CTBorder();</span>
+    // border.setColor(&quot;auto&quot;);
+<span class="nc" id="L196">    border.setColor(&quot;0000FF&quot;);</span>
+<span class="nc" id="L197">    border.setSz(new BigInteger(&quot;20&quot;));</span>
+<span class="nc" id="L198">    border.setSpace(new BigInteger(&quot;0&quot;));</span>
+<span class="nc" id="L199">    border.setVal(STBorder.SINGLE);</span>
+
+<span class="nc" id="L201">    TcBorders borders = new TcBorders();</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">    if (borderBottom) {</span>
+<span class="nc" id="L203">      borders.setBottom(border);</span>
+    }
+<span class="nc bnc" id="L205" title="All 2 branches missed.">    if (borderTop) {</span>
+<span class="nc" id="L206">      borders.setTop(border);</span>
+    }
+<span class="nc bnc" id="L208" title="All 2 branches missed.">    if (borderLeft) {</span>
+<span class="nc" id="L209">      borders.setLeft(border);</span>
+    }
+<span class="nc bnc" id="L211" title="All 2 branches missed.">    if (borderRight) {</span>
+<span class="nc" id="L212">      borders.setRight(border);</span>
+    }
+<span class="nc" id="L214">    tableCellProperties.setTcBorders(borders);</span>
+<span class="nc" id="L215">  }</span>
+
+  private void setCellWidth(Tc tableCell, int width) {
+<span class="nc bnc" id="L218" title="All 2 branches missed.">    if (width &gt; 0) {</span>
+<span class="nc" id="L219">      TcPr tableCellProperties = tableCell.getTcPr();</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">      if (tableCellProperties == null) {</span>
+<span class="nc" id="L221">        tableCellProperties = new TcPr();</span>
+<span class="nc" id="L222">        tableCell.setTcPr(tableCellProperties);</span>
+      }
+<span class="nc" id="L224">      TblWidth tableWidth = new TblWidth();</span>
+<span class="nc" id="L225">      tableWidth.setType(&quot;dxa&quot;);</span>
+<span class="nc" id="L226">      tableWidth.setW(BigInteger.valueOf(width));</span>
+<span class="nc" id="L227">      tableCellProperties.setTcW(tableWidth);</span>
+    }
+<span class="nc" id="L229">  }</span>
+
+  private void setCellNoWrap(Tc tableCell) {
+<span class="nc" id="L232">    TcPr tableCellProperties = tableCell.getTcPr();</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">    if (tableCellProperties == null) {</span>
+<span class="nc" id="L234">      tableCellProperties = new TcPr();</span>
+<span class="nc" id="L235">      tableCell.setTcPr(tableCellProperties);</span>
+    }
+<span class="nc" id="L237">    BooleanDefaultTrue b = new BooleanDefaultTrue();</span>
+<span class="nc" id="L238">    b.setVal(true);</span>
+<span class="nc" id="L239">    tableCellProperties.setNoWrap(b);</span>
+<span class="nc" id="L240">  }</span>
+
+  private void setCellVMerge(Tc tableCell, String mergeVal) {
+<span class="nc bnc" id="L243" title="All 2 branches missed.">    if (mergeVal != null) {</span>
+<span class="nc" id="L244">      TcPr tableCellProperties = tableCell.getTcPr();</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">      if (tableCellProperties == null) {</span>
+<span class="nc" id="L246">        tableCellProperties = new TcPr();</span>
+<span class="nc" id="L247">        tableCell.setTcPr(tableCellProperties);</span>
+      }
+<span class="nc" id="L249">      VMerge merge = new VMerge();</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">      if (!&quot;close&quot;.equals(mergeVal)) {</span>
+<span class="nc" id="L251">        merge.setVal(mergeVal);</span>
+      }
+<span class="nc" id="L253">      tableCellProperties.setVMerge(merge);</span>
+    }
+<span class="nc" id="L255">  }</span>
+
+  private void setCellHMerge(Tc tableCell, int horizontalMergedCells) {
+<span class="nc bnc" id="L258" title="All 2 branches missed.">    if (horizontalMergedCells &gt; 1) {</span>
+<span class="nc" id="L259">      TcPr tableCellProperties = tableCell.getTcPr();</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">      if (tableCellProperties == null) {</span>
+<span class="nc" id="L261">        tableCellProperties = new TcPr();</span>
+<span class="nc" id="L262">        tableCell.setTcPr(tableCellProperties);</span>
+      }
+
+<span class="nc" id="L265">      GridSpan gridSpan = new GridSpan();</span>
+<span class="nc" id="L266">      gridSpan.setVal(new BigInteger(String.valueOf(horizontalMergedCells)));</span>
+
+<span class="nc" id="L268">      tableCellProperties.setGridSpan(gridSpan);</span>
+<span class="nc" id="L269">      tableCell.setTcPr(tableCellProperties);</span>
+    }
+<span class="nc" id="L271">  }</span>
+
+  private void setCellColor(Tc tableCell, String color) {
+<span class="nc bnc" id="L274" title="All 2 branches missed.">    if (color != null) {</span>
+<span class="nc" id="L275">      TcPr tableCellProperties = tableCell.getTcPr();</span>
+<span class="nc bnc" id="L276" title="All 2 branches missed.">      if (tableCellProperties == null) {</span>
+<span class="nc" id="L277">        tableCellProperties = new TcPr();</span>
+<span class="nc" id="L278">        tableCell.setTcPr(tableCellProperties);</span>
+      }
+<span class="nc" id="L280">      CTShd shd = new CTShd();</span>
+<span class="nc" id="L281">      shd.setFill(color);</span>
+<span class="nc" id="L282">      tableCellProperties.setShd(shd);</span>
+    }
+<span class="nc" id="L284">  }</span>
+
+  private void setCellMargins(Tc tableCell, int top, int right, int bottom, int left) {
+<span class="nc" id="L287">    TcPr tableCellProperties = tableCell.getTcPr();</span>
+<span class="nc bnc" id="L288" title="All 2 branches missed.">    if (tableCellProperties == null) {</span>
+<span class="nc" id="L289">      tableCellProperties = new TcPr();</span>
+<span class="nc" id="L290">      tableCell.setTcPr(tableCellProperties);</span>
+    }
+<span class="nc" id="L292">    TcMar margins = new TcMar();</span>
+
+<span class="nc bnc" id="L294" title="All 2 branches missed.">    if (bottom &gt; 0) {</span>
+<span class="nc" id="L295">      TblWidth bW = new TblWidth();</span>
+<span class="nc" id="L296">      bW.setType(&quot;dxa&quot;);</span>
+<span class="nc" id="L297">      bW.setW(BigInteger.valueOf(bottom));</span>
+<span class="nc" id="L298">      margins.setBottom(bW);</span>
+    }
+
+<span class="nc bnc" id="L301" title="All 2 branches missed.">    if (top &gt; 0) {</span>
+<span class="nc" id="L302">      TblWidth tW = new TblWidth();</span>
+<span class="nc" id="L303">      tW.setType(&quot;dxa&quot;);</span>
+<span class="nc" id="L304">      tW.setW(BigInteger.valueOf(top));</span>
+<span class="nc" id="L305">      margins.setTop(tW);</span>
+    }
+
+<span class="nc bnc" id="L308" title="All 2 branches missed.">    if (left &gt; 0) {</span>
+<span class="nc" id="L309">      TblWidth lW = new TblWidth();</span>
+<span class="nc" id="L310">      lW.setType(&quot;dxa&quot;);</span>
+<span class="nc" id="L311">      lW.setW(BigInteger.valueOf(left));</span>
+<span class="nc" id="L312">      margins.setLeft(lW);</span>
+    }
+
+<span class="nc bnc" id="L315" title="All 2 branches missed.">    if (right &gt; 0) {</span>
+<span class="nc" id="L316">      TblWidth rW = new TblWidth();</span>
+<span class="nc" id="L317">      rW.setType(&quot;dxa&quot;);</span>
+<span class="nc" id="L318">      rW.setW(BigInteger.valueOf(right));</span>
+<span class="nc" id="L319">      margins.setRight(rW);</span>
+    }
+
+<span class="nc" id="L322">    tableCellProperties.setTcMar(margins);</span>
+<span class="nc" id="L323">  }</span>
+
+  private void setVerticalAlignment(Tc tableCell, STVerticalJc align) {
+<span class="nc bnc" id="L326" title="All 2 branches missed.">    if (align != null) {</span>
+<span class="nc" id="L327">      TcPr tableCellProperties = tableCell.getTcPr();</span>
+<span class="nc bnc" id="L328" title="All 2 branches missed.">      if (tableCellProperties == null) {</span>
+<span class="nc" id="L329">        tableCellProperties = new TcPr();</span>
+<span class="nc" id="L330">        tableCell.setTcPr(tableCellProperties);</span>
+      }
+
+<span class="nc" id="L333">      CTVerticalJc valign = new CTVerticalJc();</span>
+<span class="nc" id="L334">      valign.setVal(align);</span>
+
+<span class="nc" id="L336">      tableCellProperties.setVAlign(valign);</span>
+    }
+<span class="nc" id="L338">  }</span>
+
+  private void setFontSize(RPr runProperties, String fontSize) {
+<span class="nc bnc" id="L341" title="All 4 branches missed.">    if (fontSize != null &amp;&amp; !fontSize.isEmpty()) {</span>
+<span class="nc" id="L342">      HpsMeasure size = new HpsMeasure();</span>
+<span class="nc" id="L343">      size.setVal(new BigInteger(fontSize));</span>
+<span class="nc" id="L344">      runProperties.setSz(size);</span>
+<span class="nc" id="L345">      runProperties.setSzCs(size);</span>
+    }
+
+<span class="nc" id="L348">  }</span>
+
+
+  private void setFontFamily(RPr runProperties, String fontFamily) {
+<span class="nc bnc" id="L352" title="All 2 branches missed.">    if (fontFamily != null) {</span>
+<span class="nc" id="L353">      RFonts rf = runProperties.getRFonts();</span>
+<span class="nc bnc" id="L354" title="All 2 branches missed.">      if (rf == null) {</span>
+<span class="nc" id="L355">        rf = new RFonts();</span>
+<span class="nc" id="L356">        runProperties.setRFonts(rf);</span>
+      }
+<span class="nc" id="L358">      rf.setAscii(fontFamily);</span>
+    }
+
+<span class="nc" id="L361">  }</span>
+
+  private void setFontColor(RPr runProperties, String color) {
+<span class="nc bnc" id="L364" title="All 2 branches missed.">    if (color != null) {</span>
+<span class="nc" id="L365">      Color c = new Color();</span>
+<span class="nc" id="L366">      c.setVal(color);</span>
+<span class="nc" id="L367">      runProperties.setColor(c);</span>
+    }
+<span class="nc" id="L369">  }</span>
+
+  private void setHorizontalAlignment(P paragraph, JcEnumeration hAlign) {
+<span class="nc bnc" id="L372" title="All 2 branches missed.">    if (hAlign != null) {</span>
+<span class="nc" id="L373">      PPr pprop = new PPr();</span>
+<span class="nc" id="L374">      Jc align = new Jc();</span>
+<span class="nc" id="L375">      align.setVal(hAlign);</span>
+<span class="nc" id="L376">      pprop.setJc(align);</span>
+<span class="nc" id="L377">      paragraph.setPPr(pprop);</span>
+    }
+<span class="nc" id="L379">  }</span>
+
+  private void addBoldStyle(RPr runProperties) {
+<span class="nc" id="L382">    BooleanDefaultTrue b = new BooleanDefaultTrue();</span>
+<span class="nc" id="L383">    b.setVal(true);</span>
+<span class="nc" id="L384">    runProperties.setB(b);</span>
+<span class="nc" id="L385">  }</span>
+
+  private void addItalicStyle(RPr runProperties) {
+<span class="nc" id="L388">    BooleanDefaultTrue b = new BooleanDefaultTrue();</span>
+<span class="nc" id="L389">    b.setVal(true);</span>
+<span class="nc" id="L390">    runProperties.setI(b);</span>
+<span class="nc" id="L391">  }</span>
+
+  private void addUnderlineStyle(RPr runProperties) {
+<span class="nc" id="L394">    U val = new U();</span>
+<span class="nc" id="L395">    val.setVal(UnderlineEnumeration.SINGLE);</span>
+<span class="nc" id="L396">    runProperties.setU(val);</span>
+<span class="nc" id="L397">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

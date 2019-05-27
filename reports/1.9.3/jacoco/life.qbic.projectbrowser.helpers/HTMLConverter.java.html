@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HTMLConverter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.helpers</a> &gt; <span class="el_source">HTMLConverter.java</span></div><h1>HTMLConverter.java</h1><pre class="source lang-java linenums">package life.qbic.projectbrowser.helpers;
+
+import java.util.Locale;
+
+import com.vaadin.data.util.converter.Converter;
+
+/**
+ * Converts normal newlines to html newlines as used in html components. can be extended to convert
+ * different html tags
+ * 
+ * @author Andreas Friedrich
+ * 
+ */
+<span class="nc" id="L14">public class HTMLConverter implements Converter&lt;String, String&gt; {</span>
+
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 1898828004063038594L;
+
+  @Override
+  public Class&lt;String&gt; getModelType() {
+<span class="nc" id="L23">    return String.class;</span>
+  }
+
+  @Override
+  public Class&lt;String&gt; getPresentationType() {
+<span class="nc" id="L28">    return String.class;</span>
+  }
+
+  @Override
+  public String convertToModel(String value, Class&lt;? extends String&gt; targetType, Locale locale)
+      throws ConversionException {
+<span class="nc" id="L34">    return value.replace(&quot;\n&quot;, &quot;&lt;br&gt;&quot;);</span>
+  }
+
+  @Override
+  public String convertToPresentation(String value, Class&lt;? extends String&gt; targetType,
+      Locale locale) throws ConversionException {
+<span class="nc" id="L40">    return value.replace(&quot;&lt;br&gt;&quot;, &quot;\n&quot;);</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DatasetViewFilterGenerator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.helpers</a> &gt; <span class="el_source">DatasetViewFilterGenerator.java</span></div><h1>DatasetViewFilterGenerator.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects.
+ * Copyright (C) &quot;2016”  Christopher Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.helpers;
+
+import java.io.Serializable;
+
+import org.tepi.filtertable.FilterGenerator;
+
+import com.vaadin.data.Container.Filter;
+import com.vaadin.data.util.filter.Compare;
+import com.vaadin.data.util.filter.Or;
+import com.vaadin.ui.AbstractField;
+import com.vaadin.ui.CheckBox;
+import com.vaadin.ui.Field;
+import com.vaadin.ui.Notification;
+
+@SuppressWarnings(&quot;serial&quot;)
+<span class="nc" id="L33">public class DatasetViewFilterGenerator implements FilterGenerator, Serializable {</span>
+
+
+  @Override
+  public Filter generateFilter(Object propertyId, Object value) {
+<span class="nc bnc" id="L38" title="All 2 branches missed.">    if (&quot;id&quot;.equals(propertyId)) {</span>
+      /* Create an 'equals' filter for the ID field */
+<span class="nc bnc" id="L40" title="All 4 branches missed.">      if (value != null &amp;&amp; value instanceof String) {</span>
+        try {
+<span class="nc" id="L42">          return new Compare.Equal(propertyId, Integer.parseInt((String) value));</span>
+<span class="nc" id="L43">        } catch (NumberFormatException ignored) {</span>
+          // If no integer was entered, just generate default filter
+<span class="nc" id="L45">        }</span>
+      }
+<span class="nc bnc" id="L47" title="All 2 branches missed.">    } else if (&quot;checked&quot;.equals(propertyId)) {</span>
+<span class="nc bnc" id="L48" title="All 4 branches missed.">      if (value != null &amp;&amp; value instanceof Boolean) {</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">        if (Boolean.TRUE.equals(value)) {</span>
+<span class="nc" id="L50">          return new Compare.Equal(propertyId, value);</span>
+        } else {
+<span class="nc" id="L52">          return new Or(new Compare.Equal(propertyId, true), new Compare.Equal(propertyId, false));</span>
+        }
+      }
+    }
+    // For other properties, use the default filter
+<span class="nc" id="L57">    return null;</span>
+  }
+
+  @Override
+  public Filter generateFilter(Object propertyId, Field&lt;?&gt; originatingField) {
+    // Use the default filter
+<span class="nc" id="L63">    return null;</span>
+  }
+
+  @Override
+  public AbstractField&lt;?&gt; getCustomFilterComponent(Object propertyId) {
+    // removed custom filter component for id
+<span class="nc bnc" id="L69" title="All 2 branches missed.">    if (&quot;checked&quot;.equals(propertyId)) {</span>
+<span class="nc" id="L70">      CheckBox box = new CheckBox();</span>
+<span class="nc" id="L71">      return box;</span>
+    }
+<span class="nc" id="L73">    return null;</span>
+  }
+
+  @Override
+  public void filterRemoved(Object propertyId) {
+<span class="nc" id="L78">    Notification n =</span>
+        new Notification(&quot;Filter removed from: &quot; + propertyId, Notification.Type.TRAY_NOTIFICATION);
+<span class="nc" id="L80">    n.setDelayMsec(800);</span>
+    // n.show(Page.getCurrent());
+<span class="nc" id="L82">  }</span>
+
+  @Override
+  public void filterAdded(Object propertyId, Class&lt;? extends Filter&gt; filterType, Object value) {
+<span class="nc" id="L86">    Notification n =</span>
+        new Notification(&quot;Filter added to: &quot; + propertyId, Notification.Type.TRAY_NOTIFICATION);
+<span class="nc" id="L88">    n.setDelayMsec(800);</span>
+    // n.show(Page.getCurrent());
+<span class="nc" id="L90">  }</span>
+
+  @Override
+  public Filter filterGeneratorFailed(Exception reason, Object propertyId, Object value) {
+    /* Return null -&gt; Does not add any filter on failure */
+<span class="nc" id="L95">    return null;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

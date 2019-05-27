@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GroupSpecificParameterComponent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.components</a> &gt; <span class="el_source">GroupSpecificParameterComponent.java</span></div><h1>GroupSpecificParameterComponent.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects.
+ * Copyright (C) &quot;2016”  Christopher Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.components;
+
+import java.util.HashMap;
+
+import life.qbic.projectbrowser.model.maxquant.Group;
+import life.qbic.projectbrowser.model.maxquant.GroupSpecificParameters;
+
+import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.data.Property.ValueChangeListener;
+import com.vaadin.data.fieldgroup.BeanFieldGroup;
+import com.vaadin.ui.CheckBox;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.FormLayout;
+import com.vaadin.ui.NativeSelect;
+import com.vaadin.ui.TextField;
+import com.vaadin.ui.TwinColSelect;
+
+
+/**
+ * extends vaadins CustomComponent and represents the UI of Maxquants Group spefic parameters which
+ * define parameters for a group of raw files. The groups can be updated via the update method.
+ * 
+ * @author wojnar
+ * 
+ */
+public class GroupSpecificParameterComponent extends CustomComponent {
+  private static final long serialVersionUID = -1912407218446455308L;
+
+<span class="nc" id="L47">  public static String CAPTION = &quot;Group-specific parameters&quot;;</span>
+  private NativeSelect groupSelection;
+
+  private NativeSelect typeSelect;
+
+  private QuantificationLabelComponent labels;
+
+  private FormLayout parameterlayout;
+
+  private TwinColSelect variableModifications;
+
+  private NativeSelect digestionMode;
+
+  private TwinColSelect enzyme;
+
+  private TextField missedcleavage;
+
+  private HashMap&lt;Integer, Group&gt; groups;
+
+  private NativeSelect multiplicitySelect;
+
+  private NativeSelect matchType;
+
+  private CheckBox labelfreequant;
+
+<span class="nc" id="L72">  public GroupSpecificParameterComponent() {</span>
+
+<span class="nc" id="L74">    this.setCaption(CAPTION);</span>
+
+
+<span class="nc" id="L77">    this.setCompositionRoot(init());</span>
+
+<span class="nc" id="L79">  }</span>
+
+  public Component init() {
+    // Group specific parameters
+
+<span class="nc" id="L84">    FormLayout groupSpecificParameters = new FormLayout();</span>
+
+    // does not need to be initialized more than once.
+<span class="nc bnc" id="L87" title="All 2 branches missed.">    if (groupSelection == null) {</span>
+<span class="nc" id="L88">      groupSelection = new NativeSelect(&quot;Group:&quot;);</span>
+<span class="nc" id="L89">      groupSelection.setNullSelectionAllowed(false);</span>
+<span class="nc" id="L90">      groupSpecificParameters.addComponent(groupSelection);</span>
+<span class="nc" id="L91">      groupSelection.addValueChangeListener(new ValueChangeListener() {</span>
+        private static final long serialVersionUID = -2948673674040494963L;
+
+        @Override
+        public void valueChange(ValueChangeEvent event) {
+<span class="nc bnc" id="L96" title="All 4 branches missed.">          if (event.getProperty() != null &amp;&amp; event.getProperty().getValue() != null) {</span>
+<span class="nc" id="L97">            updateParameters((Integer) event.getProperty().getValue());</span>
+          }
+<span class="nc" id="L99">        }</span>
+      });
+    }
+<span class="nc" id="L102">    parameterlayout = initParameters();</span>
+<span class="nc" id="L103">    groupSpecificParameters.addComponent(parameterlayout);</span>
+<span class="nc" id="L104">    parameterlayout.setVisible(false);</span>
+<span class="nc" id="L105">    return groupSpecificParameters;</span>
+  }
+
+
+  private FormLayout initParameters() {
+    // select the type
+<span class="nc" id="L111">    FormLayout parameterLayout = new FormLayout();</span>
+
+<span class="nc" id="L113">    labelfreequant = new CheckBox();</span>
+<span class="nc" id="L114">    labelfreequant.setCaption(&quot;Label-Free Quantification&quot;);</span>
+<span class="nc" id="L115">    parameterLayout.addComponent(labelfreequant);</span>
+
+<span class="nc" id="L117">    typeSelect = new NativeSelect();</span>
+<span class="nc" id="L118">    typeSelect.setCaption(&quot;Type&quot;);</span>
+<span class="nc" id="L119">    typeSelect.addItem(&quot;Standard&quot;);</span>
+<span class="nc" id="L120">    typeSelect.addItem(&quot;Reporter Ion&quot;);</span>
+    // add it
+<span class="nc" id="L122">    parameterLayout.addComponent(typeSelect);</span>
+    // select multiplicity.
+<span class="nc" id="L124">    multiplicitySelect = new NativeSelect();</span>
+<span class="nc" id="L125">    multiplicitySelect.setCaption(&quot;Multiplicity&quot;);</span>
+<span class="nc" id="L126">    multiplicitySelect.addItem(&quot;1 - label-free quantification&quot;);</span>
+<span class="nc" id="L127">    multiplicitySelect.addItem(&quot;2 - light and heavy labels&quot;);</span>
+<span class="nc" id="L128">    multiplicitySelect.addItem(&quot;3 - light, medium, and heavy lables&quot;);</span>
+<span class="nc" id="L129">    multiplicitySelect.setNullSelectionAllowed(false);</span>
+<span class="nc" id="L130">    parameterLayout.addComponent(multiplicitySelect);</span>
+    // add labels
+<span class="nc" id="L132">    labels = new QuantificationLabelComponent();</span>
+<span class="nc" id="L133">    parameterLayout.addComponent(labels);</span>
+<span class="nc" id="L134">    multiplicitySelect.addValueChangeListener(new ValueChangeListener() {</span>
+      private static final long serialVersionUID = 2788813707970284834L;
+
+      @Override
+      public void valueChange(ValueChangeEvent event) {
+<span class="nc" id="L139">        String multiplicity = (String) event.getProperty().getValue();</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        if (multiplicity.startsWith(&quot;1&quot;)) {</span>
+<span class="nc" id="L141">          labels.noLables();</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        } else if (multiplicity.startsWith(&quot;2&quot;)) {</span>
+<span class="nc" id="L143">          labels.lightAndHeavyLabels();</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        } else if (multiplicity.startsWith(&quot;3&quot;)) {</span>
+<span class="nc" id="L145">          labels.lightMediumAndHeavyLabels();</span>
+        }
+
+<span class="nc" id="L148">      }</span>
+    });
+<span class="nc" id="L150">    parameterLayout.addComponent(labels);</span>
+
+    // variable modifications
+<span class="nc" id="L153">    variableModifications = new TwinColSelect(&quot;Variable Modifications&quot;);</span>
+
+<span class="nc" id="L155">    variableModifications.addItems(&quot;Acetyl (Protein N-term)&quot;, &quot;Acetyl (K)&quot;, &quot;Oxidation (M)&quot;,</span>
+        &quot;Ala-&gt;Arg&quot;);
+<span class="nc" id="L157">    parameterLayout.addComponent(variableModifications);</span>
+    // digestion mode
+<span class="nc" id="L159">    digestionMode = new NativeSelect(&quot;Digestion mode&quot;);</span>
+<span class="nc" id="L160">    digestionMode.addItem(&quot;Specific&quot;);</span>
+<span class="nc" id="L161">    parameterLayout.addComponent(digestionMode);</span>
+    // enzyme
+<span class="nc" id="L163">    enzyme = new TwinColSelect(&quot;Enzyme&quot;);</span>
+<span class="nc" id="L164">    enzyme.addItems(&quot;Trypsin/P&quot;, &quot;ArgC&quot;, &quot;Trypsin&quot;, &quot;GluN&quot;);</span>
+<span class="nc" id="L165">    parameterLayout.addComponent(enzyme);</span>
+    // missed cleavage
+<span class="nc" id="L167">    missedcleavage = new TextField(&quot;Max Missed Cleavage&quot;);</span>
+<span class="nc" id="L168">    parameterLayout.addComponent(missedcleavage);</span>
+<span class="nc" id="L169">    matchType = new NativeSelect(&quot;Match type&quot;);</span>
+<span class="nc" id="L170">    matchType.addItem(&quot;MatchFromAndTo&quot;);</span>
+<span class="nc" id="L171">    parameterLayout.addComponent(matchType);</span>
+<span class="nc" id="L172">    return parameterLayout;</span>
+  }
+
+  public void update(HashMap&lt;Integer, Group&gt; groups) {
+<span class="nc" id="L176">    groupSelection.removeAllItems();</span>
+<span class="nc" id="L177">    this.resetParams();</span>
+<span class="nc" id="L178">    parameterlayout.setVisible(false);</span>
+<span class="nc bnc" id="L179" title="All 4 branches missed.">    if (groups == null || groups.isEmpty())</span>
+<span class="nc" id="L180">      return;</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">    for (Integer key : groups.keySet()) {</span>
+<span class="nc" id="L182">      groupSelection.addItem(key);</span>
+<span class="nc" id="L183">    }</span>
+<span class="nc" id="L184">    this.groups = groups;</span>
+<span class="nc" id="L185">  }</span>
+
+  private void resetParams() {
+    // TODO Auto-generated method stub
+
+<span class="nc" id="L190">  }</span>
+
+  void updateParameters(int value) {
+<span class="nc" id="L193">    parameterlayout.setVisible(true);</span>
+<span class="nc" id="L194">    BeanFieldGroup&lt;GroupSpecificParameters&gt; binder =</span>
+        new BeanFieldGroup&lt;GroupSpecificParameters&gt;(GroupSpecificParameters.class);
+<span class="nc" id="L196">    binder.setItemDataSource(groups.get(value).getParameters());</span>
+<span class="nc" id="L197">    binder.bind(labelfreequant, &quot;lfqMode&quot;);</span>
+<span class="nc" id="L198">    binder.bind(typeSelect, &quot;type&quot;);</span>
+<span class="nc" id="L199">    binder.bind(multiplicitySelect, &quot;multiplicity&quot;);</span>
+<span class="nc" id="L200">    binder.bind(variableModifications, &quot;variableModifications&quot;);</span>
+<span class="nc" id="L201">    binder.bind(digestionMode, &quot;digestionMode&quot;);</span>
+<span class="nc" id="L202">    binder.bind(enzyme, &quot;enzymes&quot;);</span>
+<span class="nc" id="L203">    binder.bind(missedcleavage, &quot;maxMissedCleavage&quot;);</span>
+    // binder.bind(TODO, &quot;matchType&quot;);
+<span class="nc" id="L205">    binder.bind(labels.getLightLabels(), &quot;lightLabels&quot;);</span>
+<span class="nc" id="L206">    binder.bind(labels.getMediumLabels(), &quot;mediumLabels&quot;);</span>
+<span class="nc" id="L207">    binder.bind(labels.getHeavyLabels(), &quot;heavyLabels&quot;);</span>
+<span class="nc" id="L208">    binder.bind(matchType, &quot;matchType&quot;);</span>
+
+    // update values immediately
+<span class="nc" id="L211">    binder.setBuffered(false);</span>
+<span class="nc" id="L212">  }</span>
+
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

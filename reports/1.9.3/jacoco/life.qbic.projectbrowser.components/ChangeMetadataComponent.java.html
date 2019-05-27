@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ChangeMetadataComponent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.components</a> &gt; <span class="el_source">ChangeMetadataComponent.java</span></div><h1>ChangeMetadataComponent.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.components;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.vaadin.data.fieldgroup.FieldGroup;
+import com.vaadin.server.Page;
+import com.vaadin.shared.ui.MarginInfo;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.ComboBox;
+import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.Field;
+import com.vaadin.ui.FormLayout;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.Notification;
+import com.vaadin.ui.Notification.Type;
+import com.vaadin.ui.TextField;
+import com.vaadin.ui.VerticalLayout;
+
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.ControlledVocabularyPropertyType;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.PropertyType;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.VocabularyTerm;
+
+import life.qbic.portal.utils.PortalUtils;
+import life.qbic.projectbrowser.model.PropertyBean;
+import life.qbic.projectbrowser.model.SampleBean;
+
+import life.qbic.projectbrowser.controllers.*;
+
+public class ChangeMetadataComponent extends CustomComponent {
+  private DataHandler datahandler;
+  private String resourceUrl;
+  private State state;
+  private VerticalLayout properties;
+
+  private FormLayout form;
+  private FieldGroup fieldGroup;
+  VerticalLayout vert;
+  String id;
+
+<span class="nc" id="L61">  public ChangeMetadataComponent(DataHandler dh, State state, String resourceurl) {</span>
+<span class="nc" id="L62">    this.datahandler = dh;</span>
+<span class="nc" id="L63">    this.resourceUrl = resourceurl;</span>
+<span class="nc" id="L64">    this.state = state;</span>
+
+<span class="nc" id="L66">    this.setCaption(&quot;Metadata&quot;);</span>
+
+<span class="nc" id="L68">    this.initUI();</span>
+<span class="nc" id="L69">  }</span>
+
+  private void initUI() {
+<span class="nc" id="L72">    properties = new VerticalLayout();</span>
+<span class="nc" id="L73">    properties.setWidth(100.0f, Unit.PERCENTAGE);</span>
+<span class="nc" id="L74">    properties.setMargin(new MarginInfo(true, false, true, true));</span>
+<span class="nc" id="L75">    properties.setSpacing(true);</span>
+<span class="nc" id="L76">    this.setWidth(Page.getCurrent().getBrowserWindowWidth() * 0.8f, Unit.PIXELS);</span>
+<span class="nc" id="L77">    this.setCompositionRoot(properties);</span>
+<span class="nc" id="L78">  }</span>
+
+  public void updateUI(final SampleBean currentBean) {
+<span class="nc" id="L81">    properties.removeAllComponents();</span>
+
+<span class="nc" id="L83">    final Button saveButton = new Button(&quot;Commit Changes&quot;, new ClickListener() {</span>
+      @Override
+      public void buttonClick(final ClickEvent event) {
+<span class="nc" id="L86">        HashMap&lt;String, Object&gt; properties = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L87">        Collection&lt;Field&lt;?&gt;&gt; registeredFields = fieldGroup.getFields();</span>
+
+<span class="nc bnc" id="L89" title="All 2 branches missed.">        for (Field&lt;?&gt; field : registeredFields) {</span>
+<span class="nc" id="L90">          properties.put(field.getDescription(), field.getValue());</span>
+<span class="nc" id="L91">        }</span>
+
+<span class="nc" id="L93">        HashMap&lt;String, Object&gt; parameters = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L94">        parameters.put(&quot;user&quot;, PortalUtils.getNonNullScreenName());</span>
+<span class="nc" id="L95">        parameters.put(&quot;identifier&quot;, currentBean.getId());</span>
+<span class="nc" id="L96">        parameters.put(&quot;properties&quot;, properties);</span>
+
+<span class="nc" id="L98">        datahandler.getOpenBisClient().triggerIngestionService(&quot;update-single-sample-metadata&quot;,</span>
+            parameters);
+<span class="nc" id="L100">        Notification.show(&quot;Changes committed!&quot;, Type.TRAY_NOTIFICATION);</span>
+<span class="nc" id="L101">      }</span>
+    });
+<span class="nc" id="L103">    buildFormLayout(currentBean);</span>
+<span class="nc" id="L104">    properties.addComponent(new Label(</span>
+<span class="nc" id="L105">        String.format(</span>
+            &quot;This view shows the metadata connected to this sample and can be used to change metadata values.&quot;),
+        Label.CONTENT_PREFORMATTED));
+<span class="nc" id="L108">    properties.addComponent(this.form);</span>
+<span class="nc" id="L109">    properties.addComponent(saveButton);</span>
+<span class="nc" id="L110">  }</span>
+
+  private Map&lt;String, PropertyBean&gt; getControlledVocabularies(SampleBean currentBean) {
+<span class="nc" id="L113">    List&lt;PropertyType&gt; completeProperties = datahandler.getOpenBisClient().listPropertiesForType(</span>
+<span class="nc" id="L114">        datahandler.getOpenBisClient().getSampleTypeByString(currentBean.getType()));</span>
+
+    // Map&lt;String, List&lt;String&gt;&gt; controlledVocabularies = new HashMap&lt;String, List&lt;String&gt;&gt;();
+<span class="nc" id="L117">    Map&lt;String, PropertyBean&gt; controlledVocabularies = new HashMap&lt;String, PropertyBean&gt;();</span>
+
+<span class="nc bnc" id="L119" title="All 2 branches missed.">    for (PropertyType p : completeProperties) {</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">      if (p instanceof ControlledVocabularyPropertyType) {</span>
+
+<span class="nc" id="L122">        ControlledVocabularyPropertyType controlled_vocab = (ControlledVocabularyPropertyType) p;</span>
+<span class="nc" id="L123">        List&lt;String&gt; terms = new ArrayList&lt;String&gt;();</span>
+
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        for (VocabularyTerm term : controlled_vocab.getTerms()) {</span>
+<span class="nc" id="L126">          terms.add(term.getCode().toString());</span>
+<span class="nc" id="L127">        }</span>
+
+<span class="nc" id="L129">        PropertyBean newVocab = new PropertyBean();</span>
+<span class="nc" id="L130">        newVocab.setCode(p.getCode());</span>
+<span class="nc" id="L131">        newVocab.setDescription(p.getDescription());</span>
+<span class="nc" id="L132">        newVocab.setLabel(p.getLabel());</span>
+<span class="nc" id="L133">        newVocab.setVocabularyValues(terms);</span>
+
+<span class="nc" id="L135">        controlledVocabularies.put(p.getCode(), newVocab);</span>
+      }
+<span class="nc" id="L137">    }</span>
+<span class="nc" id="L138">    return controlledVocabularies;</span>
+  }
+
+
+  private Map&lt;String, PropertyBean&gt; getProperties(SampleBean currentBean) {
+<span class="nc" id="L143">    List&lt;PropertyType&gt; completeProperties = datahandler.getOpenBisClient().listPropertiesForType(</span>
+<span class="nc" id="L144">        datahandler.getOpenBisClient().getSampleTypeByString(currentBean.getType()));</span>
+
+<span class="nc" id="L146">    Map&lt;String, PropertyBean&gt; properties = new HashMap&lt;String, PropertyBean&gt;();</span>
+    // Change that call
+<span class="nc" id="L148">    Map&lt;String, String&gt; assignedProperties = currentBean.getProperties();</span>
+
+<span class="nc bnc" id="L150" title="All 2 branches missed.">    for (PropertyType p : completeProperties) {</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">      if (p.getDataType().toString().equals(&quot;XML&quot;)) {</span>
+<span class="nc" id="L152">        continue;</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">      } else if (assignedProperties.keySet().contains(p.getCode())) {</span>
+        // properties.put(p.getCode(), assignedProperties.get(p.getCode()));
+<span class="nc" id="L155">        properties.put(p.getCode(), new PropertyBean(p.getLabel(), p.getCode(), p.getDescription(),</span>
+<span class="nc" id="L156">            assignedProperties.get(p.getCode())));</span>
+      } else {
+<span class="nc" id="L158">        properties.put(p.getCode(),</span>
+<span class="nc" id="L159">            new PropertyBean(p.getLabel(), p.getCode(), p.getDescription(), &quot;&quot;));</span>
+      }
+<span class="nc" id="L161">    }</span>
+<span class="nc" id="L162">    return properties;</span>
+
+  }
+
+  private void buildFormLayout(SampleBean sample) {
+<span class="nc" id="L167">    final FieldGroup fieldGroup = new FieldGroup();</span>
+<span class="nc" id="L168">    final FormLayout form2 = new FormLayout();</span>
+
+<span class="nc" id="L170">    Map&lt;String, PropertyBean&gt; controlledVocabularies = getControlledVocabularies(sample);</span>
+<span class="nc" id="L171">    Map&lt;String, PropertyBean&gt; properties = getProperties(sample);</span>
+
+<span class="nc bnc" id="L173" title="All 2 branches missed.">    for (String key : properties.keySet()) {</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">      if (controlledVocabularies.keySet().contains(key)) {</span>
+<span class="nc" id="L175">        ComboBox select = new ComboBox(controlledVocabularies.get(key).getLabel());</span>
+<span class="nc" id="L176">        fieldGroup.bind(select, key);</span>
+
+        // Add items with given item IDs
+<span class="nc" id="L179">        select.addItems(controlledVocabularies.get(key).getVocabularyValues());</span>
+
+        /*
+         * for(Object itemID: select.getItemIds()) { System.out.println(itemID); }
+         */
+<span class="nc" id="L184">        select.setDescription(controlledVocabularies.get(key).getCode());</span>
+<span class="nc" id="L185">        select.setValue(properties.get(key).getValue());</span>
+
+<span class="nc" id="L187">        form2.addComponent(select);</span>
+
+<span class="nc" id="L189">      } else {</span>
+<span class="nc" id="L190">        TextField tf = new TextField(key);</span>
+<span class="nc" id="L191">        fieldGroup.bind(tf, key);</span>
+<span class="nc" id="L192">        tf.setCaption(properties.get(key).getLabel());</span>
+<span class="nc" id="L193">        tf.setDescription(properties.get(key).getCode());</span>
+<span class="nc" id="L194">        tf.setValue((String) properties.get(key).getValue());</span>
+<span class="nc" id="L195">        form2.addComponent(tf);</span>
+      }
+<span class="nc" id="L197">    }</span>
+<span class="nc" id="L198">    this.fieldGroup = fieldGroup;</span>
+<span class="nc" id="L199">    this.form = form2;</span>
+<span class="nc" id="L200">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

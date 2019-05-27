@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OpenbisSampleAdapter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.samplegraph</a> &gt; <span class="el_source">OpenbisSampleAdapter.java</span></div><h1>OpenbisSampleAdapter.java</h1><pre class="source lang-java linenums">package life.qbic.projectbrowser.samplegraph;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import life.qbic.datamodel.samples.ISampleBean;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
+
+public class OpenbisSampleAdapter implements ISampleBean {
+  
+  private Sample openbisSample;
+<span class="nc" id="L17">  private Logger logger = LogManager.getLogger(OpenbisSampleAdapter.class);</span>
+  
+<span class="nc" id="L19">  public OpenbisSampleAdapter(Sample sample) {</span>
+<span class="nc" id="L20">   this.openbisSample = sample;</span>
+<span class="nc" id="L21">  }</span>
+  
+  public Sample getSample() {
+<span class="nc" id="L24">    return openbisSample;</span>
+  }
+  
+  public List&lt;ISampleBean&gt; getChildren() {
+<span class="nc" id="L28">    List&lt;ISampleBean&gt; res = new ArrayList&lt;ISampleBean&gt;();</span>
+<span class="nc bnc" id="L29" title="All 2 branches missed.">    for(Sample s : openbisSample.getChildren()) {</span>
+<span class="nc" id="L30">      res.add(new OpenbisSampleAdapter(s));</span>
+<span class="nc" id="L31">    }</span>
+<span class="nc" id="L32">    return res;</span>
+  }
+
+  @Override
+  public String getSecondaryName() {
+<span class="nc" id="L37">    return openbisSample.getProperties().get(&quot;Q_SECONDARY_NAME&quot;);</span>
+  }
+
+  @Override
+  public String getCode() {
+<span class="nc" id="L42">    return openbisSample.getCode();</span>
+  }
+
+  @Override
+  public List&lt;String&gt; getParentIDs() {
+<span class="nc" id="L47">    List&lt;String&gt; ids = new ArrayList&lt;String&gt;();</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">    for(Sample p : openbisSample.getParents())</span>
+<span class="nc" id="L49">      ids.add(p.getCode());</span>
+<span class="nc" id="L50">    return ids;</span>
+  }
+
+  @Override
+  public String getType() {
+<span class="nc" id="L55">    return openbisSample.getSampleTypeCode();</span>
+  }
+
+  @Override
+  public boolean hasParents() {
+<span class="nc bnc" id="L60" title="All 2 branches missed.">    return !openbisSample.getParents().isEmpty();</span>
+  }
+
+  @Override
+  public String getProject() {
+<span class="nc" id="L65">    getCode().substring(0, 5);</span>
+<span class="nc" id="L66">    return null;</span>
+  }
+
+  @Override
+  public String getSpace() {
+<span class="nc" id="L71">    return openbisSample.getSpaceCode();</span>
+  }
+
+  @Override
+  public String getExperiment() {
+<span class="nc" id="L76">    String res = openbisSample.getExperimentIdentifierOrNull();</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">    if(res!=null) {</span>
+<span class="nc" id="L78">      String[] splt = res.split(&quot;/&quot;);</span>
+<span class="nc" id="L79">      res = splt[splt.length-1];</span>
+    }
+<span class="nc" id="L81">    return res;</span>
+  }
+
+  @Override
+  public void setProject(String project) {
+<span class="nc" id="L86">    logger.warn(&quot;setting project not possible for wrapped class Sample.&quot;);</span>
+<span class="nc" id="L87">  }</span>
+
+  @Override
+  public void setSpace(String space) {
+<span class="nc" id="L91">    logger.warn(&quot;setting space not possible for wrapped class Sample.&quot;);</span>
+<span class="nc" id="L92">  }</span>
+
+  @Override
+  public void setExperiment(String experiment) {
+<span class="nc" id="L96">    logger.warn(&quot;setting experiment not possible for wrapped class Sample.&quot;);</span>
+<span class="nc" id="L97">  }</span>
+
+  @Override
+  public Map&lt;String, Object&gt; getMetadata() {
+<span class="nc" id="L101">    return new HashMap&lt;String,Object&gt;(openbisSample.getProperties());</span>
+  }
+
+  @Override
+  public ISampleBean copy() {
+<span class="nc" id="L106">    return new OpenbisSampleAdapter(openbisSample);</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

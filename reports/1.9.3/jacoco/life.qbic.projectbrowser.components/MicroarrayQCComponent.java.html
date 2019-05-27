@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MicroarrayQCComponent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.components</a> &gt; <span class="el_source">MicroarrayQCComponent.java</span></div><h1>MicroarrayQCComponent.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects.
+ * Copyright (C) &quot;2016”  Christopher Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.components;
+
+import guse.workflowrepresentation.GuseNode;
+import guse.workflowrepresentation.GuseWorkflowRepresentation;
+import guse.workflowrepresentation.InputPort;
+
+import java.util.List;
+import java.util.Map;
+
+import org.json.JSONException;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.VerticalLayout;
+
+import life.qbic.projectbrowser.controllers.WorkflowViewController;
+
+import submitter.Workflow;
+
+import de.uni_tuebingen.qbic.beans.DatasetBean;
+
+public class MicroarrayQCComponent extends CustomComponent {
+
+<span class="nc" id="L47">  private static final Logger LOG = LogManager.getLogger(MicroarrayQCComponent.class);</span>
+
+<span class="nc" id="L49">  private Button submit = new Button(&quot;Submit&quot;);</span>
+<span class="nc" id="L50">  private Button reset = new Button(&quot;Reset&quot;);</span>
+
+<span class="nc" id="L52">  private ParameterComponent parameterComponent = new ParameterComponent();</span>
+<span class="nc" id="L53">  private InputFilesComponent inputFileComponent = new InputFilesComponent();</span>
+
+  private WorkflowViewController controller;
+
+<span class="nc" id="L57">  public MicroarrayQCComponent(WorkflowViewController controller) {</span>
+<span class="nc" id="L58">    this.controller = controller;</span>
+<span class="nc" id="L59">    reset.setDescription(&quot;Reset Parameters to default values.&quot;);</span>
+<span class="nc" id="L60">    submit</span>
+<span class="nc" id="L61">        .setDescription(&quot;Execute Workflow. With given input files, database/reference files and parameters.&quot;);</span>
+
+<span class="nc" id="L63">    HorizontalLayout buttonContent = new HorizontalLayout();</span>
+<span class="nc" id="L64">    buttonContent.addComponent(reset);</span>
+<span class="nc" id="L65">    buttonContent.addComponent(submit);</span>
+
+<span class="nc" id="L67">    VerticalLayout submissionContent = new VerticalLayout();</span>
+<span class="nc" id="L68">    submissionContent.setSpacing(true);</span>
+<span class="nc" id="L69">    submissionContent.addComponent(inputFileComponent);</span>
+<span class="nc" id="L70">    submissionContent.addComponent(parameterComponent);</span>
+<span class="nc" id="L71">    submissionContent.addComponent(buttonContent);</span>
+<span class="nc" id="L72">    setCompositionRoot(submissionContent);</span>
+<span class="nc" id="L73">  }</span>
+
+  public List&lt;DatasetBean&gt; getSelectedDatasets() {
+<span class="nc" id="L76">    return inputFileComponent.getSelectedDatasets();</span>
+  }
+
+  public Workflow getWorkflow() {
+<span class="nc" id="L80">    Workflow tmp = parameterComponent.getWorkflow();</span>
+<span class="nc" id="L81">    boolean success = inputFileComponent.updateWorkflow(tmp, controller);</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">    return success ? tmp : null;</span>
+  }
+
+  public void update(Workflow workflow, BeanItemContainer&lt;DatasetBean&gt; input) {
+<span class="nc" id="L86">    this.inputFileComponent.buildLayout(workflow.getData().getData(), input);</span>
+<span class="nc" id="L87">    this.parameterComponent.buildLayout(workflow);</span>
+<span class="nc" id="L88">    this.parameterComponent.setComboboxOptions(&quot;Microarray QC.1.f&quot;,</span>
+<span class="nc" id="L89">        controller.getExperimentalFactors());</span>
+<span class="nc" id="L90">  }</span>
+
+  public void resetParameters() {
+<span class="nc" id="L93">    parameterComponent.resetParameters();</span>
+<span class="nc" id="L94">  }</span>
+
+  public void addResetListener(ClickListener listener) {
+<span class="nc" id="L97">    reset.addClickListener(listener);</span>
+<span class="nc" id="L98">  }</span>
+
+  public void addSubmissionListener(ClickListener listener) {
+<span class="nc" id="L101">    submit.addClickListener(listener);</span>
+<span class="nc" id="L102">  }</span>
+
+  public void writeParametersToWorkflow() throws IllegalArgumentException, JSONException {
+<span class="nc bnc" id="L105" title="All 2 branches missed.">    if (parameterComponent.getWorkflow() instanceof GuseWorkflowRepresentation) {</span>
+<span class="nc" id="L106">      GuseWorkflowRepresentation w = (GuseWorkflowRepresentation) parameterComponent.getWorkflow();</span>
+
+<span class="nc" id="L108">      String header = &quot;file\tinternal_ID&quot;;</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">      for (String f : controller.getExperimentalFactors())</span>
+<span class="nc" id="L110">        header = header + &quot;\t&quot; + f;</span>
+      
+<span class="nc" id="L112">      StringBuilder tsv = new StringBuilder(header);</span>
+      
+<span class="nc" id="L114">      Map&lt;String,String&gt; fileProps = controller.getExperimentalPropsForFiles();</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">      for(DatasetBean b : inputFileComponent.getSelectedDatasets()) {</span>
+<span class="nc" id="L116">        String file = b.getFileName();</span>
+<span class="nc" id="L117">        tsv.append(&quot;\n&quot;+file+&quot;\t&quot;+fileProps.get(file));</span>
+<span class="nc" id="L118">      }</span>
+<span class="nc" id="L119">      tsv.append(&quot;\n&quot;);</span>
+      
+<span class="nc" id="L121">      GuseNode node = w.getNode(&quot;Workflow&quot;);</span>
+<span class="nc" id="L122">      InputPort port = node.getPort(&quot;PHENOFILE&quot;);</span>
+<span class="nc" id="L123">      port.getParams().get(&quot;pheno&quot;).setValue(tsv.toString());</span>
+    }
+
+<span class="nc" id="L126">  }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

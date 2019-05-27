@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DatasetBean.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.model</a> &gt; <span class="el_source">DatasetBean.java</span></div><h1>DatasetBean.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.model;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import com.vaadin.ui.CheckBox;
+
+public class DatasetBean implements Serializable {
+
+
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 4275310001607043674L;
+
+  // is the bean selected in the table?
+  private CheckBox isSelected;
+
+  // all information in its linked parents.
+  private ProjectBean project;
+  private SampleBean sample;
+  private ExperimentBean experiment;
+
+  // openbis code
+  private String code;
+  // file or directory name on dss
+  private String name;
+  // type of this dataset
+  private String type;
+
+  // size of this dataset on dss.
+  private long fileSize;
+  // same as {@link fileSize} but human readable format
+  private String humanReadableFileSize;
+
+
+  // path to the actual file or directory of this dataset on the dss.
+  private String dssPath;
+  // date of the registration of this dataset (not necessary when data arrives)
+  private Date registrationDate;
+  // name of the registrator
+  // TODO class user or liferay user?
+  private String registrator;
+
+  // If it is a directory, the file structure has to taken with care.
+  private boolean isDirectory;
+
+  private DatasetBean parent;
+
+  private DatasetBean root;
+  private List&lt;DatasetBean&gt; children;
+
+  private Map&lt;String, String&gt; properties;
+
+
+
+  public Map&lt;String, String&gt; getProperties() {
+<span class="nc" id="L75">    return properties;</span>
+  }
+
+  public void setProperties(Map&lt;String, String&gt; properties) {
+<span class="nc" id="L79">    this.properties = properties;</span>
+<span class="nc" id="L80">  }</span>
+
+  public DatasetBean(CheckBox isSelected, ProjectBean project, SampleBean sample,
+      ExperimentBean experiment, String code, String name, String type, long fileSize,
+      String humanReadableFileSize, String dssPath, Date registrationDate, String registrator,
+<span class="nc" id="L85">      boolean isDirectory, DatasetBean parent, DatasetBean root, List&lt;DatasetBean&gt; children) {</span>
+<span class="nc" id="L86">    this.isSelected = isSelected;</span>
+<span class="nc" id="L87">    this.project = project;</span>
+<span class="nc" id="L88">    this.sample = sample;</span>
+<span class="nc" id="L89">    this.experiment = experiment;</span>
+<span class="nc" id="L90">    this.code = code;</span>
+<span class="nc" id="L91">    this.name = name;</span>
+<span class="nc" id="L92">    this.type = type;</span>
+<span class="nc" id="L93">    this.fileSize = fileSize;</span>
+<span class="nc" id="L94">    this.humanReadableFileSize = humanReadableFileSize;</span>
+<span class="nc" id="L95">    this.dssPath = dssPath;</span>
+<span class="nc" id="L96">    this.registrationDate = registrationDate;</span>
+<span class="nc" id="L97">    this.registrator = registrator;</span>
+<span class="nc" id="L98">    this.isDirectory = isDirectory;</span>
+<span class="nc" id="L99">    this.parent = parent;</span>
+<span class="nc" id="L100">    this.root = root;</span>
+<span class="nc" id="L101">    this.children = children;</span>
+<span class="nc" id="L102">  }</span>
+
+<span class="nc" id="L104">  public DatasetBean() {</span>
+    // TODO Auto-generated constructor stub
+<span class="nc" id="L106">  }</span>
+
+  public boolean hasParent() {
+<span class="nc bnc" id="L109" title="All 2 branches missed.">    return parent != null;</span>
+  }
+
+  public boolean hasChildren() {
+<span class="nc bnc" id="L113" title="All 4 branches missed.">    return children != null &amp;&amp; children.size() &gt; 0;</span>
+  }
+
+  public boolean isRoot() {
+<span class="nc bnc" id="L117" title="All 2 branches missed.">    return root == null;</span>
+  }
+
+
+  public DatasetBean getParent() {
+<span class="nc" id="L122">    return parent;</span>
+  }
+
+  public void setParent(DatasetBean parent) {
+<span class="nc" id="L126">    this.parent = parent;</span>
+<span class="nc" id="L127">  }</span>
+
+  public DatasetBean getRoot() {
+<span class="nc" id="L130">    return root;</span>
+  }
+
+  public void setRoot(DatasetBean root) {
+<span class="nc" id="L134">    this.root = root;</span>
+<span class="nc" id="L135">  }</span>
+
+  public List&lt;DatasetBean&gt; getChildren() {
+<span class="nc" id="L138">    return children;</span>
+  }
+
+  public void setChildren(List&lt;DatasetBean&gt; children) {
+<span class="nc" id="L142">    this.children = children;</span>
+<span class="nc" id="L143">  }</span>
+
+  public String getName() {
+<span class="nc" id="L146">    return name;</span>
+  }
+
+  public void setName(String name) {
+<span class="nc" id="L150">    this.name = name;</span>
+<span class="nc" id="L151">  }</span>
+
+  public String getType() {
+<span class="nc" id="L154">    return type;</span>
+  }
+
+  public void setType(String type) {
+<span class="nc" id="L158">    this.type = type;</span>
+<span class="nc" id="L159">  }</span>
+
+  public String getHumanReadableFileSize() {
+<span class="nc" id="L162">    return humanReadableFileSize;</span>
+  }
+
+  public void setHumanReadableFileSize(String humanReadableFileSize) {
+<span class="nc" id="L166">    this.humanReadableFileSize = humanReadableFileSize;</span>
+<span class="nc" id="L167">  }</span>
+
+  public String getDssPath() {
+<span class="nc" id="L170">    return dssPath;</span>
+  }
+
+  public void setDssPath(String dssPath) {
+<span class="nc" id="L174">    this.dssPath = dssPath;</span>
+<span class="nc" id="L175">  }</span>
+
+  public boolean getIsDirectory() {
+<span class="nc" id="L178">    return isDirectory;</span>
+  }
+
+  public void setDirectory(boolean isDirectory) {
+<span class="nc" id="L182">    this.isDirectory = isDirectory;</span>
+<span class="nc" id="L183">  }</span>
+
+  public static long getSerialversionuid() {
+<span class="nc" id="L186">    return serialVersionUID;</span>
+  }
+
+  public String getCode() {
+<span class="nc" id="L190">    return code;</span>
+  }
+
+  public void setCode(String code) {
+<span class="nc" id="L194">    this.code = code;</span>
+<span class="nc" id="L195">  }</span>
+
+  public ProjectBean getProject() {
+<span class="nc" id="L198">    return project;</span>
+  }
+
+  public void setProject(ProjectBean project) {
+<span class="nc" id="L202">    this.project = project;</span>
+<span class="nc" id="L203">  }</span>
+
+  public ExperimentBean getExperiment() {
+<span class="nc" id="L206">    return experiment;</span>
+  }
+
+  public void setExperiment(ExperimentBean experiment) {
+<span class="nc" id="L210">    this.experiment = experiment;</span>
+<span class="nc" id="L211">  }</span>
+
+  public SampleBean getSample() {
+<span class="nc" id="L214">    return sample;</span>
+  }
+
+  public void setSample(SampleBean sample) {
+<span class="nc" id="L218">    this.sample = sample;</span>
+<span class="nc" id="L219">  }</span>
+
+  /**
+   * same as {@link getName}
+   * 
+   * @return
+   */
+  public String getFileName() {
+<span class="nc" id="L227">    return name;</span>
+  }
+
+  /**
+   * same as {@link setName}
+   * 
+   * @return
+   */
+  public void setFileName(String fileName) {
+<span class="nc" id="L236">    this.name = fileName;</span>
+<span class="nc" id="L237">  }</span>
+
+  public String getFileType() {
+<span class="nc" id="L240">    return type;</span>
+  }
+
+  public void setFileType(String fileType) {
+<span class="nc" id="L244">    this.type = fileType;</span>
+<span class="nc" id="L245">  }</span>
+
+  public long getFileSize() {
+<span class="nc" id="L248">    return fileSize;</span>
+  }
+
+  public void setFileSize(long fileSize) {
+<span class="nc" id="L252">    this.fileSize = fileSize;</span>
+<span class="nc" id="L253">  }</span>
+
+  public Date getRegistrationDate() {
+<span class="nc" id="L256">    return registrationDate;</span>
+  }
+
+  public void setRegistrationDate(Date registrationDate) {
+<span class="nc" id="L260">    this.registrationDate = registrationDate;</span>
+<span class="nc" id="L261">  }</span>
+
+  public String getRegistrator() {
+<span class="nc" id="L264">    return registrator;</span>
+  }
+
+  public void setRegistrator(String registrator) {
+<span class="nc" id="L268">    this.registrator = registrator;</span>
+<span class="nc" id="L269">  }</span>
+
+  @Override
+  public String toString() {
+<span class="nc" id="L273">    return &quot;DatasetBean [code=&quot; + code + &quot;; path=&quot; + dssPath + &quot;; size=&quot; + fileSize + &quot;]&quot;;</span>
+  }
+
+  @Override
+  public int hashCode() {
+<span class="nc" id="L278">    final int prime = 31;</span>
+<span class="nc" id="L279">    int result = 1;</span>
+<span class="nc bnc" id="L280" title="All 2 branches missed.">    result = prime * result + ((code == null) ? 0 : code.hashCode());</span>
+<span class="nc" id="L281">    return result;</span>
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+<span class="nc bnc" id="L286" title="All 2 branches missed.">    if (this == obj)</span>
+<span class="nc" id="L287">      return true;</span>
+<span class="nc bnc" id="L288" title="All 2 branches missed.">    if (obj == null)</span>
+<span class="nc" id="L289">      return false;</span>
+<span class="nc bnc" id="L290" title="All 2 branches missed.">    if (getClass() != obj.getClass())</span>
+<span class="nc" id="L291">      return false;</span>
+<span class="nc" id="L292">    DatasetBean other = (DatasetBean) obj;</span>
+<span class="nc bnc" id="L293" title="All 2 branches missed.">    if (code == null) {</span>
+<span class="nc bnc" id="L294" title="All 2 branches missed.">      if (other.code != null)</span>
+<span class="nc" id="L295">        return false;</span>
+<span class="nc bnc" id="L296" title="All 2 branches missed.">    } else if (!code.equals(other.code))</span>
+<span class="nc" id="L297">      return false;</span>
+<span class="nc" id="L298">    return true;</span>
+  }
+
+  public CheckBox getIsSelected() {
+<span class="nc" id="L302">    return isSelected;</span>
+  }
+
+  public void setSelected(boolean isSelected) {
+<span class="nc" id="L306">    this.isSelected = new CheckBox();</span>
+<span class="nc" id="L307">    this.isSelected.setValue(isSelected);</span>
+<span class="nc" id="L308">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

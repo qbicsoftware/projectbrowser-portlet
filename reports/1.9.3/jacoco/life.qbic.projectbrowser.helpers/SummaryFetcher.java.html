@@ -1,0 +1,583 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SummaryFetcher.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.helpers</a> &gt; <span class="el_source">SummaryFetcher.java</span></div><h1>SummaryFetcher.java</h1><pre class="source lang-java linenums">package life.qbic.projectbrowser.helpers;
+
+import java.io.File;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+
+import life.qbic.projectbrowser.model.notes.Note;
+import life.qbic.projectbrowser.model.notes.Notes;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.wml.Br;
+import org.docx4j.wml.P;
+
+import life.qbic.xml.manager.StudyXMLParser;
+import life.qbic.xml.manager.XMLParser;
+import life.qbic.xml.properties.Property;
+import life.qbic.xml.study.Qexperiment;
+import life.qbic.projectbrowser.helpers.Docx4jHelper;
+
+import ch.systemsx.cisd.openbis.dss.client.api.v1.DataSet;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Experiment;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.PropertyType;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
+import life.qbic.datamodel.identifiers.ExperimentCodeFunctions;
+import life.qbic.openbis.openbisclient.OpenBisClient;
+
+import com.vaadin.server.FileDownloader;
+import com.vaadin.server.FileResource;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.Panel;
+import com.vaadin.ui.Table;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.themes.ValoTheme;
+
+public class SummaryFetcher {
+
+  private OpenBisClient openbis;
+  private Map&lt;String, String&gt; allMap;
+  private String space;
+  private String projectCode;
+<span class="nc" id="L60">  private UglyToPrettyNameMapper prettyNameMapper = new UglyToPrettyNameMapper();</span>
+  private String projectName;
+  private String projectDescription;
+<span class="nc" id="L63">  private final Map&lt;String, String&gt; expTypeTranslation = new HashMap&lt;String, String&gt;() {</span>
+    {
+<span class="nc" id="L65">      put(&quot;Q_NGS_MEASUREMENT&quot;, &quot;Next Generation Sequencing Run&quot;);</span>
+<span class="nc" id="L66">      put(&quot;Q_EXPERIMENTAL_DESIGN&quot;, &quot;Sampling Units&quot;);</span>
+<span class="nc" id="L67">      put(&quot;Q_BMI_GENERIC_IMAGING&quot;, &quot;Biomedical Imaging&quot;);</span>
+<span class="nc" id="L68">      put(&quot;Q_SAMPLE_EXTRACTION&quot;, &quot;Sample Extraction&quot;);</span>
+<span class="nc" id="L69">      put(&quot;Q_SAMPLE_PREPARATION&quot;, &quot;Sample Preparation&quot;);</span>
+<span class="nc" id="L70">      put(&quot;Q_PROJECT_DETAILS&quot;, &quot;Project Details&quot;);</span>
+<span class="nc" id="L71">      put(&quot;UNKNOWN&quot;, &quot;Experiment Unknown&quot;);</span>
+<span class="nc" id="L72">      put(&quot;Q_EXT_MS_QUALITYCONTROL&quot;, &quot;MS Quality Control&quot;);</span>
+<span class="nc" id="L73">      put(&quot;Q_EXT_NGS_QUALITYCONTROL&quot;, &quot;NGS Quality Control&quot;);</span>
+<span class="nc" id="L74">      put(&quot;Q_MICROARRAY_MEASUREMENT&quot;, &quot;Microarray Measurement&quot;);</span>
+<span class="nc" id="L75">      put(&quot;Q_MS_MEASUREMENT&quot;, &quot;MS Measurement&quot;);</span>
+<span class="nc" id="L76">      put(&quot;Q_NGS_EPITOPE_PREDICTION&quot;, &quot;Prediction of MHC binding Epitopes&quot;);</span>
+<span class="nc" id="L77">      put(&quot;Q_NGS_FLOWCELL_RUN&quot;, &quot;Flowcell Run&quot;);</span>
+<span class="nc" id="L78">      put(&quot;Q_NGS_HLATYPING&quot;, &quot;HLA Typing&quot;);</span>
+<span class="nc" id="L79">      put(&quot;Q_NGS_IMMUNE_MONITORING&quot;, &quot;Immune Monitoring&quot;);</span>
+<span class="nc" id="L80">      put(&quot;Q_NGS_MAPPING&quot;, &quot;Mapping of NGS Reads&quot;);</span>
+<span class="nc" id="L81">      put(&quot;Q_NGS_SINGLE_SAMPLE_RUN&quot;, &quot;Next-Generation Sequencing Run&quot;);</span>
+<span class="nc" id="L82">      put(&quot;Q_NGS_VARIANT_CALLING&quot;, &quot;Variant Calling&quot;);</span>
+<span class="nc" id="L83">      put(&quot;Q_WF_MA_QUALITYCONTROL&quot;, &quot;Microarray Quality Control Workflow&quot;);</span>
+<span class="nc" id="L84">      put(&quot;Q_WF_MS_MAXQUANT&quot;, &quot;MaxQuant Workflow&quot;);</span>
+<span class="nc" id="L85">      put(&quot;Q_WF_MS_PEPTIDEID&quot;, &quot;Peptide Identification Workflow&quot;);</span>
+<span class="nc" id="L86">      put(&quot;Q_WF_MS_QUALITYCONTROL&quot;, &quot;MS Quality Control Worfklow&quot;);</span>
+<span class="nc" id="L87">      put(&quot;Q_WF_NGS_EPITOPE_PREDICTION&quot;, &quot;Prediction of MHC binding Epitopes Workflow&quot;);</span>
+<span class="nc" id="L88">      put(&quot;Q_WF_NGS_HLATYPING&quot;, &quot;HLA Typing Workflow&quot;);</span>
+<span class="nc" id="L89">      put(&quot;Q_WF_NGS_MERGE&quot;, &quot;Merging of NGS Reads&quot;);</span>
+<span class="nc" id="L90">      put(&quot;Q_WF_NGS_QUALITYCONTROL&quot;, &quot;NGS Quality Control Workflow&quot;);</span>
+<span class="nc" id="L91">      put(&quot;Q_WF_NGS_RNA_EXPRESSION_ANALYSIS&quot;, &quot;RNA Expression Analysis Workflow&quot;);</span>
+<span class="nc" id="L92">      put(&quot;Q_WF_NGS_VARIANT_ANNOTATION&quot;, &quot;Variant Annotation Workflow&quot;);</span>
+<span class="nc" id="L93">      put(&quot;Q_WF_NGS_VARIANT_CALLING&quot;, &quot;Variant Calling Workflow&quot;);</span>
+<span class="nc" id="L94">      put(&quot;Q_WF_NGS_MAPPING&quot;, &quot;NGS Read Alignment Workflow&quot;);</span>
+<span class="nc" id="L95">      put(&quot;Q_WF_MS_INDIVIDUALIZED_PROTEOME&quot;, &quot;Individualized Proteins Workflow&quot;);</span>
+<span class="nc" id="L96">      put(&quot;Q_WF_MS_LIGANDOMICS_ID&quot;, &quot;Ligandomics Identification Workflow&quot;);</span>
+<span class="nc" id="L97">      put(&quot;Q_WF_MS_LIGANDOMICS_QC&quot;, &quot;Ligandomics Quality Control Workflow&quot;);</span>
+<span class="nc" id="L98">      put(&quot;Q_MHC_LIGAND_EXTRACTION&quot;, &quot;MHC Ligand Extraction&quot;);</span>
+<span class="nc" id="L99">    };</span>
+  };
+  private WordprocessingMLPackage wordMLPackage;
+  private Docx4jHelper docxHelper;
+  private Component summaryComponent;
+  private String tmpFolder;
+<span class="nc" id="L105">  private boolean success = false;</span>
+  private Set&lt;String&gt; factorLabels;
+  private Map&lt;Pair&lt;String, String&gt;, Property&gt; factorsForLabelsAndSamples;
+
+<span class="nc" id="L109">  public SummaryFetcher(OpenBisClient openbis, String tmpFolder) {</span>
+<span class="nc" id="L110">    this.tmpFolder = tmpFolder;</span>
+<span class="nc" id="L111">    this.openbis = openbis;</span>
+<span class="nc" id="L112">    allMap = new HashMap&lt;String, String&gt;();</span>
+
+
+<span class="nc" id="L115">    Map&lt;String, String&gt; taxMap = openbis.getVocabCodesAndLabelsForVocab(&quot;Q_NCBI_TAXONOMY&quot;);</span>
+<span class="nc" id="L116">    Map&lt;String, String&gt; tissueMap = openbis.getVocabCodesAndLabelsForVocab(&quot;Q_PRIMARY_TISSUES&quot;);</span>
+<span class="nc" id="L117">    Map&lt;String, String&gt; deviceMap = openbis.getVocabCodesAndLabelsForVocab(&quot;Q_MS_DEVICES&quot;);</span>
+<span class="nc" id="L118">    Map&lt;String, String&gt; cellLinesMap = openbis.getVocabCodesAndLabelsForVocab(&quot;Q_CELL_LINES&quot;);</span>
+<span class="nc" id="L119">    Map&lt;String, String&gt; chromTypesMap =</span>
+<span class="nc" id="L120">        openbis.getVocabCodesAndLabelsForVocab(&quot;Q_CHROMATOGRAPHY_TYPES&quot;);</span>
+<span class="nc" id="L121">    Map&lt;String, String&gt; antibodiesMap = openbis.getVocabCodesAndLabelsForVocab(&quot;Q_ANTIBODY&quot;);</span>
+
+<span class="nc" id="L123">    allMap.putAll(reverseMap(cellLinesMap));</span>
+<span class="nc" id="L124">    allMap.putAll(reverseMap(deviceMap));</span>
+<span class="nc" id="L125">    allMap.putAll(reverseMap(taxMap));</span>
+<span class="nc" id="L126">    allMap.putAll(reverseMap(tissueMap));</span>
+<span class="nc" id="L127">    allMap.putAll(reverseMap(antibodiesMap));</span>
+<span class="nc" id="L128">    allMap.putAll(reverseMap(chromTypesMap));</span>
+<span class="nc" id="L129">  }</span>
+
+  private Map&lt;String, String&gt; reverseMap(Map&lt;String, String&gt; map) {
+<span class="nc" id="L132">    Map&lt;String, String&gt; reverse = new HashMap&lt;String, String&gt;();</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">    for (Map.Entry&lt;String, String&gt; e : map.entrySet())</span>
+<span class="nc" id="L134">      reverse.put(e.getValue(), e.getKey());</span>
+<span class="nc" id="L135">    return reverse;</span>
+  }
+
+  public void fetchSummaryComponent(String space, String code, String name, String description,
+      final ProjectSummaryReadyRunnable ready) {
+<span class="nc" id="L140">    this.space = space;</span>
+<span class="nc" id="L141">    this.projectCode = code;</span>
+<span class="nc" id="L142">    this.projectName = name;</span>
+<span class="nc" id="L143">    this.projectDescription = description;</span>
+<span class="nc" id="L144">    Thread t = new Thread(new Runnable() {</span>
+
+      @Override
+      public void run() {
+<span class="nc" id="L148">        parseExperimentalDesign();</span>
+<span class="nc" id="L149">        summaryComponent = computePopupComponent();</span>
+<span class="nc" id="L150">        UI.getCurrent().access(ready);</span>
+<span class="nc" id="L151">        UI.getCurrent().setPollInterval(-1);</span>
+<span class="nc" id="L152">      }</span>
+    });
+<span class="nc" id="L154">    t.start();</span>
+<span class="nc" id="L155">    UI.getCurrent().setPollInterval(200);</span>
+<span class="nc" id="L156">  }</span>
+
+  protected void parseExperimentalDesign() {
+<span class="nc" id="L159">    String id = ExperimentCodeFunctions.getInfoExperimentID(space, projectCode);</span>
+<span class="nc" id="L160">    List&lt;Experiment&gt; exps = openbis.getExperimentById2(id);</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">    if (!exps.isEmpty()) {</span>
+<span class="nc" id="L162">      StudyXMLParser parser = new StudyXMLParser();</span>
+      try {
+<span class="nc" id="L164">        JAXBElement&lt;Qexperiment&gt; design =</span>
+<span class="nc" id="L165">            parser.parseXMLString(exps.get(0).getProperties().get(&quot;Q_EXPERIMENTAL_SETUP&quot;));</span>
+<span class="nc" id="L166">        factorLabels = parser.getFactorLabels(design);</span>
+<span class="nc" id="L167">        factorsForLabelsAndSamples = parser.getFactorsForLabelsAndSamples(design);</span>
+<span class="nc" id="L168">      } catch (JAXBException e) {</span>
+        // TODO Auto-generated catch block
+<span class="nc" id="L170">        e.printStackTrace();</span>
+<span class="nc" id="L171">      }</span>
+    }
+<span class="nc" id="L173">  }</span>
+
+  private VerticalLayout computePopupComponent() {
+<span class="nc" id="L176">    initDocx4J();</span>
+<span class="nc" id="L177">    P p = docxHelper.createParagraph(&quot;Summary for project &quot; + projectCode, true, false, &quot;40&quot;);</span>
+<span class="nc" id="L178">    wordMLPackage.getMainDocumentPart().addObject(p);</span>
+
+<span class="nc" id="L180">    VerticalLayout res = new VerticalLayout();</span>
+<span class="nc" id="L181">    res.setCaption(&quot;Summary&quot;);</span>
+<span class="nc" id="L182">    res.setSpacing(true);</span>
+<span class="nc" id="L183">    res.setMargin(true);</span>
+
+    // collect and connect everything (if samples exist)
+<span class="nc" id="L186">    List&lt;Sample&gt; samples =</span>
+<span class="nc" id="L187">        openbis.getSamplesWithParentsAndChildrenOfProjectBySearchService(projectCode);</span>
+<span class="nc bnc" id="L188" title="All 4 branches missed.">    if (!projectCode.startsWith(&quot;Q&quot;) || projectCode.length() != 5) {</span>
+<span class="nc" id="L189">      success = false;</span>
+<span class="nc" id="L190">      return res;</span>
+    }
+<span class="nc bnc" id="L192" title="All 2 branches missed.">    if (samples.size() == 0) {</span>
+<span class="nc" id="L193">      success = false;</span>
+<span class="nc" id="L194">      return res;</span>
+    } else {
+<span class="nc" id="L196">      List&lt;Experiment&gt; experiments = openbis.getExperimentsForProject3(projectCode);</span>
+<span class="nc" id="L197">      Experiment first = experiments.get(0);</span>
+<span class="nc" id="L198">      List&lt;DataSet&gt; datasets = openbis.getDataSetsOfProjectByIdentifier(</span>
+<span class="nc" id="L199">          first.getIdentifier().replace(&quot;/&quot; + first.getCode(), &quot;&quot;));</span>
+
+<span class="nc" id="L201">      Map&lt;Experiment, List&lt;Sample&gt;&gt; expToSamples = new HashMap&lt;Experiment, List&lt;Sample&gt;&gt;();</span>
+<span class="nc" id="L202">      Map&lt;String, List&lt;DataSet&gt;&gt; sampIDToDS = new HashMap&lt;String, List&lt;DataSet&gt;&gt;();</span>
+<span class="nc" id="L203">      Map&lt;String, List&lt;DataSet&gt;&gt; expIDToDS = new HashMap&lt;String, List&lt;DataSet&gt;&gt;();</span>
+<span class="nc" id="L204">      Map&lt;String, Experiment&gt; expIDToExp = new HashMap&lt;String, Experiment&gt;();</span>
+<span class="nc" id="L205">      Map&lt;String, List&lt;PropertyType&gt;&gt; expTypeToProperties =</span>
+          new HashMap&lt;String, List&lt;PropertyType&gt;&gt;();
+
+<span class="nc bnc" id="L208" title="All 2 branches missed.">      for (DataSet d : datasets) {</span>
+<span class="nc" id="L209">        String sampID = d.getSampleIdentifierOrNull();</span>
+<span class="nc" id="L210">        String expID = d.getExperimentIdentifier();</span>
+        // fill sample id to datasets
+<span class="nc bnc" id="L212" title="All 2 branches missed.">        if (sampIDToDS.containsKey(sampID))</span>
+<span class="nc" id="L213">          sampIDToDS.get(sampID).add(d);</span>
+        else
+<span class="nc" id="L215">          sampIDToDS.put(sampID, new ArrayList&lt;DataSet&gt;(Arrays.asList(d)));</span>
+        // fill experiment id to datasets
+<span class="nc bnc" id="L217" title="All 2 branches missed.">        if (expIDToDS.containsKey(expID))</span>
+<span class="nc" id="L218">          expIDToDS.get(expID).add(d);</span>
+        else
+<span class="nc" id="L220">          expIDToDS.put(expID, new ArrayList&lt;DataSet&gt;(Arrays.asList(d)));</span>
+<span class="nc" id="L221">      }</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">      for (Experiment e : experiments)</span>
+<span class="nc" id="L223">        expIDToExp.put(e.getIdentifier(), e);</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">      for (Sample s : samples) {</span>
+<span class="nc" id="L225">        Experiment exp = expIDToExp.get(s.getExperimentIdentifierOrNull());</span>
+<span class="nc bnc" id="L226" title="All 2 branches missed.">        if (expToSamples.containsKey(exp))</span>
+<span class="nc" id="L227">          expToSamples.get(exp).add(s);</span>
+        else
+<span class="nc" id="L229">          expToSamples.put(exp, new ArrayList&lt;Sample&gt;(Arrays.asList(s)));</span>
+<span class="nc" id="L230">      }</span>
+      // sort and display information
+<span class="nc" id="L232">      Collections.sort(experiments, ExperimentTypeComparator.getInstance());</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">      for (Experiment e : experiments) {</span>
+
+<span class="nc" id="L235">        String type = e.getExperimentTypeCode();</span>
+<span class="nc bnc" id="L236" title="All 2 branches missed.">        if (!expTypeToProperties.containsKey(type))</span>
+<span class="nc" id="L237">          expTypeToProperties.put(type,</span>
+<span class="nc" id="L238">              openbis.listPropertiesForType(openbis.getExperimentTypeByString(type)));</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">        if (expTypeTranslation.containsKey(type))</span>
+<span class="nc" id="L240">          type = expTypeTranslation.get(type);</span>
+<span class="nc bnc" id="L241" title="All 4 branches missed.">        if (expToSamples.containsKey(e) &amp;&amp; !type.equals(&quot;Project Details&quot;)) {// TODO here, project</span>
+                                                                             // details/attachments
+                                                                             // information could be
+                                                                             // added
+<span class="nc" id="L245">          VerticalLayout section = new VerticalLayout();</span>
+          // create vaadin and docx section
+<span class="nc" id="L247">          generateExperimentHeaderWithMetadata(e, section, wordMLPackage.getMainDocumentPart(),</span>
+              expTypeToProperties);
+
+<span class="nc" id="L250">          Table sampleTable = generateSampleTable(expToSamples.get(e), sampIDToDS,</span>
+<span class="nc" id="L251">              expIDToDS.get(e.getIdentifier()), wordMLPackage.getMainDocumentPart());</span>
+<span class="nc" id="L252">          section.addComponent(sampleTable);</span>
+<span class="nc" id="L253">          res.addComponent(section);</span>
+        }
+<span class="nc" id="L255">      }</span>
+<span class="nc" id="L256">      success = true;</span>
+    }
+<span class="nc" id="L258">    addSummaryDownload(res);</span>
+<span class="nc" id="L259">    return res;</span>
+  }
+
+  private String createTimeStamp() {
+<span class="nc" id="L263">    Date date = new Date();</span>
+<span class="nc" id="L264">    return new Timestamp(date.getTime()).toString().split(&quot; &quot;)[1].replace(&quot;:&quot;, &quot;&quot;).replace(&quot;.&quot;, &quot;&quot;);</span>
+  }
+
+  private void addSummaryDownload(VerticalLayout res) {
+<span class="nc" id="L268">    Button download = new Button(&quot;Download Summary&quot;);</span>
+<span class="nc" id="L269">    res.addComponent(download);</span>
+<span class="nc" id="L270">    String docxPath = tmpFolder + projectCode + &quot;_&quot; + createTimeStamp() + &quot;.docx&quot;;</span>
+    try {
+<span class="nc" id="L272">      wordMLPackage.save(new File(docxPath));</span>
+<span class="nc" id="L273">    } catch (Docx4JException e) {</span>
+      // TODO Auto-generated catch block
+<span class="nc" id="L275">      e.printStackTrace();</span>
+<span class="nc" id="L276">    }</span>
+<span class="nc" id="L277">    FileResource resource = new FileResource(new File(docxPath));</span>
+<span class="nc" id="L278">    FileDownloader docxDownload = new FileDownloader(resource);</span>
+<span class="nc" id="L279">    docxDownload.extend(download);</span>
+<span class="nc" id="L280">  }</span>
+
+  private void initDocx4J() {
+<span class="nc" id="L283">    docxHelper = new Docx4jHelper();</span>
+    try {
+<span class="nc" id="L285">      wordMLPackage = WordprocessingMLPackage.createPackage();</span>
+<span class="nc" id="L286">    } catch (InvalidFormatException e) {</span>
+      // TODO Auto-generated catch block
+<span class="nc" id="L288">      e.printStackTrace();</span>
+<span class="nc" id="L289">    }</span>
+<span class="nc" id="L290">  }</span>
+
+  private void generateExperimentHeaderWithMetadata(Experiment e, VerticalLayout section,
+      MainDocumentPart mainDocumentPart, Map&lt;String, List&lt;PropertyType&gt;&gt; expTypeToProperties) {
+<span class="nc" id="L294">    String expHeadline =</span>
+<span class="nc" id="L295">        expTypeTranslation.get(e.getExperimentTypeCode()) + &quot; (&quot; + e.getCode() + &quot;)&quot;;</span>
+
+    // docx
+<span class="nc" id="L298">    P p1 = docxHelper.createParagraph(expHeadline, true, false, &quot;32&quot;);</span>
+<span class="nc" id="L299">    mainDocumentPart.addObject(p1);</span>
+
+    // view
+<span class="nc" id="L302">    Panel expPanel = new Panel();</span>
+<span class="nc" id="L303">    expPanel.setStyleName(ValoTheme.PANEL_WELL);</span>
+<span class="nc" id="L304">    Label header = new Label(expHeadline);</span>
+<span class="nc" id="L305">    header.setStyleName(ValoTheme.LABEL_BOLD);</span>
+<span class="nc" id="L306">    section.addComponent(header);</span>
+
+    // all possible properties that can be set for this experiment type
+<span class="nc" id="L309">    List&lt;PropertyType&gt; possibleProps = expTypeToProperties.get(e.getExperimentTypeCode());</span>
+<span class="nc" id="L310">    Map&lt;String, String&gt; properties = e.getProperties();</span>
+    // collect ready-to-display key-value pairs
+<span class="nc" id="L312">    List&lt;String&gt; metadata = new ArrayList&lt;String&gt;();</span>
+
+<span class="nc" id="L314">    Date date = e.getRegistrationDetails().getRegistrationDate();</span>
+<span class="nc" id="L315">    SimpleDateFormat dateFormat = new SimpleDateFormat(&quot;dd-MM-yy&quot;);</span>
+<span class="nc" id="L316">    String formattedDate = dateFormat.format(date);</span>
+<span class="nc" id="L317">    metadata.add(&quot;Date: &quot; + formattedDate);</span>
+<span class="nc bnc" id="L318" title="All 2 branches missed.">    for (PropertyType p : possibleProps) {</span>
+<span class="nc" id="L319">      String code = p.getCode();</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">      if (properties.containsKey(code)) {</span>
+<span class="nc" id="L321">        String label = p.getLabel();</span>
+<span class="nc" id="L322">        String value = properties.get(code);</span>
+<span class="nc bnc" id="L323" title="All 2 branches missed.">        if (label.equals(&quot;Notes&quot;)) {</span>
+<span class="nc" id="L324">          metadata.addAll(parseXMLNotes(value));</span>
+        } else {
+<span class="nc bnc" id="L326" title="All 2 branches missed.">          if (allMap.containsKey(value)) {</span>
+<span class="nc" id="L327">            value = allMap.get(value);</span>
+          }
+<span class="nc" id="L329">          metadata.add(label + &quot;: &quot; + value);</span>
+        }
+      }
+<span class="nc" id="L332">    }</span>
+
+<span class="nc" id="L334">    Collections.sort(metadata);</span>
+<span class="nc bnc" id="L335" title="All 2 branches missed.">    for (String line : metadata) {</span>
+      // vaadin
+<span class="nc" id="L337">      Label l = new Label(line);</span>
+<span class="nc" id="L338">      section.addComponent(l);</span>
+      // docx
+<span class="nc" id="L340">      mainDocumentPart.addObject(docxHelper.createParagraph(line, false, false, &quot;32&quot;));</span>
+<span class="nc" id="L341">    }</span>
+<span class="nc" id="L342">    expPanel.setContent(section);</span>
+<span class="nc" id="L343">  }</span>
+
+  private List&lt;String&gt; parseXMLNotes(String value) {
+<span class="nc" id="L346">    List&lt;String&gt; res = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L347">    List&lt;Note&gt; notes = new ArrayList&lt;Note&gt;();</span>
+    try {
+<span class="nc" id="L349">      JAXBElement&lt;Notes&gt; jaxbelem = HistoryReader.parseNotes(value);</span>
+<span class="nc" id="L350">      notes = jaxbelem.getValue().getNote();</span>
+<span class="nc" id="L351">    } catch (JAXBException e) {</span>
+      // TODO Auto-generated catch block
+<span class="nc" id="L353">      e.printStackTrace();</span>
+<span class="nc" id="L354">    }</span>
+<span class="nc bnc" id="L355" title="All 2 branches missed.">    for (Note n : notes) {</span>
+<span class="nc" id="L356">      res.add(Utils.usernameToFullName(n.getUsername()) + &quot; commented: &quot; + n.getComment());</span>
+<span class="nc" id="L357">    }</span>
+<span class="nc" id="L358">    return res;</span>
+  }
+
+  private Table generateSampleTable(List&lt;Sample&gt; samples, Map&lt;String, List&lt;DataSet&gt;&gt; sampIDToDS,
+      List&lt;DataSet&gt; expDS, MainDocumentPart mainDocumentPart) {
+<span class="nc" id="L363">    String tableHeadline = prettyNameMapper.getPrettyName(samples.get(0).getSampleTypeCode()) + &quot;s&quot;; // plural</span>
+<span class="nc" id="L364">    mainDocumentPart.addObject(docxHelper.createParagraph(tableHeadline, false, false, &quot;32&quot;));</span>
+
+<span class="nc" id="L366">    Table table = new Table(tableHeadline);</span>
+<span class="nc" id="L367">    table.setStyleName(ValoTheme.TABLE_SMALL);</span>
+
+<span class="nc" id="L369">    List&lt;String&gt; factorsInTable = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L370">    List&lt;String&gt; header = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L371">    List&lt;List&lt;String&gt;&gt; data = new ArrayList&lt;List&lt;String&gt;&gt;();</span>
+<span class="nc" id="L372">    int numDS = 0;</span>
+<span class="nc bnc" id="L373" title="All 2 branches missed.">    if (expDS != null)</span>
+<span class="nc" id="L374">      numDS = expDS.size();</span>
+<span class="nc bnc" id="L375" title="All 2 branches missed.">    if (samples.size() &gt; 50) {</span>
+<span class="nc" id="L376">      header.add(&quot;Samples&quot;);</span>
+<span class="nc" id="L377">      header.add(&quot;Datasets&quot;);</span>
+<span class="nc" id="L378">      table.addContainerProperty(&quot;Samples&quot;, String.class, null);</span>
+<span class="nc" id="L379">      table.addContainerProperty(&quot;Datasets&quot;, String.class, null);</span>
+<span class="nc" id="L380">      List&lt;String&gt; row = new ArrayList&lt;String&gt;();</span>
+
+<span class="nc" id="L382">      row.add(Integer.toString(samples.size()));</span>
+<span class="nc" id="L383">      row.add(Integer.toString(numDS));</span>
+<span class="nc" id="L384">      table.addItem(row.toArray(new Object[row.size()]), 1);</span>
+<span class="nc" id="L385">      table.setPageLength(1);</span>
+<span class="nc" id="L386">      data.add(row); // test</span>
+<span class="nc" id="L387">    } else {</span>
+<span class="nc" id="L388">      header.add(&quot;Code&quot;);</span>
+<span class="nc" id="L389">      header.add(&quot;Name&quot;);</span>
+<span class="nc" id="L390">      header.add(&quot;External ID&quot;);</span>
+<span class="nc" id="L391">      table.addContainerProperty(&quot;Code&quot;, String.class, null);</span>
+<span class="nc" id="L392">      table.addContainerProperty(&quot;Name&quot;, String.class, null);</span>
+<span class="nc" id="L393">      table.addContainerProperty(&quot;External ID&quot;, String.class, null);</span>
+<span class="nc" id="L394">      table.setImmediate(true);</span>
+      // List&lt;String&gt; factorLabels = new ArrayList&lt;String&gt;();
+      // List&lt;Property&gt; factors = new ArrayList&lt;Property&gt;();
+      // int maxCols = 0;
+      // Map&lt;Sample, List&lt;Property&gt;&gt; samplesToFactors = new HashMap&lt;Sample, List&lt;Property&gt;&gt;();
+<span class="nc" id="L399">      Sample first = samples.get(0);</span>
+<span class="nc" id="L400">      boolean specialSet = false;</span>
+<span class="nc" id="L401">      String sType = first.getSampleTypeCode();</span>
+      // if (mostInformative.getProperties().containsKey(&quot;Q_PROPERTIES&quot;)) {
+      // XMLParser xmlParser = new XMLParser();
+      //
+      // for (Sample s : samples) {
+      // String xml = s.getProperties().get(&quot;Q_PROPERTIES&quot;);
+      // List&lt;Property&gt; curr = new ArrayList&lt;Property&gt;();
+      // try {
+      // curr = xmlParser.getAllPropertiesFromXML(xml);
+      // samplesToFactors.put(s, curr);
+      // } catch (JAXBException e) {
+      // // TODO Auto-generated catch block
+      // e.printStackTrace();
+      // }
+      // int size = curr.size();
+      // if (size &gt; maxCols) {
+      // maxCols = size;
+      // mostInformative = s;
+      // }
+      // }
+      // factors = samplesToFactors.get(mostInformative);
+      // }
+
+
+<span class="nc bnc" id="L425" title="All 2 branches missed.">      for (String label : factorLabels) {</span>
+<span class="nc" id="L426">        boolean used = false;</span>
+<span class="nc bnc" id="L427" title="All 2 branches missed.">        for (Sample s : samples) {</span>
+<span class="nc bnc" id="L428" title="All 2 branches missed.">          if (factorsForLabelsAndSamples.get(new ImmutablePair&lt;&gt;(label, s.getCode())) != null) {</span>
+<span class="nc" id="L429">            used = true;</span>
+<span class="nc" id="L430">            factorsInTable.add(label);</span>
+<span class="nc" id="L431">            break;</span>
+          }
+<span class="nc" id="L433">        }</span>
+<span class="nc bnc" id="L434" title="All 2 branches missed.">        if (used) {</span>
+<span class="nc bnc" id="L435" title="All 4 branches missed.">          if (label.equals(&quot;species&quot;) &amp;&amp; sType.equals(&quot;Q_BIOLOGICAL_ENTITY&quot;))</span>
+<span class="nc" id="L436">            specialSet = true;</span>
+<span class="nc bnc" id="L437" title="All 4 branches missed.">          else if (label.equals(&quot;tissues&quot;) &amp;&amp; sType.equals(&quot;Q_BIOLOGICAL_SAMPLE&quot;))</span>
+<span class="nc" id="L438">            specialSet = true;</span>
+<span class="nc" id="L439">          header.add(label);</span>
+<span class="nc" id="L440">          table.addContainerProperty(label, String.class, null);</span>
+        }
+<span class="nc" id="L442">      }</span>
+
+      // for (int i = 0; i &lt; factors.size(); i++) {
+      // String l = factors.get(i).getLabel();
+      // if (l.equals(&quot;species&quot;) &amp;&amp; sType.equals(&quot;Q_BIOLOGICAL_ENTITY&quot;))
+      // specialSet = true;
+      // else if (l.equals(&quot;tissues&quot;) &amp;&amp; sType.equals(&quot;Q_BIOLOGICAL_SAMPLE&quot;))
+      // specialSet = true;
+      //
+      // int j = 2;
+      // while (factorLabels.contains(l)) {
+      // l = factors.get(i).getLabel() + &quot; (&quot; + Integer.toString(j) + &quot;)&quot;;
+      // j++;
+      // }
+      // factorLabels.add(l);
+      // header.add(l);
+      // table.addContainerProperty(l, String.class, null);
+      // }
+<span class="nc" id="L460">      List&lt;String&gt; typesToAdd = new ArrayList&lt;String&gt;();</span>
+<span class="nc bnc" id="L461" title="All 4 branches missed.">      switch (sType) {</span>
+        case &quot;Q_BIOLOGICAL_ENTITY&quot;:
+<span class="nc bnc" id="L463" title="All 2 branches missed.">          if (!specialSet)</span>
+<span class="nc" id="L464">            typesToAdd.add(&quot;Species&quot;);</span>
+          break;
+        case &quot;Q_BIOLOGICAL_SAMPLE&quot;:
+<span class="nc bnc" id="L467" title="All 2 branches missed.">          if (!specialSet)</span>
+<span class="nc" id="L468">            typesToAdd.add(&quot;Tissue&quot;);</span>
+          break;
+        case &quot;Q_TEST_SAMPLE&quot;:
+<span class="nc" id="L471">          typesToAdd.add(&quot;Analyte&quot;);</span>
+<span class="nc" id="L472">          break;</span>
+        default:
+          break;
+      }
+<span class="nc bnc" id="L476" title="All 2 branches missed.">      if (numDS &gt; 0)</span>
+<span class="nc" id="L477">        typesToAdd.add(&quot;Datasets&quot;);</span>
+<span class="nc bnc" id="L478" title="All 2 branches missed.">      for (String typeToAdd : typesToAdd) {</span>
+<span class="nc" id="L479">        header.add(typeToAdd);</span>
+<span class="nc" id="L480">        table.addContainerProperty(typeToAdd, String.class, null);</span>
+<span class="nc" id="L481">      }</span>
+<span class="nc bnc" id="L482" title="All 2 branches missed.">      for (Sample s : samples) {</span>
+        // Create the table row.
+<span class="nc" id="L484">        Map&lt;String, String&gt; props = s.getProperties();</span>
+<span class="nc" id="L485">        List&lt;String&gt; row = new ArrayList&lt;String&gt;();</span>
+
+<span class="nc" id="L487">        row.add(s.getCode());</span>
+<span class="nc" id="L488">        row.add(props.get(&quot;Q_SECONDARY_NAME&quot;));</span>
+<span class="nc" id="L489">        row.add(props.get(&quot;Q_EXTERNALDB_ID&quot;));</span>
+
+        // List&lt;Property&gt; currFactors = new ArrayList&lt;Property&gt;();
+        // int missing = 0;
+<span class="nc bnc" id="L493" title="All 2 branches missed.">        for (String label : factorsInTable) {</span>
+<span class="nc" id="L494">          Property f = factorsForLabelsAndSamples.get(new ImmutablePair&lt;&gt;(label, s.getCode()));</span>
+<span class="nc bnc" id="L495" title="All 2 branches missed.">          if (f == null) {</span>
+<span class="nc" id="L496">            row.add(&quot;&quot;);</span>
+          } else {
+<span class="nc" id="L498">            String v = f.getValue();</span>
+<span class="nc bnc" id="L499" title="All 2 branches missed.">            if (f.hasUnit())</span>
+<span class="nc" id="L500">              v += &quot; &quot; + f.getUnit();</span>
+<span class="nc" id="L501">            row.add(v);</span>
+          }
+<span class="nc" id="L503">        }</span>
+
+        // if (samplesToFactors.containsKey(s))
+        // currFactors = samplesToFactors.get(s);
+        // int missing = maxCols - currFactors.size();
+        // for (Property f : currFactors) {
+        // String v = f.getValue();
+        // if (f.hasUnit())
+        // v += &quot; &quot; + f.getUnit();
+        // row.add(v);
+        // }
+        // for (int j = 0; j &lt; missing; j++) {
+        // row.add(&quot;&quot;);
+        // }
+
+
+<span class="nc" id="L519">        int dataCount = 0;</span>
+<span class="nc bnc" id="L520" title="All 2 branches missed.">        if (sampIDToDS.containsKey(s.getIdentifier()))</span>
+<span class="nc" id="L521">          dataCount = sampIDToDS.get(s.getIdentifier()).size();</span>
+<span class="nc bnc" id="L522" title="All 4 branches missed.">        switch (sType) {</span>
+          case &quot;Q_BIOLOGICAL_ENTITY&quot;:
+<span class="nc bnc" id="L524" title="All 2 branches missed.">            if (!specialSet)</span>
+<span class="nc" id="L525">              row.add(allMap.get(props.get(&quot;Q_NCBI_ORGANISM&quot;)));</span>
+            break;
+          case &quot;Q_BIOLOGICAL_SAMPLE&quot;:
+<span class="nc bnc" id="L528" title="All 2 branches missed.">            if (!specialSet)</span>
+<span class="nc" id="L529">              row.add(parseTissue(s));</span>
+            break;
+          case &quot;Q_TEST_SAMPLE&quot;:
+<span class="nc" id="L532">            row.add(props.get(&quot;Q_SAMPLE_TYPE&quot;));</span>
+<span class="nc" id="L533">            break;</span>
+          default:
+            break;
+        }
+<span class="nc bnc" id="L537" title="All 2 branches missed.">        if (dataCount &gt; 0)</span>
+<span class="nc" id="L538">          row.add(Integer.toString(dataCount));</span>
+<span class="nc" id="L539">        data.add(row);</span>
+<span class="nc" id="L540">        table.addItem(row.toArray(new Object[row.size()]), s);</span>
+<span class="nc" id="L541">      }</span>
+<span class="nc" id="L542">      table.setPageLength(samples.size());</span>
+    }
+    // docx
+<span class="nc" id="L545">    wordMLPackage.getMainDocumentPart().addObject(docxHelper.createTableWithContent(header, data));</span>
+<span class="nc" id="L546">    wordMLPackage.getMainDocumentPart().addObject(new Br());</span>
+<span class="nc" id="L547">    return table;</span>
+  }
+
+  private String parseTissue(Sample s) {
+<span class="nc" id="L551">    String tissue = s.getProperties().get(&quot;Q_PRIMARY_TISSUE&quot;);</span>
+<span class="nc" id="L552">    String other = s.getProperties().get(&quot;Q_TISSUE_DETAILED&quot;);</span>
+<span class="nc bnc" id="L553" title="All 2 branches missed.">    if (tissue.equals(&quot;OTHER&quot;))</span>
+<span class="nc bnc" id="L554" title="All 4 branches missed.">      if (other == null || other.isEmpty())</span>
+<span class="nc" id="L555">        tissue = &quot;Other&quot;;</span>
+      else
+<span class="nc" id="L557">        tissue = other;</span>
+<span class="nc bnc" id="L558" title="All 2 branches missed.">    else if (tissue.equals(&quot;CELL_CULTURE&quot;))</span>
+<span class="nc bnc" id="L559" title="All 4 branches missed.">      if (other == null || other.isEmpty())</span>
+<span class="nc" id="L560">        tissue = &quot;Cell Culture&quot;;</span>
+      else
+<span class="nc" id="L562">        tissue = other;</span>
+<span class="nc bnc" id="L563" title="All 2 branches missed.">    if (allMap.containsKey(tissue))</span>
+<span class="nc" id="L564">      return allMap.get(tissue);</span>
+    else
+<span class="nc" id="L566">      return tissue;</span>
+  }
+
+  /**
+   * returns ready to use summary component
+   * 
+   * @return
+   */
+  public Component getWindowContent() {
+<span class="nc" id="L575">    return summaryComponent;</span>
+  }
+
+  public boolean wasSuccessful() {
+<span class="nc" id="L579">    return success;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

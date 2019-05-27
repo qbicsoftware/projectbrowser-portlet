@@ -1,0 +1,2711 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DataHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.controllers</a> &gt; <span class="el_source">DataHandler.java</span></div><h1>DataHandler.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.controllers;
+
+import java.io.Serializable;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+
+import life.qbic.portal.utils.PortalUtils;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.data.util.HierarchicalContainer;
+import com.vaadin.data.util.IndexedContainer;
+import com.vaadin.server.FontAwesome;
+import com.vaadin.server.ThemeResource;
+import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.ui.CheckBox;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.ProgressBar;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.themes.ValoTheme;
+
+import ch.systemsx.cisd.openbis.dss.client.api.v1.DataSet;
+import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.FileInfoDssDTO;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.ControlledVocabularyPropertyType;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Experiment;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Material;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.MaterialIdentifier;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.MaterialTypeIdentifier;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Project;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.PropertyType;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SpaceWithProjectsAndRoleAssignments;
+import ch.systemsx.cisd.openbis.plugin.query.shared.api.v1.dto.QueryTableModel;
+import life.qbic.datamodel.experiments.ExperimentType;
+import life.qbic.datamodel.identifiers.ExperimentCodeFunctions;
+import life.qbic.openbis.openbisclient.OpenBisClient;
+
+import life.qbic.projectbrowser.helpers.Utils;
+import life.qbic.projectbrowser.helpers.OpenBisFunctions;
+import life.qbic.projectbrowser.helpers.BarcodeFunctions;
+import life.qbic.projectbrowser.model.DatasetBean;
+import life.qbic.projectbrowser.model.ExperimentBean;
+import life.qbic.projectbrowser.model.ExperimentStatusBean;
+import life.qbic.projectbrowser.model.NewIvacSampleBean;
+import life.qbic.projectbrowser.model.SampleBean;
+import life.qbic.projectbrowser.model.spaceToProjectPrefixMap;
+import life.qbic.projectbrowser.model.ProjectBean;
+import life.qbic.projectbrowser.model.DBManager;
+import life.qbic.projectbrowser.helpers.AlternativeSecondaryNameCreator;
+
+import life.qbic.xml.persons.Qperson;
+import life.qbic.xml.properties.Property;
+import life.qbic.xml.study.Qexperiment;
+import life.qbic.xml.manager.PersonParser;
+import life.qbic.xml.manager.StudyXMLParser;
+
+
+public class DataHandler implements Serializable {
+
+
+  /**
+   * 
+   */
+  private static final long serialVersionUID = -4814000017404997233L;
+<span class="nc" id="L100">  private static final Logger LOG = LogManager.getLogger(DataHandler.class);</span>
+
+  // Map&lt;String, SpaceInformation&gt; spaces = new HashMap&lt;String, SpaceInformation&gt;();
+  // Map&lt;String, ProjectInformation&gt; projectInformations = new HashMap&lt;String,
+  // ProjectInformation&gt;();
+  // Map&lt;String, ExperimentInformation&gt; experimentInformations =
+  // new HashMap&lt;String, ExperimentInformation&gt;();
+  // Map&lt;String, SampleInformation&gt; sampleInformations = new HashMap&lt;String, SampleInformation&gt;();
+  // Map&lt;String, ProjectBean&gt; projectMap = new HashMap&lt;String, ProjectBean&gt;();
+  // Map&lt;String, ExperimentBean&gt; experimentMap = new HashMap&lt;String, ExperimentBean&gt;();
+<span class="nc" id="L110">  Map&lt;String, SampleBean&gt; sampleMap = new HashMap&lt;String, SampleBean&gt;();</span>
+<span class="nc" id="L111">  Map&lt;String, DatasetBean&gt; datasetMap = new HashMap&lt;String, DatasetBean&gt;();</span>
+
+//  Map&lt;String, String&gt; spaceToProjectPrefixMap = new HashMap&lt;String, String&gt;();
+
+
+  // store search result containers here
+<span class="nc" id="L117">  List&lt;Sample&gt; sampleResults = new ArrayList&lt;Sample&gt;();</span>
+<span class="nc" id="L118">  List&lt;Experiment&gt; expResults = new ArrayList&lt;Experiment&gt;();</span>
+<span class="nc" id="L119">  List&lt;Project&gt; projResults = new ArrayList&lt;Project&gt;();</span>
+
+<span class="nc" id="L121">  List&lt;String&gt; showOptions = Arrays.asList(&quot;Projects&quot;, &quot;Experiments&quot;, &quot;Samples&quot;);</span>
+
+
+<span class="nc" id="L124">  String lastQueryString = new String();</span>
+
+
+<span class="nc" id="L127">  List&lt;SpaceWithProjectsAndRoleAssignments&gt; space_list = null;</span>
+  // Map&lt;String, IndexedContainer&gt; connectedPersons = new HashMap&lt;String, IndexedContainer&gt;();
+<span class="nc" id="L129">  IndexedContainer connectedPersons = new IndexedContainer();</span>
+
+  // Map&lt;String, IndexedContainer&gt; space_to_projects = new HashMap&lt;String, IndexedContainer&gt;();
+  //
+  // Map&lt;String, IndexedContainer&gt; space_to_experiments = new HashMap&lt;String, IndexedContainer&gt;();
+  // Map&lt;String, IndexedContainer&gt; project_to_experiments = new HashMap&lt;String, IndexedContainer&gt;();
+  //
+  // Map&lt;String, IndexedContainer&gt; space_to_samples = new HashMap&lt;String, IndexedContainer&gt;();
+  // Map&lt;String, IndexedContainer&gt; project_to_samples = new HashMap&lt;String, IndexedContainer&gt;();
+  // Map&lt;String, IndexedContainer&gt; experiment_to_samples = new HashMap&lt;String, IndexedContainer&gt;();
+
+  // Map&lt;String, HierarchicalContainer&gt; space_to_datasets =
+  // new HashMap&lt;String, HierarchicalContainer&gt;();
+  // Map&lt;String, HierarchicalContainer&gt; project_to_datasets =
+  // new HashMap&lt;String, HierarchicalContainer&gt;();
+  // Map&lt;String, HierarchicalContainer&gt; experiment_to_datasets =
+  // new HashMap&lt;String, HierarchicalContainer&gt;();
+  // Map&lt;String, HierarchicalContainer&gt; sample_to_datasets =
+  // new HashMap&lt;String, HierarchicalContainer&gt;();
+
+  public List&lt;Sample&gt; getSampleResults() {
+<span class="nc" id="L150">    return sampleResults;</span>
+  }
+
+  public void setSampleResults(List&lt;Sample&gt; sampleResults) {
+<span class="nc" id="L154">    Set&lt;String&gt; projects = new HashSet&lt;String&gt;();</span>
+
+    // we have to initialize the projects in order to get the experimental design for the navigation from the searchbar view
+<span class="nc bnc" id="L157" title="All 2 branches missed.">    for (Sample s: sampleResults) {</span>
+<span class="nc" id="L158">      String expID = s.getExperimentIdentifierOrNull();</span>
+<span class="nc" id="L159">      String spaceCode = s.getSpaceCode();</span>
+<span class="nc" id="L160">      String projectId = String.format(&quot;/%s/%s&quot;, spaceCode, expID.split(&quot;/&quot;)[2]);</span>
+
+<span class="nc bnc" id="L162" title="All 2 branches missed.">      if(!projects.contains(projectId)) {</span>
+<span class="nc" id="L163">        projects.add(projectId);</span>
+      }
+<span class="nc" id="L165">    }</span>
+
+<span class="nc bnc" id="L167" title="All 2 branches missed.">    for (String p: projects) {</span>
+<span class="nc" id="L168">      this.getProject2(p);</span>
+<span class="nc" id="L169">    }</span>
+
+<span class="nc" id="L171">    this.sampleResults = sampleResults;</span>
+<span class="nc" id="L172">  }</span>
+
+  public List&lt;Experiment&gt; getExpResults() {
+<span class="nc" id="L175">    return expResults;</span>
+  }
+
+  public void setExpResults(List&lt;Experiment&gt; expResults) {
+<span class="nc" id="L179">    this.expResults = expResults;</span>
+<span class="nc" id="L180">  }</span>
+
+  public List&lt;Project&gt; getProjResults() {
+<span class="nc" id="L183">    return projResults;</span>
+  }
+
+
+  public void setProjResults(List&lt;Project&gt; projResults) {
+<span class="nc" id="L188">    this.projResults = projResults;</span>
+<span class="nc" id="L189">  }</span>
+
+  public List&lt;String&gt; getShowOptions() {
+<span class="nc" id="L192">    return showOptions;</span>
+  }
+
+
+  public void setShowOptions(List&lt;String&gt; showOptions) {
+<span class="nc" id="L197">    this.showOptions = showOptions;</span>
+<span class="nc" id="L198">  }</span>
+
+  public String getLastQueryString() {
+<span class="nc" id="L201">    return lastQueryString;</span>
+  }
+
+
+  public void setLastQueryString(String lastQueryString) {
+<span class="nc" id="L206">    this.lastQueryString = lastQueryString;</span>
+<span class="nc" id="L207">  }</span>
+
+
+
+  public List&lt;SpaceWithProjectsAndRoleAssignments&gt; getSpacesWithProjectInformation() {
+<span class="nc bnc" id="L212" title="All 2 branches missed.">    if (space_list == null) {</span>
+<span class="nc" id="L213">      space_list = this.getOpenBisClient().getFacade().getSpacesWithProjects();</span>
+    }
+
+<span class="nc" id="L216">    return space_list;</span>
+  }
+
+  private OpenBisClient openBisClient;
+  private DBManager databaseManager;
+
+<span class="nc" id="L222">  private Map&lt;String, Project&gt; dtoProjects = new HashMap&lt;String, Project&gt;();</span>
+  // private Map&lt;String, Experiment&gt; dtoExperiments = new HashMap&lt;String, Experiment&gt;();
+<span class="nc" id="L224">  private StudyXMLParser studyParser = new StudyXMLParser();</span>
+  private Set&lt;String&gt; experimentalFactorLabels;
+  private Map&lt;Pair&lt;String, String&gt;, Property&gt; experimentalFactorsForLabelsAndSamples;
+  private Map&lt;String, List&lt;Property&gt;&gt; propertiesForSamples;
+  private JAXBElement&lt;Qexperiment&gt; experimentalSetup;
+
+<span class="nc" id="L230">  public DataHandler(OpenBisClient client, DBManager databaseManager) {</span>
+    // reset(); //TODO useless?
+<span class="nc" id="L232">    this.setOpenBisClient(client);</span>
+<span class="nc" id="L233">    this.setDatabaseManager(databaseManager);</span>
+<span class="nc" id="L234">  }</span>
+
+
+  // // id in this case meaning the openBIS instance ?!
+  // public SpaceInformation getSpace(String identifier) throws Exception {
+  //
+  // List&lt;SpaceWithProjectsAndRoleAssignments&gt; space_list = null;
+  // SpaceInformation spaces = null;
+  //
+  // if (this.spaces.get(identifier) != null) {
+  // return this.spaces.get(identifier);
+  // }
+  //
+  // else if (this.spaces.get(identifier) == null) {
+  // space_list = this.getSpacesWithProjectInformation();
+  // spaces = this.createSpaceContainer(space_list, identifier);
+  //
+  // this.spaces.put(identifier, spaces);
+  // }
+  //
+  // else {
+  // throw new Exception(&quot;Unknown Space: &quot; + identifier + &quot;. Method DataHandler::getSpace.&quot;);
+  // }
+  //
+  // return spaces;
+  //
+  // }
+
+  private Date parseDate(String dateString) {
+<span class="nc" id="L263">    Date date = null;</span>
+<span class="nc" id="L264">    SimpleDateFormat formatter = new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss&quot;);</span>
+    try {
+<span class="nc" id="L266">      date = formatter.parse(dateString.split(&quot;\\+&quot;)[0]);</span>
+
+<span class="nc" id="L268">    } catch (ParseException e) {</span>
+<span class="nc" id="L269">      e.printStackTrace();</span>
+<span class="nc" id="L270">    }</span>
+<span class="nc" id="L271">    return date;</span>
+  }
+
+  /**
+   * 
+   * @param datasets List of dataset codes
+   * @return A list of DatasetBeans denoting the roots of the folder structure of each dataset.
+   *         Subfolders and files can be reached by calling the getChildren() function on each Bean.
+   */
+  public List&lt;DatasetBean&gt; queryDatasetsForFolderStructure(
+      List&lt;ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet&gt; datasets) {
+<span class="nc" id="L282">    Map&lt;String, List&lt;String&gt;&gt; params = new HashMap&lt;String, List&lt;String&gt;&gt;();</span>
+<span class="nc" id="L283">    List&lt;String&gt; dsCodes = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L284">    Map&lt;String, String&gt; types = new HashMap&lt;String, String&gt;();</span>
+
+<span class="nc" id="L286">    Map&lt;String, Map&lt;String, String&gt;&gt; props = new LinkedHashMap&lt;String, Map&lt;String, String&gt;&gt;();</span>
+
+<span class="nc bnc" id="L288" title="All 2 branches missed.">    for (ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet ds : datasets) {</span>
+<span class="nc" id="L289">      dsCodes.add(ds.getCode());</span>
+<span class="nc" id="L290">      types.put(ds.getCode(), ds.getDataSetTypeCode());</span>
+<span class="nc" id="L291">      props.put(ds.getCode(), ds.getProperties());</span>
+<span class="nc" id="L292">    }</span>
+
+<span class="nc" id="L294">    params.put(&quot;codes&quot;, dsCodes);</span>
+<span class="nc" id="L295">    QueryTableModel res = getOpenBisClient().queryFileInformation(params);</span>
+
+    // TODO this should work, but here starts the new code in case it doesn't 07.08.15 - Andreas
+<span class="nc" id="L298">    Map&lt;String, List&lt;DatasetBean&gt;&gt; folderStructure = new HashMap&lt;String, List&lt;DatasetBean&gt;&gt;();</span>
+<span class="nc" id="L299">    Map&lt;String, DatasetBean&gt; fileNames = new HashMap&lt;String, DatasetBean&gt;();</span>
+    // Set&lt;DatasetBean&gt; folders = new HashSet&lt;DatasetBean&gt;();
+
+<span class="nc bnc" id="L302" title="All 2 branches missed.">    for (Serializable[] ss : res.getRows()) {</span>
+
+<span class="nc" id="L304">      DatasetBean b = new DatasetBean();</span>
+<span class="nc" id="L305">      String dsCode = (String) ss[0];</span>
+<span class="nc" id="L306">      String fileName = (String) ss[2];</span>
+<span class="nc" id="L307">      String dssPath = (String) ss[1];</span>
+<span class="nc" id="L308">      b.setCode(dsCode);</span>
+<span class="nc" id="L309">      b.setType(types.get(dsCode));</span>
+<span class="nc" id="L310">      b.setFileName(fileName);</span>
+<span class="nc" id="L311">      b.setDssPath(dssPath);</span>
+<span class="nc" id="L312">      long size = (Long) ss[3];</span>
+<span class="nc" id="L313">      b.setFileSize(size);</span>
+<span class="nc" id="L314">      b.setRegistrationDate(parseDate((String) ss[5]));</span>
+<span class="nc" id="L315">      b.setProperties(props.get(dsCode));</span>
+
+      // both code and filename are needed for the keys to be unique
+      // fileNames.put(dsCode + fileName, b);
+<span class="nc" id="L319">      fileNames.put(dsCode + dssPath, b);</span>
+
+      // store file beans under their respective code+folder, except those with &quot;original&quot;
+      // String folderKey = (String) ss[4];
+      // safest way to be unique: folder is dss path without the last part of the path (&quot;original&quot;
+      // isn't changed)
+<span class="nc" id="L325">      String folderKey = dssPath;</span>
+<span class="nc bnc" id="L326" title="All 4 branches missed.">      if (null != dssPath &amp;&amp; dssPath.length() &gt; 0) {</span>
+<span class="nc" id="L327">        int endIndex = dssPath.lastIndexOf(&quot;/&quot;);</span>
+<span class="nc bnc" id="L328" title="All 2 branches missed.">        if (endIndex != -1) {</span>
+<span class="nc" id="L329">          folderKey = dssPath.substring(0, endIndex); // not forgot to put check if(endIndex !=</span>
+                                                      // -1)
+        }
+      }
+      // LOG.debug(&quot;full path &quot; + b.getDssPath());
+<span class="nc bnc" id="L334" title="All 2 branches missed.">      if (!folderKey.equals(&quot;original&quot;))</span>
+<span class="nc" id="L335">        folderKey = dsCode + folderKey;</span>
+      // LOG.debug(&quot;folder key: &quot; + folderKey);
+      // folder known, add this file to folder
+<span class="nc bnc" id="L338" title="All 2 branches missed.">      if (folderStructure.containsKey(folderKey)) {</span>
+<span class="nc" id="L339">        folderStructure.get(folderKey).add(b);</span>
+      } else {
+        // folder unknown, create new folder with dataset list containing this file
+<span class="nc" id="L342">        List&lt;DatasetBean&gt; inFolder = new ArrayList&lt;DatasetBean&gt;();</span>
+<span class="nc" id="L343">        inFolder.add(b);</span>
+<span class="nc" id="L344">        folderStructure.put(folderKey, inFolder);</span>
+      }
+<span class="nc" id="L346">    }</span>
+    // System.out.println(&quot;known folders with data: &quot; + folderStructure.size());
+    // System.out.println(&quot;known fileNames: &quot; + fileNames.size());
+    // for (String folder : folderStructure.keySet()) {
+    // System.out.println(folder + &quot; contains &quot; + folderStructure.get(folder).size() + &quot; files&quot;);
+    // }
+    // find children samples for our folders
+<span class="nc bnc" id="L353" title="All 2 branches missed.">    for (String fileNameKey : fileNames.keySet()) {</span>
+      // if the fileNameKey is in our folder map we have found a folder (not a file and not the
+      // &quot;original&quot; folder)
+<span class="nc bnc" id="L356" title="All 2 branches missed.">      if (folderStructure.containsKey(fileNameKey)) {</span>
+        // and we add the files to this folder bean
+        // System.out.println(&quot;filekey: &quot; + fileNameKey);
+<span class="nc" id="L359">        List&lt;DatasetBean&gt; children = folderStructure.get(fileNameKey);</span>
+        // if (children == null)
+        // System.out.println(&quot;no subfiles for this key&quot;);
+        // else
+        // System.out.println(children.size() + &quot; subfiles&quot;);
+<span class="nc" id="L364">        fileNames.get(fileNameKey).setChildren(children);</span>
+        // System.out.println(fileNames.get(fileNameKey).getChildren());
+      }
+<span class="nc" id="L367">    }</span>
+    // System.out.println(&quot;first ds in original:&quot;);
+    // DatasetBean ds = folderStructure.get(&quot;original&quot;).get(0);
+    // System.out.println(ds);
+    // System.out.println(&quot;subfolders:&quot;);
+    // System.out.println(ds.getChildren());
+    // Now the structure should be set up. Root structures have &quot;original&quot; as parent folder
+<span class="nc" id="L374">    List&lt;DatasetBean&gt; roots = folderStructure.get(&quot;original&quot;);</span>
+    // Remove empty folders
+<span class="nc" id="L376">    List&lt;DatasetBean&gt; level = roots;</span>
+<span class="nc bnc" id="L377" title="All 2 branches missed.">    while (!level.isEmpty()) {</span>
+<span class="nc" id="L378">      List&lt;DatasetBean&gt; collect = new ArrayList&lt;DatasetBean&gt;();</span>
+<span class="nc" id="L379">      List&lt;DatasetBean&gt; toRemove = new ArrayList&lt;DatasetBean&gt;();</span>
+<span class="nc bnc" id="L380" title="All 2 branches missed.">      for (DatasetBean b : level) {</span>
+<span class="nc bnc" id="L381" title="All 2 branches missed.">        if (b.hasChildren()) {</span>
+          // collect subfolders + files for recursion
+<span class="nc" id="L383">          collect.addAll(b.getChildren());</span>
+        } else {
+          // no subfolders or files and empty? remove from this folder level
+<span class="nc bnc" id="L386" title="All 2 branches missed.">          if (b.getFileSize() == 0) {</span>
+<span class="nc" id="L387">            toRemove.add(b);</span>
+          }
+        }
+<span class="nc" id="L390">      }</span>
+<span class="nc" id="L391">      level.removeAll(toRemove);</span>
+<span class="nc" id="L392">      level = collect;</span>
+<span class="nc" id="L393">    }</span>
+<span class="nc" id="L394">    LOG.debug(fileNames.size() + &quot; files found&quot;);</span>
+<span class="nc" id="L395">    LOG.debug(folderStructure.size() + &quot; folders found&quot;);</span>
+<span class="nc" id="L396">    LOG.debug(roots.size() + &quot; root folders&quot;);</span>
+<span class="nc" id="L397">    int annoyanceCount = 5;</span>
+<span class="nc" id="L398">    LOG.debug(&quot;subfiles for the first 5 root folders: &quot;);</span>
+<span class="nc bnc" id="L399" title="All 2 branches missed.">    for (DatasetBean b : roots) {</span>
+<span class="nc" id="L400">      annoyanceCount--;</span>
+<span class="nc bnc" id="L401" title="All 2 branches missed.">      if (annoyanceCount &gt; 0) {</span>
+<span class="nc bnc" id="L402" title="All 2 branches missed.">        if (b.hasChildren())</span>
+<span class="nc" id="L403">          LOG.debug(&quot;root has attached subfiles: &quot; + b.getChildren().size());</span>
+      }
+<span class="nc" id="L405">    }</span>
+<span class="nc" id="L406">    return roots;</span>
+  }
+
+  // Recursively get all samples which are above the corresponding sample in the tree
+  public List&lt;DatasetBean&gt; getAllFiles(List&lt;DatasetBean&gt; found, DatasetBean root) {
+<span class="nc" id="L411">    List&lt;DatasetBean&gt; current = root.getChildren();</span>
+
+<span class="nc bnc" id="L413" title="All 2 branches missed.">    if (current == null) {</span>
+<span class="nc" id="L414">      found.add(root);</span>
+<span class="nc bnc" id="L415" title="All 2 branches missed.">    } else if (current.size() == 0) {</span>
+<span class="nc" id="L416">      found.add(root);</span>
+
+    } else {
+<span class="nc bnc" id="L419" title="All 2 branches missed.">      for (int i = 0; i &lt; current.size(); i++) {</span>
+<span class="nc" id="L420">        getAllFiles(found, current.get(i));</span>
+      }
+    }
+<span class="nc" id="L423">    return found;</span>
+  }
+
+
+  public List&lt;DatasetBean&gt; queryDatasetsForFiles(
+      List&lt;ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet&gt; datasets) {
+<span class="nc" id="L429">    List&lt;DatasetBean&gt; results = new ArrayList&lt;DatasetBean&gt;();</span>
+
+<span class="nc bnc" id="L431" title="All 2 branches missed.">    if (datasets.size() &gt; 0) {</span>
+<span class="nc" id="L432">      List&lt;DatasetBean&gt; roots = queryDatasetsForFolderStructure(datasets);</span>
+
+<span class="nc bnc" id="L434" title="All 2 branches missed.">      for (DatasetBean ds : roots) {</span>
+<span class="nc" id="L435">        List&lt;DatasetBean&gt; startList = new ArrayList&lt;DatasetBean&gt;();</span>
+<span class="nc" id="L436">        results.addAll(getAllFiles(startList, ds));</span>
+<span class="nc" id="L437">      }</span>
+    }
+
+<span class="nc" id="L440">    return results;</span>
+  }
+
+  // /**
+  // * Method to get Bean from either openbis identifier or openbis object. Checks if corresponding
+  // * bean is already stored in datahandler map.
+  // *
+  // * @param
+  // * @return
+  // */
+  // @Deprecated
+  // public ProjectBean getProject(Object proj) {
+  // Project project;
+  // ProjectBean newProjectBean;
+  // // System.out.println(proj);
+  // // System.out.println(this.projectMap);
+  //
+  // if (proj instanceof Project) {
+  // project = (Project) proj;
+  // newProjectBean = this.createProjectBean(project);
+  // this.projectMap.put(newProjectBean.getId(), newProjectBean);
+  // } else {
+  // if (this.projectMap.get((String) proj) != null) {
+  //
+  // newProjectBean = this.projectMap.get(proj);
+  // } else {
+  // project = this.getOpenBisClient().getProjectByIdentifier((String) proj);
+  // newProjectBean = this.createProjectBean(project);
+  // this.projectMap.put(newProjectBean.getId(), newProjectBean);
+  // }
+  // }
+  // return newProjectBean;
+  // }
+
+  /**
+   * Method to get Bean from either openbis identifier or openbis object. Does NOT check if
+   * corresponding bean is already stored in datahandler map. Should be used if project instance has
+   * been modified from session
+   * 
+   * @param
+   * @return
+   */
+  public ProjectBean getProjectFromDB(String projectIdentifier) {
+<span class="nc" id="L483">    List&lt;Experiment&gt; experiments =</span>
+<span class="nc" id="L484">        this.getOpenBisClient().getExperimentsForProject2(projectIdentifier);</span>
+
+<span class="nc" id="L486">    float projectStatus = this.getOpenBisClient().computeProjectStatus(experiments);</span>
+
+<span class="nc" id="L488">    Project project = getOpenBisClient().getProjectByIdentifier(projectIdentifier);</span>
+<span class="nc" id="L489">    dtoProjects.put(projectIdentifier, project);</span>
+
+<span class="nc" id="L491">    ProjectBean newProjectBean = new ProjectBean();</span>
+
+<span class="nc" id="L493">    ProgressBar progressBar = new ProgressBar();</span>
+<span class="nc" id="L494">    progressBar.setValue(projectStatus);</span>
+
+<span class="nc" id="L496">    Date registrationDate = project.getRegistrationDetails().getRegistrationDate();</span>
+
+    // String pi = getDatabaseManager().getInvestigatorDetailsForProject(project.getCode());
+<span class="nc" id="L499">    String pi = getDatabaseManager().getPersonDetailsForProject(project.getIdentifier(), &quot;PI&quot;);</span>
+<span class="nc" id="L500">    String cp = getDatabaseManager().getPersonDetailsForProject(project.getIdentifier(), &quot;Contact&quot;);</span>
+    // String manager = getDatabaseManager().getPersonDetailsForProject(project.getIdentifier(),
+    // &quot;Manager&quot;);//TODO
+<span class="nc" id="L503">    String manager = &quot;&quot;;</span>
+<span class="nc" id="L504">    String longDesc = getDatabaseManager().getLongProjectDescription(project.getIdentifier());</span>
+
+<span class="nc bnc" id="L506" title="All 2 branches missed.">    if (pi.equals(&quot;&quot;)) {</span>
+<span class="nc" id="L507">      newProjectBean.setPrincipalInvestigator(&quot;n/a&quot;);</span>
+    } else {
+<span class="nc" id="L509">      newProjectBean.setPrincipalInvestigator(pi);</span>
+    }
+
+<span class="nc bnc" id="L512" title="All 2 branches missed.">    if (cp.equals(&quot;&quot;)) {</span>
+<span class="nc" id="L513">      newProjectBean.setContactPerson(&quot;n/a&quot;);</span>
+    } else {
+<span class="nc" id="L515">      newProjectBean.setContactPerson(cp);</span>
+    }
+
+<span class="nc bnc" id="L518" title="All 2 branches missed.">    if (manager.equals(&quot;&quot;)) {</span>
+<span class="nc" id="L519">      newProjectBean.setProjectManager(&quot;n/a&quot;);</span>
+    } else {
+<span class="nc" id="L521">      newProjectBean.setProjectManager(manager);</span>
+    }
+
+<span class="nc" id="L524">    String secondaryName = getDatabaseManager().getProjectName(projectIdentifier);</span>
+<span class="nc bnc" id="L525" title="All 4 branches missed.">    if (secondaryName == null || secondaryName.isEmpty())</span>
+<span class="nc" id="L526">      secondaryName = &quot;n/a&quot;;</span>
+<span class="nc" id="L527">    newProjectBean.setSecondaryName(secondaryName);</span>
+
+<span class="nc bnc" id="L529" title="All 2 branches missed.">    if (longDesc == null)</span>
+<span class="nc" id="L530">      longDesc = &quot;&quot;;</span>
+
+<span class="nc" id="L532">    newProjectBean.setId(project.getIdentifier());</span>
+<span class="nc" id="L533">    newProjectBean.setCode(project.getCode());</span>
+<span class="nc" id="L534">    String desc = project.getDescription();</span>
+<span class="nc bnc" id="L535" title="All 2 branches missed.">    if (desc == null)</span>
+<span class="nc" id="L536">      desc = &quot;&quot;;</span>
+<span class="nc" id="L537">    newProjectBean.setDescription(desc);</span>
+<span class="nc" id="L538">    newProjectBean.setRegistrationDate(registrationDate);</span>
+<span class="nc" id="L539">    newProjectBean.setProgress(progressBar);</span>
+<span class="nc" id="L540">    newProjectBean.setRegistrator(project.getRegistrationDetails().getUserId());</span>
+<span class="nc" id="L541">    newProjectBean.setContact(project.getRegistrationDetails().getUserEmail());</span>
+
+<span class="nc" id="L543">    BeanItemContainer&lt;ExperimentBean&gt; experimentBeans =</span>
+        new BeanItemContainer&lt;ExperimentBean&gt;(ExperimentBean.class);
+
+<span class="nc bnc" id="L546" title="All 2 branches missed.">    for (Experiment experiment : experiments) {</span>
+<span class="nc" id="L547">      ExperimentBean newExperimentBean = new ExperimentBean();</span>
+<span class="nc" id="L548">      String status = &quot;&quot;;</span>
+
+<span class="nc" id="L550">      Map&lt;String, String&gt; assignedProperties = experiment.getProperties();</span>
+
+<span class="nc bnc" id="L552" title="All 2 branches missed.">      if (assignedProperties.keySet().contains(&quot;Q_CURRENT_STATUS&quot;)) {</span>
+<span class="nc" id="L553">        status = assignedProperties.get(&quot;Q_CURRENT_STATUS&quot;);</span>
+      }
+
+<span class="nc bnc" id="L556" title="All 2 branches missed.">      else if (assignedProperties.keySet().contains(&quot;Q_WF_STATUS&quot;)) {</span>
+<span class="nc" id="L557">        status = assignedProperties.get(&quot;Q_WF_STATUS&quot;);</span>
+      }
+
+      // Image statusColor = new Image(status, this.setExperimentStatusColor(status));
+      // statusColor.setWidth(&quot;15px&quot;);
+      // statusColor.setHeight(&quot;15px&quot;);
+      // statusColor.setCaption(status);
+
+<span class="nc" id="L565">      newExperimentBean.setId(experiment.getIdentifier());</span>
+<span class="nc" id="L566">      newExperimentBean.setCode(experiment.getCode());</span>
+<span class="nc" id="L567">      newExperimentBean.setType(experiment.getExperimentTypeCode());</span>
+<span class="nc" id="L568">      newExperimentBean.setStatus(status);</span>
+<span class="nc" id="L569">      newExperimentBean.setRegistrator(experiment.getRegistrationDetails().getUserId());</span>
+<span class="nc" id="L570">      newExperimentBean</span>
+<span class="nc" id="L571">          .setRegistrationDate(experiment.getRegistrationDetails().getRegistrationDate());</span>
+<span class="nc" id="L572">      experimentBeans.addBean(newExperimentBean);</span>
+<span class="nc" id="L573">    }</span>
+
+<span class="nc" id="L575">    newProjectBean.setLongDescription(longDesc);</span>
+
+<span class="nc" id="L577">    List&lt;ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet&gt; projectData = this</span>
+<span class="nc" id="L578">        .getOpenBisClient().getDataSetsOfProjectByIdentifierWithSearchCriteria(projectIdentifier);</span>
+
+<span class="nc" id="L580">    Boolean containsData = false;</span>
+<span class="nc" id="L581">    Boolean containsResults = false;</span>
+<span class="nc" id="L582">    Boolean attachmentResult = false;</span>
+    // Boolean containsAttachments = false;
+
+<span class="nc bnc" id="L585" title="All 2 branches missed.">    for (ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet ds : projectData) {</span>
+<span class="nc" id="L586">      attachmentResult = false;</span>
+<span class="nc bnc" id="L587" title="All 2 branches missed.">      if (ds.getDataSetTypeCode().equals(&quot;Q_PROJECT_DATA&quot;)) {</span>
+<span class="nc" id="L588">        attachmentResult = ds.getProperties().get(&quot;Q_ATTACHMENT_TYPE&quot;).equals(&quot;RESULT&quot;);</span>
+      }
+
+<span class="nc bnc" id="L591" title="All 2 branches missed.">      if (!(ds.getDataSetTypeCode().equals(&quot;Q_PROJECT_DATA&quot;))</span>
+<span class="nc bnc" id="L592" title="All 2 branches missed.">          &amp;&amp; !(ds.getDataSetTypeCode().contains(&quot;RESULTS&quot;))) {</span>
+<span class="nc" id="L593">        containsData = true;</span>
+<span class="nc bnc" id="L594" title="All 4 branches missed.">      } else if (ds.getDataSetTypeCode().contains(&quot;RESULTS&quot;) || attachmentResult) {</span>
+<span class="nc" id="L595">        containsResults = true;</span>
+      } // else if (ds.getDataSetTypeCode() == &quot;Q_PROJECT_DATA&quot;) {
+        // containsAttachments = true;
+      // }
+<span class="nc" id="L599">    }</span>
+
+<span class="nc" id="L601">    newProjectBean.setContainsData(containsData);</span>
+<span class="nc" id="L602">    newProjectBean.setContainsResults(containsResults);</span>
+
+<span class="nc" id="L604">    newProjectBean.setExperiments(experimentBeans);</span>
+<span class="nc" id="L605">    newProjectBean.setMembers(new HashSet&lt;String&gt;());</span>
+<span class="nc" id="L606">    return newProjectBean;</span>
+  }
+
+  /**
+   * Method to get Bean from either openbis identifier or openbis object. Checks if corresponding
+   * bean is already stored in datahandler map.
+   * 
+   * @param
+   * @return
+   */
+  public ProjectBean getProject2(String projectIdentifier) {
+<span class="nc" id="L617">    List&lt;Experiment&gt; experiments =</span>
+<span class="nc" id="L618">        this.getOpenBisClient().getExperimentsForProject3(projectIdentifier);// TODO changed this</span>
+                                                                             // from
+                                                                             // getExperimentsForProject2
+
+<span class="nc" id="L622">    float projectStatus = this.getOpenBisClient().computeProjectStatus(experiments);</span>
+
+<span class="nc" id="L624">    Project project = getOpenbisDtoProject(projectIdentifier);</span>
+<span class="nc bnc" id="L625" title="All 2 branches missed.">    if (project == null) {</span>
+<span class="nc" id="L626">      project = getOpenBisClient().getProjectByIdentifier(projectIdentifier);</span>
+<span class="nc" id="L627">      addOpenbisDtoProject(project);</span>
+    }
+<span class="nc" id="L629">    ProjectBean newProjectBean = new ProjectBean();</span>
+
+<span class="nc" id="L631">    ProgressBar progressBar = new ProgressBar();</span>
+<span class="nc" id="L632">    progressBar.setValue(projectStatus);</span>
+
+<span class="nc" id="L634">    Date registrationDate = project.getRegistrationDetails().getRegistrationDate();</span>
+
+    // String pi = getDatabaseManager().getInvestigatorDetailsForProject(project.getCode());
+<span class="nc" id="L637">    String pi = getDatabaseManager().getPersonDetailsForProject(project.getIdentifier(), &quot;PI&quot;);</span>
+<span class="nc" id="L638">    String cp = getDatabaseManager().getPersonDetailsForProject(project.getIdentifier(), &quot;Contact&quot;);</span>
+<span class="nc" id="L639">    String manager =</span>
+<span class="nc" id="L640">        getDatabaseManager().getPersonDetailsForProject(project.getIdentifier(), &quot;Manager&quot;);</span>
+
+<span class="nc" id="L642">    String longDesc = getDatabaseManager().getLongProjectDescription(project.getIdentifier());</span>
+
+<span class="nc bnc" id="L644" title="All 2 branches missed.">    if (pi.equals(&quot;&quot;)) {</span>
+<span class="nc" id="L645">      newProjectBean.setPrincipalInvestigator(&quot;n/a&quot;);</span>
+    } else {
+<span class="nc" id="L647">      newProjectBean.setPrincipalInvestigator(pi);</span>
+    }
+
+<span class="nc bnc" id="L650" title="All 2 branches missed.">    if (cp.equals(&quot;&quot;)) {</span>
+<span class="nc" id="L651">      newProjectBean.setContactPerson(&quot;n/a&quot;);</span>
+    } else {
+<span class="nc" id="L653">      newProjectBean.setContactPerson(cp);</span>
+    }
+
+<span class="nc bnc" id="L656" title="All 2 branches missed.">    if (manager.equals(&quot;&quot;)) {</span>
+<span class="nc" id="L657">      newProjectBean.setProjectManager(&quot;n/a&quot;);</span>
+    } else {
+<span class="nc" id="L659">      newProjectBean.setProjectManager(manager);</span>
+    }
+
+<span class="nc bnc" id="L662" title="All 2 branches missed.">    if (longDesc == null)</span>
+<span class="nc" id="L663">      longDesc = &quot;&quot;;</span>
+<span class="nc" id="L664">    newProjectBean.setLongDescription(longDesc);</span>
+
+<span class="nc" id="L666">    newProjectBean.setId(project.getIdentifier());</span>
+<span class="nc" id="L667">    newProjectBean.setCode(project.getCode());</span>
+<span class="nc" id="L668">    String desc = project.getDescription();</span>
+<span class="nc bnc" id="L669" title="All 2 branches missed.">    if (desc == null)</span>
+<span class="nc" id="L670">      desc = &quot;&quot;;</span>
+<span class="nc" id="L671">    newProjectBean.setDescription(desc);</span>
+<span class="nc" id="L672">    newProjectBean.setRegistrationDate(registrationDate);</span>
+<span class="nc" id="L673">    newProjectBean.setProgress(progressBar);</span>
+<span class="nc" id="L674">    newProjectBean.setRegistrator(project.getRegistrationDetails().getUserId());</span>
+<span class="nc" id="L675">    newProjectBean.setContact(project.getRegistrationDetails().getUserEmail());</span>
+
+    // Create sample Beans (or fetch them) for samples of experiments
+<span class="nc" id="L678">    List&lt;Sample&gt; allSamples = this.getOpenBisClient()</span>
+<span class="nc" id="L679">        .getSamplesWithParentsAndChildrenOfProjectBySearchService(projectIdentifier);</span>
+
+<span class="nc" id="L681">    BeanItemContainer&lt;ExperimentBean&gt; experimentBeans =</span>
+        new BeanItemContainer&lt;ExperimentBean&gt;(ExperimentBean.class);
+
+<span class="nc" id="L684">    AlternativeSecondaryNameCreator altNameCreator = new AlternativeSecondaryNameCreator(</span>
+<span class="nc" id="L685">        openBisClient.getVocabCodesAndLabelsForVocab(&quot;Q_NCBI_TAXONOMY&quot;));</span>
+
+    // this is the experiment that stores the experimental design xml
+<span class="nc" id="L688">    Experiment designExperiment = null;</span>
+<span class="nc" id="L689">    Set&lt;String&gt; allSampleCodes = new HashSet&lt;&gt;();</span>
+<span class="nc bnc" id="L690" title="All 2 branches missed.">    for (Sample s : allSamples) {</span>
+<span class="nc" id="L691">      allSampleCodes.add(s.getCode());</span>
+<span class="nc" id="L692">    }</span>
+
+    // create basic experimental design, if it doesn't exist
+<span class="nc" id="L695">    String space = project.getSpaceCode();</span>
+<span class="nc" id="L696">    String projectCode = project.getCode();</span>
+<span class="nc" id="L697">    String designExpID = ExperimentCodeFunctions.getInfoExperimentID(space, projectCode);</span>
+
+<span class="nc bnc" id="L699" title="All 2 branches missed.">    for (Experiment experiment : experiments) {</span>
+<span class="nc" id="L700">      String id = experiment.getIdentifier();</span>
+<span class="nc bnc" id="L701" title="All 2 branches missed.">      if (id.equals(designExpID)) {</span>
+<span class="nc" id="L702">        designExperiment = experiment;</span>
+<span class="nc" id="L703">        break;</span>
+      }
+<span class="nc" id="L705">    }</span>
+<span class="nc" id="L706">    String user = PortalUtils.getNonNullScreenName();</span>
+
+<span class="nc bnc" id="L708" title="All 2 branches missed.">    if (designExperiment == null) {</span>
+<span class="nc" id="L709">      LOG.info(&quot;design experiment null, creating new one.&quot;);</span>
+<span class="nc" id="L710">      Map&lt;String, Object&gt; params = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L711">      Map&lt;String, String&gt; props = new HashMap&lt;&gt;();</span>
+      // TODO empty xml is not valid, but should we add one at all?
+      // try {
+      // String basicXML = studyParser.toString(studyParser.getEmptyXML());
+      // props.put(&quot;Q_EXPERIMENTAL_SETUP&quot;, basicXML);
+      // } catch (JAXBException e) {
+      // // TODO Auto-generated catch block
+      // e.printStackTrace();
+      // }
+<span class="nc" id="L720">      params.put(&quot;user&quot;, user);</span>
+<span class="nc" id="L721">      params.put(&quot;code&quot;, projectCode + &quot;_INFO&quot;);</span>
+<span class="nc" id="L722">      params.put(&quot;type&quot;, ExperimentType.Q_PROJECT_DETAILS);</span>
+<span class="nc" id="L723">      params.put(&quot;project&quot;, projectCode);</span>
+<span class="nc" id="L724">      params.put(&quot;space&quot;, space);</span>
+<span class="nc" id="L725">      params.put(&quot;properties&quot;, props);</span>
+<span class="nc" id="L726">      openBisClient.triggerIngestionService(&quot;register-exp&quot;, params);</span>
+    }
+    // parse experimental design for later use
+<span class="nc" id="L729">    String xmlString = designExperiment.getProperties().get(&quot;Q_EXPERIMENTAL_SETUP&quot;);</span>
+<span class="nc" id="L730">    JAXBElement&lt;Qexperiment&gt; expDesign = null;</span>
+    try {
+<span class="nc" id="L732">      expDesign = studyParser.parseXMLString(xmlString);</span>
+<span class="nc" id="L733">    } catch (JAXBException e) {</span>
+<span class="nc" id="L734">      LOG.error(&quot;could not parse experimental design xml!&quot;);</span>
+<span class="nc" id="L735">      e.printStackTrace();</span>
+<span class="nc" id="L736">    }</span>
+<span class="nc bnc" id="L737" title="All 2 branches missed.">    if (expDesign != null) {</span>
+      // experimental design found and parsed. remove samples that have since been deleted:
+      try {
+<span class="nc bnc" id="L740" title="All 2 branches missed.">        if (!allSampleCodes.isEmpty()) {</span>
+<span class="nc" id="L741">          LOG.info(&quot;comparing existing samples with references in experimental design&quot;);</span>
+<span class="nc bnc" id="L742" title="All 2 branches missed.">          if (studyParser.hasReferencesToMissingIDs(expDesign, allSampleCodes)) {</span>
+<span class="nc" id="L743">            LOG.info(&quot;deleted samples found. updating xml in openBIS&quot;);</span>
+<span class="nc" id="L744">            expDesign = studyParser.removeReferencesToMissingIDs(expDesign, allSampleCodes, true);</span>
+          }
+        }
+<span class="nc" id="L747">        HashMap&lt;String, Object&gt; params = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L748">        Map&lt;String, Object&gt; properties = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L749">        properties.put(&quot;Q_EXPERIMENTAL_SETUP&quot;, studyParser.toString(expDesign));</span>
+<span class="nc" id="L750">        params.put(&quot;user&quot;, user);</span>
+<span class="nc" id="L751">        params.put(&quot;identifier&quot;, designExpID);</span>
+<span class="nc" id="L752">        params.put(&quot;properties&quot;, properties);</span>
+<span class="nc" id="L753">        openBisClient.triggerIngestionService(&quot;update-experiment-metadata&quot;, params);</span>
+<span class="nc" id="L754">      } catch (JAXBException e) {</span>
+<span class="nc" id="L755">        LOG.warn(</span>
+            &quot;could not create new experimental design xml from old one after removing missing ids. &quot;
+                + &quot;will continue with old design.&quot;);
+<span class="nc" id="L758">        e.printStackTrace();</span>
+<span class="nc" id="L759">      }</span>
+
+<span class="nc" id="L761">      this.experimentalSetup = expDesign;</span>
+<span class="nc" id="L762">      this.experimentalFactorLabels = studyParser.getFactorLabels(expDesign);</span>
+<span class="nc" id="L763">      this.experimentalFactorsForLabelsAndSamples =</span>
+<span class="nc" id="L764">          studyParser.getFactorsForLabelsAndSamples(expDesign);</span>
+<span class="nc" id="L765">      this.propertiesForSamples = studyParser.getPropertiesForSampleCode(expDesign);</span>
+    }
+
+<span class="nc bnc" id="L768" title="All 2 branches missed.">    for (Experiment experiment : experiments) {</span>
+<span class="nc" id="L769">      ExperimentBean newExperimentBean = new ExperimentBean();</span>
+
+      // TODO doesn't work with getExperimentsForProject2
+<span class="nc" id="L772">      Map&lt;String, String&gt; assignedProperties = experiment.getProperties();</span>
+
+<span class="nc" id="L774">      String status = &quot;&quot;;</span>
+
+<span class="nc bnc" id="L776" title="All 2 branches missed.">      if (assignedProperties.keySet().contains(&quot;Q_CURRENT_STATUS&quot;)) {</span>
+<span class="nc" id="L777">        status = assignedProperties.get(&quot;Q_CURRENT_STATUS&quot;);</span>
+      }
+
+<span class="nc bnc" id="L780" title="All 2 branches missed.">      else if (assignedProperties.keySet().contains(&quot;Q_WF_STATUS&quot;)) {</span>
+<span class="nc" id="L781">        status = assignedProperties.get(&quot;Q_WF_STATUS&quot;);</span>
+      }
+
+<span class="nc" id="L784">      List&lt;Sample&gt; samples = new ArrayList&lt;Sample&gt;();</span>
+<span class="nc bnc" id="L785" title="All 2 branches missed.">      for (Sample s : allSamples) {</span>
+<span class="nc bnc" id="L786" title="All 2 branches missed.">        if (s.getExperimentIdentifierOrNull().equals(experiment.getIdentifier()))</span>
+<span class="nc" id="L787">          samples.add(s);</span>
+<span class="nc" id="L788">      }</span>
+<span class="nc" id="L789">      BeanItemContainer&lt;SampleBean&gt; sampleBeans =</span>
+          new BeanItemContainer&lt;SampleBean&gt;(SampleBean.class);
+<span class="nc bnc" id="L791" title="All 2 branches missed.">      for (Sample sample : samples) {</span>
+<span class="nc" id="L792">        SampleBean sbean = new SampleBean();</span>
+<span class="nc" id="L793">        sbean.setId(sample.getIdentifier());</span>
+<span class="nc" id="L794">        sbean.setCode(sample.getCode());</span>
+<span class="nc" id="L795">        sbean.setType(sample.getSampleTypeCode());</span>
+<span class="nc" id="L796">        sbean.setProperties(sample.getProperties());</span>
+<span class="nc" id="L797">        List&lt;Property&gt; complexProps =</span>
+<span class="nc" id="L798">            studyParser.getFactorsAndPropertiesForSampleCode(experimentalSetup, sample.getCode());</span>
+<span class="nc" id="L799">        sbean.setComplexProperties(complexProps);</span>
+<span class="nc" id="L800">        sampleBeans.addBean(sbean);</span>
+<span class="nc" id="L801">      }</span>
+<span class="nc" id="L802">      newExperimentBean.setSamples(sampleBeans);</span>
+
+<span class="nc" id="L804">      newExperimentBean.setAltNameCreator(altNameCreator);</span>
+<span class="nc" id="L805">      newExperimentBean.setProperties(assignedProperties);</span>
+<span class="nc" id="L806">      newExperimentBean.setSecondaryName(assignedProperties.get(&quot;Q_SECONDARY_NAME&quot;));</span>
+<span class="nc" id="L807">      newExperimentBean.setId(experiment.getIdentifier());</span>
+<span class="nc" id="L808">      newExperimentBean.setCode(experiment.getCode());</span>
+<span class="nc" id="L809">      newExperimentBean.setType(experiment.getExperimentTypeCode());</span>
+<span class="nc" id="L810">      newExperimentBean.setRegistrator(experiment.getRegistrationDetails().getUserId());</span>
+<span class="nc" id="L811">      newExperimentBean</span>
+<span class="nc" id="L812">          .setRegistrationDate(experiment.getRegistrationDetails().getRegistrationDate());</span>
+<span class="nc" id="L813">      newExperimentBean.setStatus(status);</span>
+<span class="nc" id="L814">      experimentBeans.addBean(newExperimentBean);</span>
+<span class="nc" id="L815">    }</span>
+<span class="nc" id="L816">    List&lt;ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet&gt; projectData = this</span>
+<span class="nc" id="L817">        .getOpenBisClient().getDataSetsOfProjectByIdentifierWithSearchCriteria(projectIdentifier);</span>
+
+<span class="nc" id="L819">    Boolean containsData = false;</span>
+<span class="nc" id="L820">    Boolean containsResults = false;</span>
+<span class="nc" id="L821">    Boolean attachmentResult = false;</span>
+    // Boolean containsAttachments = false;
+<span class="nc bnc" id="L823" title="All 2 branches missed.">    for (ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet ds : projectData) {</span>
+<span class="nc" id="L824">      attachmentResult = false;</span>
+<span class="nc bnc" id="L825" title="All 2 branches missed.">      if (ds.getDataSetTypeCode().equals(&quot;Q_PROJECT_DATA&quot;)) {</span>
+<span class="nc" id="L826">        attachmentResult = ds.getProperties().get(&quot;Q_ATTACHMENT_TYPE&quot;).equals(&quot;RESULT&quot;);</span>
+      }
+
+<span class="nc bnc" id="L829" title="All 2 branches missed.">      if (!(ds.getDataSetTypeCode().equals(&quot;Q_PROJECT_DATA&quot;))</span>
+<span class="nc bnc" id="L830" title="All 2 branches missed.">          &amp;&amp; !(ds.getDataSetTypeCode().contains(&quot;RESULTS&quot;))) {</span>
+<span class="nc" id="L831">        containsData = true;</span>
+<span class="nc bnc" id="L832" title="All 4 branches missed.">      } else if (ds.getDataSetTypeCode().contains(&quot;RESULTS&quot;) || attachmentResult) {</span>
+<span class="nc" id="L833">        containsResults = true;</span>
+      } // else if (ds.getDataSetTypeCode() == &quot;Q_PROJECT_DATA&quot;) {
+        // containsAttachments = true;
+      // }
+<span class="nc" id="L837">    }</span>
+
+<span class="nc" id="L839">    newProjectBean.setContainsData(containsData);</span>
+<span class="nc" id="L840">    newProjectBean.setContainsResults(containsResults);</span>
+    // newProjectBean.setContainsAttachments(containsAttachments);
+
+<span class="nc" id="L843">    newProjectBean.setExperiments(experimentBeans);</span>
+<span class="nc" id="L844">    newProjectBean.setMembers(new HashSet&lt;String&gt;());</span>
+
+<span class="nc" id="L846">    String secondaryName = getDatabaseManager().getProjectName(projectIdentifier);</span>
+<span class="nc bnc" id="L847" title="All 4 branches missed.">    if (secondaryName == null || secondaryName.isEmpty())</span>
+<span class="nc" id="L848">      secondaryName = &quot;n/a&quot;;</span>
+
+<span class="nc" id="L850">    newProjectBean.setSecondaryName(secondaryName);</span>
+<span class="nc" id="L851">    return newProjectBean;</span>
+  }
+
+  //
+  // public ProjectBean getProjectIvac(String projectIdentifier) {
+  // List&lt;Experiment&gt; experiments =
+  // this.getOpenBisClient().getExperimentsForProject3(projectIdentifier);
+  // float projectStatus = this.getOpenBisClient().computeProjectStatus(experiments);
+  //
+  // Project project = getOpenbisDtoProject(projectIdentifier);
+  // if (project == null) {
+  // project = getOpenBisClient().getProjectByIdentifier(projectIdentifier);
+  // addOpenbisDtoProject(project);
+  // }
+  // ProjectBean newProjectBean = new ProjectBean();
+  //
+  // ProgressBar progressBar = new ProgressBar();
+  // progressBar.setValue(projectStatus);
+  //
+  // Date registrationDate = project.getRegistrationDetails().getRegistrationDate();
+  //
+  // // String pi = getDatabaseManager().getInvestigatorDetailsForProject(project.getCode());
+  // String pi = getDatabaseManager().getPersonDetailsForProject(project.getIdentifier(), &quot;PI&quot;);
+  // String cp = getDatabaseManager().getPersonDetailsForProject(project.getIdentifier(),
+  // &quot;Contact&quot;);
+  //
+  // if (pi.equals(&quot;&quot;)) {
+  // newProjectBean.setPrincipalInvestigator(&quot;No information provided.&quot;);
+  // } else {
+  // newProjectBean.setPrincipalInvestigator(pi);
+  // }
+  //
+  // if (cp.equals(&quot;&quot;)) {
+  // newProjectBean.setContactPerson(&quot;No information provided.&quot;);
+  // } else {
+  // newProjectBean.setContactPerson(cp);
+  // }
+  //
+  // newProjectBean.setId(project.getIdentifier());
+  // newProjectBean.setCode(project.getCode());
+  // String desc = project.getDescription();
+  // if (desc == null)
+  // desc = &quot;&quot;;
+  // newProjectBean.setDescription(desc);
+  // newProjectBean.setRegistrationDate(registrationDate);
+  // newProjectBean.setProgress(progressBar);
+  // newProjectBean.setRegistrator(project.getRegistrationDetails().getUserId());
+  // newProjectBean.setContact(project.getRegistrationDetails().getUserEmail());
+  //
+  // // Create sample Beans (or fetch them) for samples of experiments
+  // List&lt;Sample&gt; allSamples = this.getOpenBisClient()
+  // .getSamplesWithParentsAndChildrenOfProjectBySearchService(projectIdentifier);
+  //
+  // BeanItemContainer&lt;ExperimentBean&gt; experimentBeans =
+  // new BeanItemContainer&lt;ExperimentBean&gt;(ExperimentBean.class);
+  //
+  // AlternativeSecondaryNameCreator altNameCreator = new AlternativeSecondaryNameCreator(
+  // openBisClient.getVocabCodesAndLabelsForVocab(&quot;Q_NCBI_TAXONOMY&quot;));
+  // for (Experiment experiment : experiments) {
+  // ExperimentBean newExperimentBean = new ExperimentBean();
+  //
+  // Map&lt;String, String&gt; assignedProperties = experiment.getProperties();
+  //
+  // String status = &quot;&quot;;
+  //
+  // if (assignedProperties.keySet().contains(&quot;Q_CURRENT_STATUS&quot;)) {
+  // status = assignedProperties.get(&quot;Q_CURRENT_STATUS&quot;);
+  // }
+  //
+  // else if (assignedProperties.keySet().contains(&quot;Q_WF_STATUS&quot;)) {
+  // status = assignedProperties.get(&quot;Q_WF_STATUS&quot;);
+  // }
+  //
+  // List&lt;Sample&gt; samples = new ArrayList&lt;Sample&gt;();
+  // for (Sample s : allSamples) {
+  // if (s.getExperimentIdentifierOrNull().equals(experiment.getIdentifier()))
+  // samples.add(s);
+  // }
+  // BeanItemContainer&lt;SampleBean&gt; sampleBeans =
+  // new BeanItemContainer&lt;SampleBean&gt;(SampleBean.class);
+  // for (Sample sample : samples) {
+  // SampleBean sbean = new SampleBean();
+  // sbean.setId(sample.getIdentifier());
+  // sbean.setCode(sample.getCode());
+  // sbean.setType(sample.getSampleTypeCode());
+  // sbean.setProperties(sample.getProperties());
+  // sampleBeans.addBean(sbean);
+  // }
+  // newExperimentBean.setSamples(sampleBeans);
+  //
+  // newExperimentBean.setAltNameCreator(altNameCreator);
+  // newExperimentBean.setProperties(assignedProperties);
+  // newExperimentBean.setSecondaryName(assignedProperties.get(&quot;Q_SECONDARY_NAME&quot;));
+  // newExperimentBean.setId(experiment.getIdentifier());
+  // newExperimentBean.setCode(experiment.getCode());
+  // newExperimentBean.setType(experiment.getExperimentTypeCode());
+  // newExperimentBean.setRegistrator(experiment.getRegistrationDetails().getUserId());
+  // newExperimentBean
+  // .setRegistrationDate(experiment.getRegistrationDetails().getRegistrationDate());
+  // newExperimentBean.setStatus(status);
+  // experimentBeans.addBean(newExperimentBean);
+  // }
+  //
+  // newProjectBean.setContainsData(this.getOpenBisClient()
+  // .getDataSetsOfProjectByIdentifierWithSearchCriteria(projectIdentifier).size() &gt; 0);
+  //
+  //
+  // newProjectBean.setExperiments(experimentBeans);
+  // newProjectBean.setMembers(new HashSet&lt;String&gt;());
+  // return newProjectBean;
+  // }
+
+
+  public Project getOpenbisDtoProject(String projectIdentifier) {
+<span class="nc bnc" id="L965" title="All 2 branches missed.">    if (this.dtoProjects.containsKey(projectIdentifier)) {</span>
+<span class="nc" id="L966">      return this.dtoProjects.get(projectIdentifier);</span>
+    }
+<span class="nc" id="L968">    return null;</span>
+
+  }
+
+
+  public void addOpenbisDtoProject(Project project) {
+<span class="nc bnc" id="L974" title="All 4 branches missed.">    if (project != null &amp;&amp; !dtoProjects.containsKey(project.getIdentifier())) {</span>
+<span class="nc" id="L975">      this.dtoProjects.put(project.getIdentifier(), project);</span>
+    }
+<span class="nc" id="L977">  }</span>
+
+
+
+  /**
+   * Method to get Bean from either openbis identifier or openbis object. Checks if corresponding
+   * bean is already stored in datahandler map.
+   * 
+   * @param
+   * @return
+   */
+  // public ExperimentBean getExperiment(Object exp) {
+  // Experiment experiment;
+  // ExperimentBean newExperimentBean;
+  //
+  // if (exp instanceof Experiment) {
+  // experiment = (Experiment) exp;
+  // newExperimentBean = this.createExperimentBean(experiment);
+  // this.experimentMap.put(newExperimentBean.getId(), newExperimentBean);
+  // }
+  //
+  // else {
+  // if (this.experimentMap.get((String) exp) != null) {
+  // newExperimentBean = this.experimentMap.get(exp);
+  // } else {
+  // experiment = this.getOpenBisClient().getExperimentById((String) exp);
+  // newExperimentBean = this.createExperimentBean(experiment);
+  // this.experimentMap.put(newExperimentBean.getId(), newExperimentBean);
+  // }
+  // }
+  // return newExperimentBean;
+  // }
+
+
+  public ExperimentBean getExperiment2(String expIdentifiers) {
+<span class="nc" id="L1012">    ExperimentBean ebean = new ExperimentBean();</span>
+
+<span class="nc" id="L1014">    AlternativeSecondaryNameCreator altNameCreator = new AlternativeSecondaryNameCreator(</span>
+<span class="nc" id="L1015">        openBisClient.getVocabCodesAndLabelsForVocab(&quot;Q_NCBI_TAXONOMY&quot;));</span>
+<span class="nc" id="L1016">    ebean.setAltNameCreator(altNameCreator);</span>
+
+<span class="nc" id="L1018">    String status = &quot;&quot;;</span>
+<span class="nc" id="L1019">    List&lt;Experiment&gt; experiments = getOpenBisClient().getExperimentById2(expIdentifiers);</span>
+<span class="nc" id="L1020">    Experiment experiment = null;</span>
+<span class="nc bnc" id="L1021" title="All 2 branches missed.">    for (Experiment tmpexp : experiments) {</span>
+<span class="nc bnc" id="L1022" title="All 2 branches missed.">      if (tmpexp.getIdentifier().equals(expIdentifiers)) {</span>
+<span class="nc" id="L1023">        experiment = tmpexp;</span>
+<span class="nc" id="L1024">        break;</span>
+      }
+<span class="nc" id="L1026">    }</span>
+<span class="nc bnc" id="L1027" title="All 2 branches missed.">    if (experiment == null)</span>
+<span class="nc" id="L1028">      throw new IllegalArgumentException(</span>
+<span class="nc" id="L1029">          String.format(&quot;experiment Identifier %s does not exist&quot;, expIdentifiers));</span>
+    // Get all properties for metadata changing
+<span class="nc" id="L1031">    List&lt;PropertyType&gt; completeProperties = this.getOpenBisClient().listPropertiesForType(</span>
+<span class="nc" id="L1032">        this.getOpenBisClient().getExperimentTypeByString(experiment.getExperimentTypeCode()));</span>
+
+<span class="nc" id="L1034">    Map&lt;String, String&gt; assignedProperties = experiment.getProperties();</span>
+<span class="nc" id="L1035">    Map&lt;String, List&lt;String&gt;&gt; controlledVocabularies = new HashMap&lt;String, List&lt;String&gt;&gt;();</span>
+<span class="nc" id="L1036">    Map&lt;String, String&gt; properties = new HashMap&lt;String, String&gt;();</span>
+
+<span class="nc bnc" id="L1038" title="All 2 branches missed.">    if (assignedProperties.keySet().contains(&quot;Q_CURRENT_STATUS&quot;)) {</span>
+<span class="nc" id="L1039">      status = assignedProperties.get(&quot;Q_CURRENT_STATUS&quot;);</span>
+    }
+
+<span class="nc bnc" id="L1042" title="All 2 branches missed.">    else if (assignedProperties.keySet().contains(&quot;Q_WF_STATUS&quot;)) {</span>
+<span class="nc" id="L1043">      status = assignedProperties.get(&quot;Q_WF_STATUS&quot;);</span>
+    }
+
+<span class="nc" id="L1046">    boolean material = false;</span>
+
+<span class="nc bnc" id="L1048" title="All 2 branches missed.">    for (PropertyType p : completeProperties) {</span>
+
+<span class="nc bnc" id="L1050" title="All 2 branches missed.">      if (p instanceof ControlledVocabularyPropertyType) {</span>
+<span class="nc" id="L1051">        controlledVocabularies.put(p.getCode(),</span>
+<span class="nc" id="L1052">            getOpenBisClient().listVocabularyTermsForProperty(p));</span>
+      }
+
+<span class="nc bnc" id="L1055" title="All 2 branches missed.">      if (p.getDataType().toString().equals(&quot;MATERIAL&quot;)</span>
+<span class="nc bnc" id="L1056" title="All 2 branches missed.">          &amp;&amp; (assignedProperties.get(p.getCode()) != null)) {</span>
+<span class="nc" id="L1057">        String[] splitted = assignedProperties.get(p.getCode()).split(&quot;\\(&quot;);</span>
+
+<span class="nc" id="L1059">        String materialType = splitted[1].replace(&quot;)&quot;, &quot;&quot;).replace(&quot; &quot;, &quot;&quot;);</span>
+<span class="nc" id="L1060">        String materialCode = splitted[0].replace(&quot; &quot;, &quot;&quot;);</span>
+
+<span class="nc" id="L1062">        MaterialIdentifier matId =</span>
+            new MaterialIdentifier(new MaterialTypeIdentifier(materialType), materialCode);
+
+<span class="nc" id="L1065">        List&lt;MaterialIdentifier&gt; matIds = new ArrayList&lt;MaterialIdentifier&gt;();</span>
+<span class="nc" id="L1066">        matIds.add(matId);</span>
+
+<span class="nc" id="L1068">        List&lt;Material&gt; materials = getOpenBisClient().getOpenbisInfoService()</span>
+<span class="nc" id="L1069">            .getMaterialByCodes(getOpenBisClient().getSessionToken(), matIds);</span>
+
+<span class="nc" id="L1071">        Map&lt;String, String&gt; matProperties = materials.get(0).getProperties();</span>
+<span class="nc" id="L1072">        String matProperty = &quot;&quot;;</span>
+
+<span class="nc bnc" id="L1074" title="All 2 branches missed.">        for (Entry prop : matProperties.entrySet()) {</span>
+<span class="nc" id="L1075">          matProperty += String.format(&quot;%s, &quot;, prop.getValue());</span>
+<span class="nc" id="L1076">        }</span>
+
+<span class="nc" id="L1078">        properties.put(p.getCode(), matProperty.substring(0, matProperty.length() - 2));</span>
+<span class="nc" id="L1079">        material = true;</span>
+      }
+
+<span class="nc bnc" id="L1082" title="All 4 branches missed.">      if (assignedProperties.keySet().contains(p.getCode()) &amp;&amp; !(material)) {</span>
+<span class="nc" id="L1083">        properties.put(p.getCode(), assignedProperties.get(p.getCode()));</span>
+<span class="nc bnc" id="L1084" title="All 2 branches missed.">      } else if (!(material)) {</span>
+<span class="nc" id="L1085">        properties.put(p.getCode(), &quot;&quot;);</span>
+      }
+<span class="nc" id="L1087">    }</span>
+
+<span class="nc" id="L1089">    Map&lt;String, String&gt; typeLabels = this.getOpenBisClient().getLabelsofProperties(</span>
+<span class="nc" id="L1090">        this.getOpenBisClient().getExperimentTypeByString(experiment.getExperimentTypeCode()));</span>
+
+    // Image statusColor = new Image(status, this.setExperimentStatusColor(status));
+    // statusColor.setWidth(&quot;15px&quot;);
+    // statusColor.setHeight(&quot;15px&quot;);
+
+<span class="nc" id="L1096">    ebean.setId(experiment.getIdentifier());</span>
+<span class="nc" id="L1097">    ebean.setCode(experiment.getCode());</span>
+<span class="nc" id="L1098">    ebean.setType(experiment.getExperimentTypeCode());</span>
+<span class="nc" id="L1099">    ebean.setStatus(status);</span>
+<span class="nc" id="L1100">    ebean.setRegistrator(experiment.getRegistrationDetails().getUserId());</span>
+<span class="nc" id="L1101">    ebean.setRegistrationDate(experiment.getRegistrationDetails().getRegistrationDate());</span>
+<span class="nc" id="L1102">    ebean.setProperties(properties);</span>
+<span class="nc" id="L1103">    ebean.setSecondaryName(properties.get(&quot;Q_SECONDARY_NAME&quot;));</span>
+<span class="nc" id="L1104">    ebean.setControlledVocabularies(controlledVocabularies);</span>
+<span class="nc" id="L1105">    ebean.setTypeLabels(typeLabels);</span>
+
+    // TODO do we want to have that ? (last Changed)
+<span class="nc" id="L1108">    ebean.setLastChangedSample(null);</span>
+<span class="nc" id="L1109">    ebean.setContainsData(this.getOpenBisClient()</span>
+<span class="nc bnc" id="L1110" title="All 2 branches missed.">        .getDataSetsOfExperimentByCodeWithSearchCriteria(experiment.getCode()).size() &gt; 0);</span>
+
+    // List&lt;Sample&gt; samples = this.getOpenBisClient().getSamplesofExperiment(expIdentifiers);
+    // Create sample Beans (or fetch them) for samples of experiment
+<span class="nc" id="L1114">    List&lt;Sample&gt; allSamples = new ArrayList&lt;Sample&gt;();</span>
+<span class="nc bnc" id="L1115" title="All 2 branches missed.">    if (allSamples.isEmpty()) {</span>
+<span class="nc" id="L1116">      String[] splt = experiment.getIdentifier().split(&quot;/&quot;);</span>
+<span class="nc" id="L1117">      String projID = &quot;/&quot; + splt[1] + &quot;/&quot; + splt[2];</span>
+<span class="nc" id="L1118">      allSamples =</span>
+<span class="nc" id="L1119">          this.getOpenBisClient().getSamplesWithParentsAndChildrenOfProjectBySearchService(projID);</span>
+    }
+<span class="nc" id="L1121">    List&lt;Sample&gt; samples = new ArrayList&lt;Sample&gt;();</span>
+<span class="nc bnc" id="L1122" title="All 2 branches missed.">    for (Sample s : allSamples) {</span>
+<span class="nc bnc" id="L1123" title="All 2 branches missed.">      if (s.getExperimentIdentifierOrNull().equals(experiment.getIdentifier()))</span>
+<span class="nc" id="L1124">        samples.add(s);</span>
+<span class="nc" id="L1125">    }</span>
+
+<span class="nc" id="L1127">    BeanItemContainer&lt;SampleBean&gt; sampleBeans = new BeanItemContainer&lt;SampleBean&gt;(SampleBean.class);</span>
+<span class="nc bnc" id="L1128" title="All 2 branches missed.">    for (Sample sample : samples) {</span>
+<span class="nc" id="L1129">      SampleBean sbean = new SampleBean();</span>
+<span class="nc" id="L1130">      sbean.setId(sample.getIdentifier());</span>
+<span class="nc" id="L1131">      sbean.setCode(sample.getCode());</span>
+<span class="nc" id="L1132">      sbean.setType(sample.getSampleTypeCode());</span>
+<span class="nc" id="L1133">      sbean.setProperties(sample.getProperties());</span>
+<span class="nc" id="L1134">      List&lt;Property&gt; complexProps =</span>
+<span class="nc" id="L1135">          studyParser.getFactorsAndPropertiesForSampleCode(experimentalSetup, sample.getCode());</span>
+<span class="nc" id="L1136">      sbean.setComplexProperties(complexProps);</span>
+      /*
+       * Map&lt;String, String&gt; sampleTypeLabels =
+       * this.openBisClient.getLabelsofProperties(this.openBisClient.getSampleTypeByString(sample
+       * .getSampleTypeCode())); sbean.setTypeLabels(sampleTypeLabels);
+       */
+
+<span class="nc" id="L1143">      sampleBeans.addBean(sbean);</span>
+<span class="nc" id="L1144">    }</span>
+<span class="nc" id="L1145">    ebean.setSamples(sampleBeans);</span>
+
+<span class="nc" id="L1147">    return ebean;</span>
+  }
+
+  public SampleBean getSample2(String sampleIdentifiers) {
+<span class="nc" id="L1151">    Sample sample = this.getOpenBisClient().getSampleByIdentifier(sampleIdentifiers);</span>
+<span class="nc" id="L1152">    SampleBean sbean = createSampleBean(sample);</span>
+<span class="nc" id="L1153">    return sbean;</span>
+  }
+
+  /**
+   * Method to get Bean from either openbis identifier or openbis object. Checks if corresponding
+   * bean is already stored in datahandler map.
+   * 
+   * @param
+   * @return
+   */
+  public SampleBean getSample(Object samp) {
+    Sample sample;
+    SampleBean newSampleBean;
+
+<span class="nc bnc" id="L1167" title="All 2 branches missed.">    if (samp instanceof Sample) {</span>
+<span class="nc" id="L1168">      sample = (Sample) samp;</span>
+<span class="nc" id="L1169">      newSampleBean = this.createSampleBean(sample);</span>
+<span class="nc" id="L1170">      this.sampleMap.put(newSampleBean.getId(), newSampleBean);</span>
+    }
+
+    else {
+<span class="nc bnc" id="L1174" title="All 2 branches missed.">      if (this.sampleMap.get((String) samp) != null) {</span>
+<span class="nc" id="L1175">        newSampleBean = this.sampleMap.get(samp);</span>
+      } else {
+<span class="nc" id="L1177">        sample = this.getOpenBisClient().getSampleByIdentifier((String) samp);</span>
+<span class="nc" id="L1178">        newSampleBean = this.createSampleBean(sample);</span>
+<span class="nc" id="L1179">        this.sampleMap.put(newSampleBean.getId(), newSampleBean);</span>
+      }
+    }
+
+<span class="nc" id="L1183">    return newSampleBean;</span>
+  }
+
+  /**
+   * Method to get Bean from either openbis identifier or openbis object. Checks if corresponding
+   * bean is already stored in datahandler map.
+   * 
+   * @param
+   * @return
+   */
+  public DatasetBean getDataset(Object ds) {
+    DataSet dataset;
+    DatasetBean newDatasetBean;
+
+<span class="nc bnc" id="L1197" title="All 2 branches missed.">    if (ds instanceof DataSet) {</span>
+<span class="nc" id="L1198">      dataset = (DataSet) ds;</span>
+<span class="nc" id="L1199">      newDatasetBean = this.createDatasetBean(dataset);</span>
+    }
+
+    else {
+<span class="nc bnc" id="L1203" title="All 2 branches missed.">      if (this.datasetMap.get((String) ds) != null) {</span>
+<span class="nc" id="L1204">        newDatasetBean = this.datasetMap.get(ds);</span>
+      } else {
+<span class="nc" id="L1206">        dataset = this.getOpenBisClient().getFacade().getDataSet((String) ds);</span>
+<span class="nc" id="L1207">        newDatasetBean = this.createDatasetBean(dataset);</span>
+      }
+    }
+<span class="nc" id="L1210">    this.datasetMap.put(newDatasetBean.getCode(), newDatasetBean);</span>
+<span class="nc" id="L1211">    return newDatasetBean;</span>
+  }
+
+
+  /**
+   * Returns all users of a Space.
+   * 
+   * @param spaceCode code of the openBIS space
+   * @return set of user names as string
+   */
+  private Set&lt;String&gt; getSpaceMembers(String spaceCode) {
+<span class="nc" id="L1222">    List&lt;SpaceWithProjectsAndRoleAssignments&gt; spaces = this.getSpacesWithProjectInformation();</span>
+<span class="nc bnc" id="L1223" title="All 2 branches missed.">    for (SpaceWithProjectsAndRoleAssignments space : spaces) {</span>
+<span class="nc bnc" id="L1224" title="All 2 branches missed.">      if (space.getCode().equals(spaceCode)) {</span>
+<span class="nc" id="L1225">        return space.getUsers();</span>
+      }
+<span class="nc" id="L1227">    }</span>
+<span class="nc" id="L1228">    return null;</span>
+  }
+
+  /**
+   * checks which of the datasets in the given list is the oldest and writes that into the last tree
+   * parameters Note: lastModifiedDate, lastModifiedExperiment, lastModifiedSample will be modified.
+   * if lastModifiedSample, lastModifiedExperiment have value N/A datasets have no registration
+   * dates Params should not be null
+   * 
+   * @param datasets List of datasets that will be compared
+   * @param lastModifiedDate will contain the last modified date
+   * @param lastModifiedExperiment will contain experiment identifier, which contains last
+   *        registered dataset
+   * @param lastModifiedSample will contain last sample identifier, which contains last registered
+   *        dataset, or null if dataset does not belong to a sample.
+   */
+  public void lastDatasetRegistered(List&lt;DataSet&gt; datasets, Date lastModifiedDate,
+      StringBuilder lastModifiedExperiment, StringBuilder lastModifiedSample) {
+<span class="nc" id="L1246">    String exp = &quot;N/A&quot;;</span>
+<span class="nc" id="L1247">    String samp = &quot;N/A&quot;;</span>
+<span class="nc bnc" id="L1248" title="All 2 branches missed.">    for (DataSet dataset : datasets) {</span>
+<span class="nc" id="L1249">      Date date = dataset.getRegistrationDate();</span>
+
+<span class="nc bnc" id="L1251" title="All 2 branches missed.">      if (date.after(lastModifiedDate)) {</span>
+<span class="nc" id="L1252">        samp = dataset.getSampleIdentifierOrNull();</span>
+<span class="nc bnc" id="L1253" title="All 2 branches missed.">        if (samp == null) {</span>
+<span class="nc" id="L1254">          samp = &quot;N/A&quot;;</span>
+        }
+<span class="nc" id="L1256">        exp = dataset.getExperimentIdentifier();</span>
+<span class="nc" id="L1257">        lastModifiedDate.setTime(date.getTime());</span>
+<span class="nc" id="L1258">        break;</span>
+      }
+<span class="nc" id="L1260">    }</span>
+<span class="nc" id="L1261">    lastModifiedExperiment.append(exp);</span>
+<span class="nc" id="L1262">    lastModifiedSample.append(samp);</span>
+<span class="nc" id="L1263">  }</span>
+
+  // public void reset() {
+  // // this.spaces = new HashMap&lt;String,IndexedContainer&gt;();
+  // // this.projects = new HashMap&lt;String,IndexedContainer&gt;();
+  // // this.experiments = new HashMap&lt;String,IndexedContainer&gt;();
+  // // this.samples = new HashMap&lt;String,IndexedContainer&gt;();
+  // this.space_to_datasets = new HashMap&lt;String, HierarchicalContainer&gt;();
+  // }
+
+
+  /**
+   * This method filters out qbic staff and other unnecessary space members TODO: this method might
+   * be better of as not being part of the DataHandler...and not hardcoded
+   * 
+   * @param users a set of all space users or members
+   * @return a new set which exculdes qbic staff and functional members
+   */
+  public Set&lt;String&gt; removeQBiCStaffFromMemberSet(Set&lt;String&gt; users) {
+    // TODO there is probably a method to get users of the QBIC group out of openBIS
+<span class="nc" id="L1283">    Set&lt;String&gt; ret = new LinkedHashSet&lt;String&gt;(users);</span>
+    // ret.remove(&quot;iiswo01&quot;); // QBiC Staff
+    // ret.remove(&quot;iisfr01&quot;); // QBiC Staff
+    // ret.remove(&quot;kxmsn01&quot;); // QBiC Staff
+    // ret.remove(&quot;zxmbf02&quot;); // QBiC Staff
+    // ret.remove(&quot;qeana10&quot;); // functional user
+<span class="nc" id="L1289">    ret.remove(&quot;etlserver&quot;); // OpenBIS user</span>
+<span class="nc" id="L1290">    ret.remove(&quot;admin&quot;); // OpenBIS user</span>
+<span class="nc" id="L1291">    ret.remove(&quot;QBIC&quot;); // OpenBIS user</span>
+<span class="nc" id="L1292">    ret.remove(&quot;sauron&quot;);</span>
+<span class="nc" id="L1293">    ret.remove(&quot;regtestuser&quot;);</span>
+<span class="nc" id="L1294">    ret.remove(&quot;student&quot;);</span>
+    // ret.remove(&quot;babysauron&quot;);
+<span class="nc" id="L1296">    return ret;</span>
+  }
+
+
+  /**
+   * Method create ProjectBean for project object
+   * 
+   * @param project
+   * @return ProjectBean for corresponding project
+   */
+
+  // @Deprecated
+  // ProjectBean createProjectBean(Project project) {
+  //
+  // ProjectBean newProjectBean = new ProjectBean();
+  //
+  // List&lt;Experiment&gt; experiments =
+  // this.getOpenBisClient().getExperimentsOfProjectByIdentifier(project.getIdentifier());
+  //
+  // ProgressBar progressBar = new ProgressBar();
+  // progressBar.setValue(this.getOpenBisClient().computeProjectStatus(project));
+  //
+  // Date registrationDate = project.getRegistrationDetails().getRegistrationDate();
+  //
+  // newProjectBean.setId(project.getIdentifier());
+  // newProjectBean.setCode(project.getCode());
+  // String desc = project.getDescription();
+  // if (desc == null)
+  // desc = &quot;&quot;;
+  // newProjectBean.setDescription(desc);
+  // newProjectBean.setRegistrationDate(registrationDate);
+  // newProjectBean.setProgress(progressBar);
+  // newProjectBean.setRegistrator(project.getRegistrationDetails().getUserId());
+  // newProjectBean.setContact(project.getRegistrationDetails().getUserEmail());
+  //
+  // BeanItemContainer&lt;ExperimentBean&gt; experimentBeans =
+  // new BeanItemContainer&lt;ExperimentBean&gt;(ExperimentBean.class);
+  //
+  // List&lt;String&gt; experiment_identifiers = new ArrayList&lt;String&gt;();
+  //
+  // for (Experiment experiment : experiments) {
+  // experimentBeans.addBean(this.getExperiment(experiment));
+  // experiment_identifiers.add(experiment.getIdentifier());
+  // }
+  // List&lt;DataSet&gt; datasets = (experiment_identifiers.size() &gt; 0)
+  // ? getOpenBisClient().getFacade().listDataSetsForExperiments(experiment_identifiers)
+  // : new ArrayList&lt;DataSet&gt;();
+  // newProjectBean.setContainsData(datasets.size() != 0);
+  //
+  // newProjectBean.setExperiments(experimentBeans);
+  // newProjectBean.setMembers(this.getOpenBisClient().getSpaceMembers(project.getSpaceCode()));
+  //
+  // return newProjectBean;
+  // }
+
+
+  /**
+   * Method to create ExperimentBean for experiment object
+   * 
+   * @param experiment
+   * @return ExperimentBean for corresponding experiment
+   */
+  // @Deprecated
+  // ExperimentBean createExperimentBean(Experiment experiment) {
+  //
+  // ExperimentBean newExperimentBean = new ExperimentBean();
+  // List&lt;Sample&gt; samples =
+  // this.getOpenBisClient().getSamplesofExperiment(experiment.getIdentifier());
+  //
+  // String status = &quot;&quot;;
+  //
+  // // Get all properties for metadata changing
+  // List&lt;PropertyType&gt; completeProperties = this.getOpenBisClient().listPropertiesForType(
+  // this.getOpenBisClient().getExperimentTypeByString(experiment.getExperimentTypeCode()));
+  //
+  // Map&lt;String, String&gt; assignedProperties = experiment.getProperties();
+  // Map&lt;String, List&lt;String&gt;&gt; controlledVocabularies = new HashMap&lt;String, List&lt;String&gt;&gt;();
+  // Map&lt;String, String&gt; properties = new HashMap&lt;String, String&gt;();
+  //
+  //
+  // if (assignedProperties.keySet().contains(&quot;Q_CURRENT_STATUS&quot;)) {
+  // status = assignedProperties.get(&quot;Q_CURRENT_STATUS&quot;);
+  // }
+  //
+  // else if (assignedProperties.keySet().contains(&quot;Q_WF_STATUS&quot;)) {
+  // status = assignedProperties.get(&quot;Q_WF_STATUS&quot;);
+  // }
+  //
+  // for (PropertyType p : completeProperties) {
+  //
+  // // TODO no hardcoding
+  //
+  // if (p instanceof ControlledVocabularyPropertyType) {
+  // controlledVocabularies.put(p.getCode(),
+  // getOpenBisClient().listVocabularyTermsForProperty(p));
+  // }
+  //
+  // if (assignedProperties.keySet().contains(p.getCode())) {
+  // properties.put(p.getCode(), assignedProperties.get(p.getCode()));
+  // } else {
+  // properties.put(p.getCode(), &quot;&quot;);
+  // }
+  // }
+  //
+  // Map&lt;String, String&gt; typeLabels = this.getOpenBisClient().getLabelsofProperties(
+  // this.getOpenBisClient().getExperimentTypeByString(experiment.getExperimentTypeCode()));
+  //
+  // // Image statusColor = new Image(status, this.setExperimentStatusColor(status));
+  // // statusColor.setWidth(&quot;15px&quot;);
+  // // statusColor.setHeight(&quot;15px&quot;);
+  //
+  // newExperimentBean.setId(experiment.getIdentifier());
+  // newExperimentBean.setCode(experiment.getCode());
+  // newExperimentBean.setType(experiment.getExperimentTypeCode());
+  // newExperimentBean.setStatus(status);
+  // newExperimentBean.setRegistrator(experiment.getRegistrationDetails().getUserId());
+  // newExperimentBean
+  // .setRegistrationDate(experiment.getRegistrationDetails().getRegistrationDate());
+  // newExperimentBean.setProperties(properties);
+  // newExperimentBean.setControlledVocabularies(controlledVocabularies);
+  // newExperimentBean.setTypeLabels(typeLabels);
+  //
+  // // TODO do we want to have that ? (last Changed)
+  // newExperimentBean.setLastChangedSample(null);
+  // newExperimentBean.setContainsData(false);
+  //
+  // // Create sample Beans (or fetch them) for samples of experiment
+  // BeanItemContainer&lt;SampleBean&gt; sampleBeans = new
+  // BeanItemContainer&lt;SampleBean&gt;(SampleBean.class);
+  // for (Sample sample : samples) {
+  // SampleBean sbean = this.getSample(sample);
+  // if (sbean.getDatasets().size() &gt; 0) {
+  // newExperimentBean.setContainsData(true);
+  // }
+  // sampleBeans.addBean(sbean);
+  // }
+  // newExperimentBean.setSamples(sampleBeans);
+  // return newExperimentBean;
+  // }
+
+
+  /**
+   * Method to create SampleBean for sample object
+   * 
+   * @param sample
+   * @return SampleBean for corresponding object
+   */
+  SampleBean createSampleBean(Sample sample) {
+
+<span class="nc" id="L1445">    SampleBean newSampleBean = new SampleBean();</span>
+
+<span class="nc" id="L1447">    Map&lt;String, String&gt; properties = sample.getProperties();</span>
+
+<span class="nc" id="L1449">    newSampleBean.setId(sample.getIdentifier());</span>
+<span class="nc" id="L1450">    newSampleBean.setCode(sample.getCode());</span>
+<span class="nc" id="L1451">    newSampleBean.setType(sample.getSampleTypeCode());</span>
+<span class="nc" id="L1452">    newSampleBean.setProperties(properties);</span>
+<span class="nc" id="L1453">    List&lt;Property&gt; complexProps =</span>
+<span class="nc" id="L1454">        studyParser.getFactorsAndPropertiesForSampleCode(experimentalSetup, sample.getCode());</span>
+<span class="nc" id="L1455">    newSampleBean.setComplexProperties(complexProps);</span>
+<span class="nc" id="L1456">    newSampleBean.setParents(this.getOpenBisClient().getParentsBySearchService(sample.getCode()));</span>
+<span class="nc" id="L1457">    newSampleBean</span>
+<span class="nc" id="L1458">        .setChildren(this.getOpenBisClient().getFacade().listSamplesOfSample(sample.getPermId()));</span>
+
+<span class="nc" id="L1460">    BeanItemContainer&lt;DatasetBean&gt; datasetBeans =</span>
+        new BeanItemContainer&lt;DatasetBean&gt;(DatasetBean.class);
+<span class="nc" id="L1462">    List&lt;DataSet&gt; datasets =</span>
+<span class="nc" id="L1463">        this.getOpenBisClient().getDataSetsOfSampleByIdentifier(sample.getIdentifier());</span>
+
+<span class="nc" id="L1465">    Date lastModifiedDate = new Date();</span>
+<span class="nc bnc" id="L1466" title="All 2 branches missed.">    if (datasets.size() &gt; 0)</span>
+<span class="nc" id="L1467">      lastModifiedDate = datasets.get(0).getRegistrationDate();</span>
+
+<span class="nc bnc" id="L1469" title="All 2 branches missed.">    for (DataSet dataset : datasets) {</span>
+<span class="nc" id="L1470">      DatasetBean datasetBean = this.getDataset(dataset);</span>
+<span class="nc" id="L1471">      datasetBean.setSample(newSampleBean);</span>
+<span class="nc" id="L1472">      datasetBeans.addBean(datasetBean);</span>
+<span class="nc" id="L1473">      Date date = dataset.getRegistrationDate();</span>
+<span class="nc bnc" id="L1474" title="All 2 branches missed.">      if (date.after(lastModifiedDate)) {</span>
+<span class="nc" id="L1475">        lastModifiedDate.setTime(date.getTime());</span>
+<span class="nc" id="L1476">        break;</span>
+      }
+<span class="nc" id="L1478">    }</span>
+
+<span class="nc" id="L1480">    newSampleBean.setDatasets(datasetBeans);</span>
+<span class="nc" id="L1481">    newSampleBean.setLastChangedDataset(lastModifiedDate);</span>
+
+<span class="nc" id="L1483">    Map&lt;String, String&gt; typeLabels = this.getOpenBisClient().getLabelsofProperties(</span>
+<span class="nc" id="L1484">        this.getOpenBisClient().getSampleTypeByString(sample.getSampleTypeCode()));</span>
+<span class="nc" id="L1485">    newSampleBean.setTypeLabels(typeLabels);</span>
+
+<span class="nc" id="L1487">    return newSampleBean;</span>
+  }
+
+
+  /**
+   * Method to create DatasetBean for dataset object
+   * 
+   * @param dataset
+   * @return DatasetBean for corresponding object
+   */
+  private DatasetBean createDatasetBean(DataSet dataset) {
+
+<span class="nc" id="L1499">    DatasetBean newDatasetBean = new DatasetBean();</span>
+<span class="nc" id="L1500">    FileInfoDssDTO[] filelist = dataset.listFiles(&quot;original&quot;, true);</span>
+<span class="nc" id="L1501">    String download_link = filelist[0].getPathInDataSet();</span>
+<span class="nc" id="L1502">    String[] splitted_link = download_link.split(&quot;/&quot;);</span>
+<span class="nc" id="L1503">    String fileName = splitted_link[splitted_link.length - 1];</span>
+<span class="nc" id="L1504">    newDatasetBean.setCode(dataset.getCode());</span>
+<span class="nc" id="L1505">    newDatasetBean.setName(fileName);</span>
+<span class="nc" id="L1506">    StringBuilder dssPath =</span>
+<span class="nc" id="L1507">        new StringBuilder(dataset.getDataSetDss().tryGetInternalPathInDataStore());</span>
+<span class="nc" id="L1508">    dssPath.append(&quot;/&quot;);</span>
+<span class="nc" id="L1509">    dssPath.append(filelist[0].getPathInDataSet());</span>
+<span class="nc" id="L1510">    newDatasetBean.setDssPath(dssPath.toString());</span>
+<span class="nc" id="L1511">    newDatasetBean.setType(dataset.getDataSetTypeCode());</span>
+<span class="nc" id="L1512">    newDatasetBean.setFileSize(filelist[0].getFileSize());</span>
+    // TODO
+    // newDatasetBean.setRegistrator(registrator);
+<span class="nc" id="L1515">    newDatasetBean.setRegistrationDate(dataset.getRegistrationDate());</span>
+
+<span class="nc" id="L1517">    newDatasetBean.setParent(null);</span>
+<span class="nc" id="L1518">    newDatasetBean.setRoot(newDatasetBean);</span>
+
+<span class="nc" id="L1520">    newDatasetBean.setSelected(false);</span>
+
+
+<span class="nc bnc" id="L1523" title="All 2 branches missed.">    if (filelist[0].isDirectory()) {</span>
+<span class="nc" id="L1524">      newDatasetBean.setDirectory(filelist[0].isDirectory());</span>
+<span class="nc" id="L1525">      String folderPath = filelist[0].getPathInDataSet();</span>
+<span class="nc" id="L1526">      FileInfoDssDTO[] subList = dataset.listFiles(folderPath, false);</span>
+<span class="nc" id="L1527">      datasetBeanChildren(newDatasetBean, subList, dataset);</span>
+    }
+
+    // TODO
+    // this.fileSize = fileSize;
+    // this.humanReadableFileSize = humanReadableFileSize;
+    // this.dssPath = dssPath;
+<span class="nc" id="L1534">    return newDatasetBean;</span>
+  }
+
+  public void datasetBeanChildren(DatasetBean datasetBean, FileInfoDssDTO[] fileList, DataSet d) {
+<span class="nc" id="L1538">    ArrayList&lt;DatasetBean&gt; beans = new ArrayList&lt;DatasetBean&gt;();</span>
+<span class="nc bnc" id="L1539" title="All 2 branches missed.">    for (FileInfoDssDTO dto : fileList) {</span>
+<span class="nc" id="L1540">      DatasetBean newBean = new DatasetBean();</span>
+<span class="nc" id="L1541">      newBean.setCode(datasetBean.getCode());</span>
+<span class="nc" id="L1542">      StringBuilder dssPath = new StringBuilder(datasetBean.getDssPath());</span>
+<span class="nc" id="L1543">      dssPath.append(&quot;/&quot;);</span>
+<span class="nc" id="L1544">      dssPath.append(dto.getPathInDataSet());</span>
+<span class="nc" id="L1545">      newBean.setDssPath(dssPath.toString());</span>
+<span class="nc" id="L1546">      newBean.setExperiment(datasetBean.getExperiment());</span>
+<span class="nc" id="L1547">      String download_link = dto.getPathInDataSet();</span>
+<span class="nc" id="L1548">      String[] splitted_link = download_link.split(&quot;/&quot;);</span>
+<span class="nc" id="L1549">      newBean.setFileName(splitted_link[splitted_link.length - 1]);</span>
+<span class="nc" id="L1550">      newBean.setFileSize(dto.getFileSize());</span>
+<span class="nc" id="L1551">      newBean.setFileType(d.getDataSetTypeCode());</span>
+<span class="nc" id="L1552">      newBean.setHumanReadableFileSize(PortalUtils.humanReadableByteCount(dto.getFileSize(), true));</span>
+<span class="nc" id="L1553">      newBean.setParent(datasetBean);</span>
+<span class="nc" id="L1554">      newBean.setProject(datasetBean.getProject());</span>
+<span class="nc" id="L1555">      newBean.setRegistrationDate(datasetBean.getRegistrationDate());</span>
+<span class="nc" id="L1556">      newBean.setRegistrator(datasetBean.getRegistrator());</span>
+<span class="nc" id="L1557">      newBean.setRoot(datasetBean.getRoot());</span>
+<span class="nc" id="L1558">      newBean.setSample(datasetBean.getSample());</span>
+<span class="nc" id="L1559">      newBean.setSelected(datasetBean.getIsSelected().getValue());</span>
+<span class="nc" id="L1560">      newBean.setDirectory(false);</span>
+<span class="nc bnc" id="L1561" title="All 2 branches missed.">      if (dto.isDirectory()) {</span>
+<span class="nc" id="L1562">        newBean.setDirectory(true);</span>
+<span class="nc" id="L1563">        String folderPath = dto.getPathInDataSet();</span>
+<span class="nc" id="L1564">        FileInfoDssDTO[] subList = d.listFiles(folderPath, false);</span>
+<span class="nc" id="L1565">        datasetBeanChildren(newBean, subList, d);</span>
+      }
+<span class="nc" id="L1567">      beans.add(newBean);</span>
+
+    }
+<span class="nc" id="L1570">    datasetBean.setChildren(beans);</span>
+<span class="nc" id="L1571">  }</span>
+
+  /*
+   * @SuppressWarnings(&quot;unchecked&quot;) private BeanItemContainer&lt;ProjectBean&gt;
+   * createProjectContainer(List&lt;Project&gt; projs, String spaceID) throws Exception {
+   * 
+   * BeanItemContainer&lt;ProjectBean&gt; res = new BeanItemContainer&lt;ProjectBean&gt;(ProjectBean.class);
+   * 
+   * // project_container.addContainerProperty(&quot;Description&quot;, String.class, null); //
+   * project_container.addContainerProperty(&quot;Space&quot;, String.class, null); //
+   * project_container.addContainerProperty(&quot;Registration Date&quot;, Timestamp.class, null); //
+   * project_container.addContainerProperty(&quot;Registrator&quot;, String.class, null); //
+   * project_container.addContainerProperty(&quot;Progress&quot;, ProgressBar.class, null); SpaceBean space =
+   * new SpaceBean(); space.setId(spaceID); // TODO do we need more space information at this point?
+   * for (Project p : projs) { ProgressBar progressBar = new ProgressBar();
+   * progressBar.setValue(this.openBisClient.computeProjectStatus(p)); Date date =
+   * p.getRegistrationDetails().getRegistrationDate(); SimpleDateFormat sd = new SimpleDateFormat(
+   * &quot;yyyy-MM-dd hh:mm:ss&quot;); String dateString = sd.format(date); Timestamp ts =
+   * Timestamp.valueOf(dateString); ProjectBean b = new ProjectBean(p.getIdentifier(), p.getCode(),
+   * p.getDescription(), space, getExperiments(p.getIdentifier(), &quot;project&quot;), progressBar, ts, p
+   * .getRegistrationDetails().getUserId(), p.getRegistrationDetails().getUserEmail(),
+   * (List&lt;String&gt;) getSpaceMembers(spaceID), datasetMap.get(p.getIdentifier()) != null);
+   * res.addBean(b); // Object new_p = project_container.addItem(); // // String code = p.getCode();
+   * // String desc = p.getDescription(); // // String space = code.split(&quot;/&quot;)[1]; // // String
+   * registrator = p.getRegistrationDetails().getUserId(); //
+   * 
+   * //
+   * 
+   * // // project_container.getContainerProperty(new_p, &quot;Space&quot;).setValue(space); //
+   * project_container.getContainerProperty(new_p, &quot;Description&quot;).setValue(desc); //
+   * project_container.getContainerProperty(new_p, &quot;Registration Date&quot;).setValue(ts); //
+   * project_container.getContainerProperty(new_p, &quot;Registerator&quot;).setValue(registrator); //
+   * project_container.getContainerProperty(new_p, &quot;Progress&quot;).setValue(progressBar); }
+   * 
+   * return res; }
+   */
+  /*
+   * @SuppressWarnings(&quot;unchecked&quot;) private BeanItemContainer&lt;ExperimentBean&gt;
+   * createExperimentContainer(List&lt;Experiment&gt; exps, String projID) {
+   * 
+   * BeanItemContainer&lt;ExperimentBean&gt; res = new
+   * BeanItemContainer&lt;ExperimentBean&gt;(ExperimentBean.class);
+   * 
+   * // project_container.addContainerProperty(&quot;Description&quot;, String.class, null); //
+   * project_container.addContainerProperty(&quot;Space&quot;, String.class, null); //
+   * project_container.addContainerProperty(&quot;Registration Date&quot;, Timestamp.class, null); //
+   * project_container.addContainerProperty(&quot;Registrator&quot;, String.class, null); //
+   * project_container.addContainerProperty(&quot;Progress&quot;, ProgressBar.class, null);
+   * 
+   * 
+   * 
+   * 
+   * 
+   * 
+   * IndexedContainer experiment_container = new IndexedContainer();
+   * 
+   * experiment_container.addContainerProperty(&quot;Experiment&quot;, String.class, null);
+   * experiment_container.addContainerProperty(&quot;Experiment Type&quot;, String.class, null);
+   * experiment_container.addContainerProperty(&quot;Registration Date&quot;, Timestamp.class, null);
+   * experiment_container.addContainerProperty(&quot;Registrator&quot;, String.class, null);
+   * experiment_container.addContainerProperty(&quot;Status&quot;, Image.class, null); //
+   * experiment_container.addContainerProperty(&quot;Properties&quot;, Map.class, null); ProjectBean space =
+   * new ProjectBean(); space.setId(spaceID); // TODO do we need more space information at this
+   * point? for (Experiment e : exps) { ProgressBar progressBar = new ProgressBar();
+   * progressBar.setValue(this.openBisClient.computeProjectStatus(p)); Date date =
+   * p.getRegistrationDetails().getRegistrationDate(); SimpleDateFormat sd = new SimpleDateFormat(
+   * &quot;yyyy-MM-dd hh:mm:ss&quot;); String dateString = sd.format(date); Timestamp ts =
+   * Timestamp.valueOf(dateString); ExperimentBean e = new ExperimentBean(id, code, type, status,
+   * registrator, project, registrationDate, samples, lastChangedSample, lastChangedDataset,
+   * properties, controlledVocabularies) ProjectBean b = new ProjectBean(p.getIdentifier(),
+   * p.getCode(), p.getDescription(), space, getExperiments(p.getIdentifier(), &quot;project&quot;),
+   * progressBar, ts, p .getRegistrationDetails().getUserId(),
+   * p.getRegistrationDetails().getUserEmail(), (List&lt;String&gt;) getSpaceMembers(spaceID),
+   * datasetMap.get(p.getIdentifier()) != null); res.addBean(b);
+   * 
+   * 
+   * 
+   * 
+   * for (Experiment e : exps) { Object new_ds = experiment_container.addItem();
+   * 
+   * String type = this.openBisClient.openBIScodeToString(e.getExperimentTypeCode());
+   * 
+   * Map&lt;String, String&gt; properties = e.getProperties();
+   * 
+   * String status = &quot;&quot;;
+   * 
+   * if (properties.keySet().contains(&quot;Q_CURRENT_STATUS&quot;)) { status =
+   * properties.get(&quot;Q_CURRENT_STATUS&quot;); }
+   * 
+   * Date date = e.getRegistrationDetails().getRegistrationDate(); String registrator =
+   * e.getRegistrationDetails().getUserId();
+   * 
+   * SimpleDateFormat sd = new SimpleDateFormat(&quot;yyyy-MM-dd hh:mm:ss&quot;); String dateString =
+   * sd.format(date); Timestamp ts = Timestamp.valueOf(dateString);
+   * experiment_container.getContainerProperty(new_ds, &quot;Experiment&quot;).setValue(e.getCode());
+   * experiment_container.getContainerProperty(new_ds, &quot;Experiment Type&quot;).setValue(type);
+   * experiment_container.getContainerProperty(new_ds, &quot;Registration Date&quot;).setValue(ts);
+   * experiment_container.getContainerProperty(new_ds, &quot;Registrator&quot;).setValue(registrator);
+   * 
+   * Image statusColor = new Image(status, this.setExperimentStatusColor(status));
+   * statusColor.setWidth(&quot;15px&quot;); statusColor.setHeight(&quot;15px&quot;);
+   * experiment_container.getContainerProperty(new_ds, &quot;Status&quot;).setValue(statusColor); //
+   * experiment_container.getContainerProperty(new_ds, // &quot;Properties&quot;).setValue(e.getProperties());
+   * }
+   * 
+   * return experiment_container; }
+   */
+
+  /*
+   * beans.add(newBean);
+   * 
+   * @SuppressWarnings(&quot;unchecked&quot;) private BeanItemContainer&lt;SampleBean&gt;
+   * createSampleContainer(List&lt;Sample&gt; samples, String id) {
+   * 
+   * IndexedContainer sample_container = new IndexedContainer();
+   * sample_container.addContainerProperty(&quot;Sample&quot;, String.class, null);
+   * sample_container.addContainerProperty(&quot;Description&quot;, String.class, null);
+   * sample_container.addContainerProperty(&quot;Sample Type&quot;, String.class, null);
+   * sample_container.addContainerProperty(&quot;Registration Date&quot;, Timestamp.class, null); //
+   * sample_container.addContainerProperty(&quot;Species&quot;, String.class, null);
+   * 
+   * for (Sample s : samples) { Object new_ds = sample_container.addItem();
+   * 
+   * String type = this.openBisClient.openBIScodeToString(s.getSampleTypeCode());
+   * 
+   * Date date = s.getRegistrationDetails().getRegistrationDate(); Map&lt;String, String&gt; properties =
+   * s.getProperties(); SimpleDateFormat sd = new SimpleDateFormat(&quot;yyyy-MM-dd hh:mm:ss&quot;); String
+   * dateString = sd.format(date); Timestamp ts = Timestamp.valueOf(dateString);
+   * sample_container.getContainerProperty(new_ds, &quot;Sample&quot;).setValue(s.getCode()); //
+   * sample_container.getContainerProperty(new_ds, //
+   * &quot;Description&quot;).setValue(properties.get(&quot;SAMPLE_CLASS&quot;));
+   * sample_container.getContainerProperty(new_ds, &quot;Description&quot;).setValue(
+   * properties.get(&quot;Q_SECONDARY_NAME&quot;)); sample_container.getContainerProperty(new_ds,
+   * &quot;Sample Type&quot;).setValue(type); sample_container.getContainerProperty(new_ds,
+   * &quot;Registration Date&quot;).setValue(ts); // sample_container.getContainerProperty(new_ds, //
+   * &quot;Species&quot;).setValue(properties.get(&quot;SPECIES&quot;)); }
+   * 
+   * return sample_container; }
+   */
+  /*
+   * private BeanItemContainer&lt;DatasetBean&gt; createDatasetContainer(List&lt;DataSet&gt; datasets, String
+   * id) {
+   * 
+   * HierarchicalContainer dataset_container = new HierarchicalContainer();
+   * 
+   * dataset_container.addContainerProperty(&quot;Select&quot;, CheckBox.class, null);
+   * dataset_container.addContainerProperty(&quot;Project&quot;, String.class, null);
+   * dataset_container.addContainerProperty(&quot;Sample&quot;, String.class, null);
+   * dataset_container.addContainerProperty(&quot;Sample Type&quot;, String.class, null);
+   * dataset_container.addContainerProperty(&quot;File Name&quot;, String.class, null);
+   * dataset_container.addContainerProperty(&quot;File Type&quot;, String.class, null);
+   * dataset_container.addContainerProperty(&quot;Dataset Type&quot;, String.class, null);
+   * dataset_container.addContainerProperty(&quot;Registration Date&quot;, Timestamp.class, null);
+   * dataset_container.addContainerProperty(&quot;Validated&quot;, Boolean.class, null);
+   * dataset_container.addContainerProperty(&quot;File Size&quot;, String.class, null);
+   * dataset_container.addContainerProperty(&quot;file_size_bytes&quot;, Long.class, null);
+   * dataset_container.addContainerProperty(&quot;dl_link&quot;, String.class, null);
+   * dataset_container.addContainerProperty(&quot;CODE&quot;, String.class, null);
+   * 
+   * for (DataSet d : datasets) { String identifier = d.getSampleIdentifierOrNull(); Sample
+   * sampleObject = this.openBisClient.getSampleByIdentifier(identifier); String sample =
+   * sampleObject.getCode(); String sampleType =
+   * this.openBisClient.getSampleByIdentifier(sample).getSampleTypeCode(); Project projectObject =
+   * this.openBisClient.getProjectOfExperimentByIdentifier(sampleObject
+   * .getExperimentIdentifierOrNull()); String project = projectObject.getCode(); // String code =
+   * d.getSampleIdentifierOrNull(); // String sample = code.split(&quot;/&quot;)[2]; // String project =
+   * sample.substring(0, 5); Date date = d.getRegistrationDate();
+   * 
+   * SimpleDateFormat sd = new SimpleDateFormat(&quot;yyyy-MM-dd hh:mm:ss&quot;); String dateString =
+   * sd.format(date); Timestamp ts = Timestamp.valueOf(dateString);
+   * 
+   * FileInfoDssDTO[] filelist = d.listFiles(&quot;original&quot;, true);
+   * 
+   * // recursive test registerDatasetInTable(d, filelist, dataset_container, project, sample, ts,
+   * sampleType, null);
+   * 
+   * }
+   * 
+   * return dataset_container; }
+   */
+//
+//  public void registerDatasetInTable(DataSet d, FileInfoDssDTO[] filelist,
+//      HierarchicalContainer dataset_container, String project, String sample, Timestamp ts,
+//      String sampleType, Object parent) {
+//    if (filelist[0].isDirectory()) {
+//
+//      Object new_ds = dataset_container.addItem();
+//
+//      String folderPath = filelist[0].getPathInDataSet();
+//      FileInfoDssDTO[] subList = d.listFiles(folderPath, false);
+//
+//      dataset_container.setChildrenAllowed(new_ds, true);
+//      String download_link = filelist[0].getPathInDataSet();
+//      String[] splitted_link = download_link.split(&quot;/&quot;);
+//      String file_name = download_link.split(&quot;/&quot;)[splitted_link.length - 1];
+//
+//      dataset_container.getContainerProperty(new_ds, &quot;Select&quot;).setValue(new CheckBox());
+//
+//      dataset_container.getContainerProperty(new_ds, &quot;Project&quot;).setValue(project);
+//      dataset_container.getContainerProperty(new_ds, &quot;Sample&quot;).setValue(sample);
+//      dataset_container.getContainerProperty(new_ds, &quot;Sample Type&quot;)
+//          .setValue(this.getOpenBisClient().getSampleByIdentifier(sample).getSampleTypeCode());
+//      dataset_container.getContainerProperty(new_ds, &quot;File Name&quot;).setValue(file_name);
+//      dataset_container.getContainerProperty(new_ds, &quot;File Type&quot;).setValue(&quot;Folder&quot;);
+//      dataset_container.getContainerProperty(new_ds, &quot;Dataset Type&quot;).setValue(&quot;-&quot;);
+//      dataset_container.getContainerProperty(new_ds, &quot;Registration Date&quot;).setValue(ts);
+//      dataset_container.getContainerProperty(new_ds, &quot;Validated&quot;).setValue(true);
+//      dataset_container.getContainerProperty(new_ds, &quot;dl_link&quot;).setValue(
+//          d.getDataSetDss().tryGetInternalPathInDataStore() + &quot;/&quot; + filelist[0].getPathInDataSet());
+//      dataset_container.getContainerProperty(new_ds, &quot;CODE&quot;).setValue(d.getCode());
+//      dataset_container.getContainerProperty(new_ds, &quot;file_size_bytes&quot;)
+//          .setValue(filelist[0].getFileSize());
+//
+//      // System.out.println(&quot;Now it should be a folder: &quot; + filelist[0].getPathInDataSet());
+//
+//      if (parent != null) {
+//        dataset_container.setParent(new_ds, parent);
+//      }
+//
+//      for (FileInfoDssDTO file : subList) {
+//        FileInfoDssDTO[] childList = {file};
+//        registerDatasetInTable(d, childList, dataset_container, project, sample, ts, sampleType,
+//            new_ds);
+//      }
+//
+//    } else {
+//      // System.out.println(&quot;Now it should be a file: &quot; + filelist[0].getPathInDataSet());
+//
+//      Object new_file = dataset_container.addItem();
+//      dataset_container.setChildrenAllowed(new_file, false);
+//      String download_link = filelist[0].getPathInDataSet();
+//      String[] splitted_link = download_link.split(&quot;/&quot;);
+//      String file_name = download_link.split(&quot;/&quot;)[splitted_link.length - 1];
+//      // String file_name = download_link.split(&quot;/&quot;)[1];
+//      String fileSize = PortalUtils.humanReadableByteCount(filelist[0].getFileSize(), true);
+//
+//      dataset_container.getContainerProperty(new_file, &quot;Select&quot;).setValue(new CheckBox());
+//      dataset_container.getContainerProperty(new_file, &quot;Project&quot;).setValue(project);
+//      dataset_container.getContainerProperty(new_file, &quot;Sample&quot;).setValue(sample);
+//      dataset_container.getContainerProperty(new_file, &quot;Sample Type&quot;).setValue(sampleType);
+//      dataset_container.getContainerProperty(new_file, &quot;File Name&quot;).setValue(file_name);
+//      dataset_container.getContainerProperty(new_file, &quot;File Type&quot;)
+//          .setValue(d.getDataSetTypeCode());
+//      dataset_container.getContainerProperty(new_file, &quot;Dataset Type&quot;)
+//          .setValue(d.getDataSetTypeCode());
+//      dataset_container.getContainerProperty(new_file, &quot;Registration Date&quot;).setValue(ts);
+//      dataset_container.getContainerProperty(new_file, &quot;Validated&quot;).setValue(true);
+//      dataset_container.getContainerProperty(new_file, &quot;File Size&quot;).setValue(fileSize);
+//      dataset_container.getContainerProperty(new_file, &quot;dl_link&quot;).setValue(
+//          d.getDataSetDss().tryGetInternalPathInDataStore() + &quot;/&quot; + filelist[0].getPathInDataSet());
+//      dataset_container.getContainerProperty(new_file, &quot;CODE&quot;).setValue(d.getCode());
+//      dataset_container.getContainerProperty(new_file, &quot;file_size_bytes&quot;)
+//          .setValue(filelist[0].getFileSize());
+//      if (parent != null) {
+//        dataset_container.setParent(new_file, parent);
+//      }
+//    }
+//  }
+
+  /**
+   * Function to fill tree container and collect statistical information of spaces. Should replace
+   * the two functions and be somewhat faster. Still not pretty. Needs work
+   * 
+   * @param tc HierarchicalContainer for the Tree
+   * @param userName Screenname of the Liferay User
+   * @return SpaceInformation object
+   */
+  // public SpaceInformation initTreeAndHomeInfo(HierarchicalContainer tc, String userName) {
+  //
+  // List&lt;SpaceWithProjectsAndRoleAssignments&gt; space_list = this.getSpacesWithProjectInformation();
+  //
+  // // Initialization of Tree Container
+  // tc.addContainerProperty(&quot;identifier&quot;, String.class, &quot;N/A&quot;);
+  // tc.addContainerProperty(&quot;type&quot;, String.class, &quot;N/A&quot;);
+  // tc.addContainerProperty(&quot;project&quot;, String.class, &quot;N/A&quot;);
+  // tc.addContainerProperty(&quot;caption&quot;, String.class, &quot;N/A&quot;);
+  //
+  //
+  // // Initialization of Home Information
+  // SpaceInformation homeInformation = new SpaceInformation();
+  // IndexedContainer space_container = new IndexedContainer();
+  // space_container.addContainerProperty(&quot;Project&quot;, String.class, &quot;&quot;);
+  // space_container.addContainerProperty(&quot;Description&quot;, String.class, &quot;&quot;);
+  // space_container.addContainerProperty(&quot;Contains datasets&quot;, String.class, &quot;&quot;);
+  // int number_of_projects = 0;
+  // int number_of_experiments = 0;
+  // int number_of_samples = 0;
+  // int number_of_datasets = 0;
+  // String lastModifiedExperiment = &quot;N/A&quot;;
+  // String lastModifiedSample = &quot;N/A&quot;;
+  // Date lastModifiedDate = new Date(0, 0, 0);
+  // for (SpaceWithProjectsAndRoleAssignments s : space_list) {
+  // if (s.getUsers().contains(userName)) {
+  // String space_name = s.getCode();
+  //
+  // // TODO does this work for everyone? should it? empty container would be the aim, probably
+  // if (space_name.equals(&quot;QBIC_USER_SPACE&quot;)) {
+  // fillPersonsContainer(space_name);
+  // }
+  //
+  // List&lt;Project&gt; projects = s.getProjects();
+  // number_of_projects += projects.size();
+  // List&lt;String&gt; project_identifiers_tmp = new ArrayList&lt;String&gt;();
+  // for (Project project : projects) {
+  //
+  // String project_name = project.getCode();
+  // if (tc.containsId(project_name)) {
+  // project_name = project.getIdentifier();
+  // }
+  // Object new_s = space_container.addItem();
+  // space_container.getContainerProperty(new_s, &quot;Project&quot;).setValue(project_name);
+  //
+  // // Project descriptions can be long; truncate the string to provide a brief preview
+  // String desc = project.getDescription();
+  //
+  // if (desc != null &amp;&amp; desc.length() &gt; 0) {
+  // desc = desc.substring(0, Math.min(desc.length(), 100));
+  // if (desc.length() == 100) {
+  // desc += &quot;...&quot;;
+  // }
+  // }
+  // space_container.getContainerProperty(new_s, &quot;Description&quot;).setValue(desc);
+  //
+  // // System.out.println(&quot;|--Project: &quot; + project_name);
+  // tc.addItem(project_name);
+  //
+  // tc.getContainerProperty(project_name, &quot;type&quot;).setValue(&quot;project&quot;);
+  // tc.getContainerProperty(project_name, &quot;identifier&quot;).setValue(project_name);
+  // tc.getContainerProperty(project_name, &quot;project&quot;).setValue(project_name);
+  // tc.getContainerProperty(project_name, &quot;caption&quot;).setValue(project_name);
+  //
+  // List&lt;Project&gt; tmp_list = new ArrayList&lt;Project&gt;();
+  // tmp_list.add(project);
+  // List&lt;Experiment&gt; experiments =
+  // this.openBisClient.getOpenbisInfoService().listExperiments(
+  // this.openBisClient.getSessionToken(), tmp_list, null);
+  //
+  // // Add number of experiments for every project
+  // number_of_experiments += experiments.size();
+  //
+  // List&lt;String&gt; experiment_identifiers = new ArrayList&lt;String&gt;();
+  //
+  // for (Experiment experiment : experiments) {
+  // experiment_identifiers.add(experiment.getIdentifier());
+  // String experiment_name = experiment.getCode();
+  // if (tc.containsId(experiment_name)) {
+  // experiment_name = experiment.getIdentifier();
+  // }
+  // // System.out.println(&quot; |--Experiment: &quot; + experiment_name);
+  // tc.addItem(experiment_name);
+  // tc.setParent(experiment_name, project_name);
+  // tc.getContainerProperty(experiment_name, &quot;type&quot;).setValue(&quot;experiment&quot;);
+  // tc.getContainerProperty(experiment_name, &quot;identifier&quot;).setValue(experiment_name);
+  // tc.getContainerProperty(experiment_name, &quot;project&quot;).setValue(project_name);
+  // tc.getContainerProperty(experiment_name, &quot;caption&quot;).setValue(
+  // String.format(&quot;%s (%s)&quot;,
+  // this.openBisClient.openBIScodeToString(experiment.getExperimentTypeCode()),
+  // experiment_name));
+  //
+  // tc.setChildrenAllowed(experiment_name, false);
+  // }
+  // if (experiment_identifiers.size() &gt; 0
+  // &amp;&amp; this.openBisClient.getFacade().listDataSetsForExperiments(experiment_identifiers)
+  // .size() &gt; 0) {
+  // space_container.getContainerProperty(new_s, &quot;Contains datasets&quot;).setValue(&quot;yes&quot;);
+  // } else {
+  // space_container.getContainerProperty(new_s, &quot;Contains datasets&quot;).setValue(&quot;no&quot;);
+  // }
+  // }
+  // List&lt;Sample&gt; samplesOfSpace = new ArrayList&lt;Sample&gt;();
+  // if (project_identifiers_tmp.size() &gt; 0) {
+  // samplesOfSpace =
+  // this.openBisClient.getFacade().listSamplesForProjects(project_identifiers_tmp);
+  // } else {
+  // samplesOfSpace = this.openBisClient.getSamplesofSpace(space_name); // TODO code or
+  // // identifier
+  // // needed?
+  // }
+  // number_of_samples += samplesOfSpace.size();
+  // List&lt;String&gt; sample_identifiers_tmp = new ArrayList&lt;String&gt;();
+  // for (Sample sa : samplesOfSpace) {
+  // sample_identifiers_tmp.add(sa.getIdentifier());
+  // }
+  // List&lt;DataSet&gt; datasets = new ArrayList&lt;DataSet&gt;();
+  // if (sample_identifiers_tmp.size() &gt; 0) {
+  // datasets = this.openBisClient.getFacade().listDataSetsForSamples(sample_identifiers_tmp);
+  // }
+  // number_of_datasets += datasets.size();
+  // StringBuilder lce = new StringBuilder();
+  // StringBuilder lcs = new StringBuilder();
+  // this.lastDatasetRegistered(datasets, lastModifiedDate, lce, lcs);
+  // String tmplastModifiedExperiment = lce.toString();
+  // String tmplastModifiedSample = lcs.toString();
+  // if (!tmplastModifiedSample.equals(&quot;N/A&quot;)) {
+  // lastModifiedExperiment = tmplastModifiedExperiment;
+  // lastModifiedSample = tmplastModifiedSample;
+  // }
+  // }
+  // }
+  // homeInformation.numberOfProjects = number_of_projects;
+  // homeInformation.numberOfExperiments = number_of_experiments;
+  // homeInformation.numberOfSamples = number_of_samples;
+  // homeInformation.numberOfDatasets = number_of_datasets;
+  // homeInformation.lastChangedDataset = lastModifiedDate;
+  // homeInformation.lastChangedSample = lastModifiedSample;
+  // homeInformation.lastChangedExperiment = lastModifiedExperiment;
+  // homeInformation.projects = space_container;
+  //
+  // return homeInformation;
+  // }
+
+  /**
+   * Creates a Map of project statuses fulfilled, keyed by their meaning. For this, different steps
+   * in the project flow are checked by looking at experiment types and data registered
+   * 
+   * @param projectBean
+   * @return
+   */
+  public Map&lt;String, Integer&gt; computeProjectStatuses(ProjectBean projectBean) {
+
+    // Project p = this.openBisClient.getProjectByCode(projectId);
+<span class="nc" id="L1992">    Map&lt;String, Integer&gt; res = new HashMap&lt;String, Integer&gt;();</span>
+<span class="nc" id="L1993">    BeanItemContainer&lt;ExperimentBean&gt; cont = projectBean.getExperiments();</span>
+
+    // project was planned (otherwise it would hopefully not exist :) )
+<span class="nc" id="L1996">    res.put(&quot;Project planned&quot;, 1);</span>
+
+    // design is pre-registered to the test sample level
+<span class="nc" id="L1999">    int prereg = 0;</span>
+<span class="nc bnc" id="L2000" title="All 2 branches missed.">    for (ExperimentBean bean : cont.getItemIds()) {</span>
+<span class="nc" id="L2001">      String type = bean.getType();</span>
+
+<span class="nc bnc" id="L2003" title="All 2 branches missed.">      if (type.equals(&quot;Q_EXPERIMENTAL_DESIGN&quot;)) {</span>
+<span class="nc" id="L2004">        prereg = 1;</span>
+<span class="nc" id="L2005">        break;</span>
+      }
+<span class="nc" id="L2007">    }</span>
+<span class="nc" id="L2008">    res.put(&quot;Experimental design registered&quot;, prereg);</span>
+    // data is uploaded
+    // TODO fix that
+    // if (datasetMap.get(p.getIdentifier()) != null)
+    // res.put(&quot;Data Registered&quot;, 1);
+    // else
+<span class="nc bnc" id="L2014" title="All 2 branches missed.">    int dataregistered = projectBean.getContainsData() ? 1 : 0;</span>
+<span class="nc bnc" id="L2015" title="All 2 branches missed.">    int resultsregistered = projectBean.getContainsResults() ? 1 : 0;</span>
+    // int attachmentsregistered = projectBean.getContainsAttachments() ? 1 : 0;
+
+    // res.put(&quot;Attachments registered&quot;, attachmentsregistered);
+<span class="nc" id="L2019">    res.put(&quot;Raw data registered&quot;, dataregistered);</span>
+<span class="nc" id="L2020">    res.put(&quot;Results registered&quot;, resultsregistered);</span>
+
+<span class="nc" id="L2022">    return res;</span>
+  }
+
+  public BeanItemContainer&lt;ExperimentStatusBean&gt; computeIvacPatientStatus(ProjectBean projectBean) {
+
+<span class="nc" id="L2027">    BeanItemContainer&lt;ExperimentStatusBean&gt; res =</span>
+        new BeanItemContainer&lt;ExperimentStatusBean&gt;(ExperimentStatusBean.class);
+<span class="nc" id="L2029">    BeanItemContainer&lt;ExperimentBean&gt; cont = projectBean.getExperiments();</span>
+
+    // TODO set download link and workflow triggering
+    // TODO add immune monitoring, report generation, vaccine design
+
+<span class="nc" id="L2034">    ExperimentStatusBean barcode = new ExperimentStatusBean();</span>
+<span class="nc" id="L2035">    barcode.setDescription(&quot;Barcode Generation&quot;);</span>
+<span class="nc" id="L2036">    barcode.setStatus(1.0);</span>
+
+<span class="nc" id="L2038">    ExperimentStatusBean ngsCall = new ExperimentStatusBean();</span>
+<span class="nc" id="L2039">    ngsCall.setDescription(&quot;Variant Calling&quot;);</span>
+<span class="nc" id="L2040">    ngsCall.setStatus(0.0);</span>
+
+<span class="nc" id="L2042">    ExperimentStatusBean hlaType = new ExperimentStatusBean();</span>
+<span class="nc" id="L2043">    hlaType.setDescription(&quot;HLA Typing&quot;);</span>
+<span class="nc" id="L2044">    hlaType.setStatus(0.0);</span>
+
+<span class="nc" id="L2046">    ExperimentStatusBean variantAnno = new ExperimentStatusBean();</span>
+<span class="nc" id="L2047">    variantAnno.setDescription(&quot;Variant Annotation&quot;);</span>
+<span class="nc" id="L2048">    variantAnno.setStatus(0.0);</span>
+
+<span class="nc" id="L2050">    ExperimentStatusBean epitopePred = new ExperimentStatusBean();</span>
+<span class="nc" id="L2051">    epitopePred.setDescription(&quot;Epitope Prediction&quot;);</span>
+<span class="nc" id="L2052">    epitopePred.setStatus(0.0);</span>
+
+<span class="nc bnc" id="L2054" title="All 2 branches missed.">    for (ExperimentBean bean : cont.getItemIds()) {</span>
+<span class="nc" id="L2055">      String type = bean.getType();</span>
+
+<span class="nc bnc" id="L2057" title="All 2 branches missed.">      Double experimentStatus = bean.getProperties().get(&quot;Q_CURRENT_STATUS&quot;) == null ? 0.0</span>
+          : OpenBisFunctions
+<span class="nc" id="L2059">              .statusToDoubleValue(bean.getProperties().get(&quot;Q_CURRENT_STATUS&quot;).toString());</span>
+<span class="nc bnc" id="L2060" title="All 2 branches missed.">      if (type.equalsIgnoreCase(ExperimentType.Q_NGS_MEASUREMENT.name())) {</span>
+
+<span class="nc" id="L2062">        ExperimentStatusBean ngsMeasure = new ExperimentStatusBean();</span>
+<span class="nc" id="L2063">        ngsMeasure.setDescription(&quot;NGS Sequencing&quot;);</span>
+<span class="nc" id="L2064">        ngsMeasure.setStatus(0.0);</span>
+<span class="nc" id="L2065">        ngsMeasure.setStatus(experimentStatus);</span>
+<span class="nc" id="L2066">        ngsMeasure.setCode(bean.getCode());</span>
+<span class="nc" id="L2067">        ngsMeasure.setIdentifier(bean.getId());</span>
+
+<span class="nc" id="L2069">        res.addBean(ngsMeasure);</span>
+      }
+<span class="nc bnc" id="L2071" title="All 2 branches missed.">      if (type.equalsIgnoreCase(ExperimentType.Q_NGS_VARIANT_CALLING.name())) {</span>
+<span class="nc" id="L2072">        ngsCall.setStatus(experimentStatus);</span>
+<span class="nc" id="L2073">        ngsCall.setCode(bean.getCode());</span>
+<span class="nc" id="L2074">        ngsCall.setIdentifier(bean.getId());</span>
+      }
+<span class="nc" id="L2076">      if (type.equalsIgnoreCase(ExperimentType.Q_NGS_HLATYPING.name())</span>
+<span class="nc bnc" id="L2077" title="All 2 branches missed.">          | type.equalsIgnoreCase(ExperimentType.Q_WF_NGS_HLATYPING.name())) {</span>
+<span class="nc bnc" id="L2078" title="All 2 branches missed.">        if (type.equalsIgnoreCase(ExperimentType.Q_WF_NGS_HLATYPING.name())) {</span>
+<span class="nc" id="L2079">          hlaType.setStatus(OpenBisFunctions</span>
+<span class="nc" id="L2080">              .statusToDoubleValue(bean.getProperties().get(&quot;Q_WF_STATUS&quot;).toString()));</span>
+        } else {
+<span class="nc" id="L2082">          hlaType.setStatus(experimentStatus);</span>
+        }
+<span class="nc" id="L2084">        hlaType.setCode(bean.getCode());</span>
+<span class="nc" id="L2085">        hlaType.setIdentifier(bean.getId());</span>
+      }
+<span class="nc bnc" id="L2087" title="All 2 branches missed.">      if (type.equalsIgnoreCase(ExperimentType.Q_WF_NGS_VARIANT_ANNOTATION.name())) {</span>
+<span class="nc" id="L2088">        variantAnno.setStatus(OpenBisFunctions</span>
+<span class="nc" id="L2089">            .statusToDoubleValue(bean.getProperties().get(&quot;Q_WF_STATUS&quot;).toString()));</span>
+<span class="nc" id="L2090">        variantAnno.setCode(bean.getCode());</span>
+<span class="nc" id="L2091">        variantAnno.setIdentifier(bean.getId());</span>
+      }
+<span class="nc bnc" id="L2093" title="All 2 branches missed.">      if (type.equalsIgnoreCase(ExperimentType.Q_WF_NGS_EPITOPE_PREDICTION.name())) {</span>
+<span class="nc" id="L2094">        epitopePred.setStatus(OpenBisFunctions</span>
+<span class="nc" id="L2095">            .statusToDoubleValue(bean.getProperties().get(&quot;Q_WF_STATUS&quot;).toString()));</span>
+<span class="nc" id="L2096">        epitopePred.setCode(bean.getCode());</span>
+<span class="nc" id="L2097">        epitopePred.setIdentifier(bean.getId());</span>
+      }
+<span class="nc" id="L2099">    }</span>
+
+<span class="nc" id="L2101">    res.addBean(barcode);</span>
+<span class="nc" id="L2102">    res.addBean(ngsCall);</span>
+<span class="nc" id="L2103">    res.addBean(hlaType);</span>
+<span class="nc" id="L2104">    res.addBean(variantAnno);</span>
+<span class="nc" id="L2105">    res.addBean(epitopePred);</span>
+
+<span class="nc" id="L2107">    return res;</span>
+  }
+
+  public ThemeResource setExperimentStatusColor(String status) {
+<span class="nc" id="L2111">    ThemeResource resource = null;</span>
+<span class="nc bnc" id="L2112" title="All 2 branches missed.">    if (status.equals(&quot;FINISHED&quot;)) {</span>
+<span class="nc" id="L2113">      resource = new ThemeResource(&quot;green_light.png&quot;);</span>
+<span class="nc bnc" id="L2114" title="All 2 branches missed.">    } else if (status.equals(&quot;DELAYED&quot;)) {</span>
+<span class="nc" id="L2115">      resource = new ThemeResource(&quot;yellow_light.png&quot;);</span>
+<span class="nc bnc" id="L2116" title="All 2 branches missed.">    } else if (status.equals(&quot;STARTED&quot;)) {</span>
+<span class="nc" id="L2117">      resource = new ThemeResource(&quot;grey_light.png&quot;);</span>
+<span class="nc bnc" id="L2118" title="All 2 branches missed.">    } else if (status.equals(&quot;FAILED&quot;)) {</span>
+<span class="nc" id="L2119">      resource = new ThemeResource(&quot;red_light.png&quot;);</span>
+    } else {
+<span class="nc" id="L2121">      resource = new ThemeResource(&quot;red_light.png&quot;);</span>
+    }
+
+    // image.setWidth(&quot;15px&quot;);
+    // image.setHeight(&quot;15px&quot;);\
+<span class="nc" id="L2126">    return resource;</span>
+  }
+
+  // public String beanContainerToString(BeanItemContainer c) {
+  // String header = &quot;&quot;;
+  // for (Object o : c.getContainerPropertyIds())
+  // header += o.toString() + &quot;\t&quot;;
+  // for (c.get)
+  // }
+
+
+  public List&lt;Qperson&gt; parseConnectedPeopleInformation(String xmlString) {
+<span class="nc" id="L2138">    PersonParser xmlParser = new PersonParser();</span>
+<span class="nc" id="L2139">    List&lt;Qperson&gt; xmlPersons = null;</span>
+    try {
+<span class="nc" id="L2141">      xmlPersons = xmlParser.getPersonsFromXML(xmlString);</span>
+<span class="nc" id="L2142">    } catch (JAXBException e) {</span>
+      // TODO Auto-generated catch block
+<span class="nc" id="L2144">      e.printStackTrace();</span>
+<span class="nc" id="L2145">    }</span>
+<span class="nc" id="L2146">    return xmlPersons;</span>
+  }
+
+  public void fillPersonsContainer(String spaceIdentifier) {
+<span class="nc" id="L2150">    List&lt;Sample&gt; samplesOfSpace = new ArrayList&lt;Sample&gt;();</span>
+<span class="nc" id="L2151">    samplesOfSpace = this.getOpenBisClient().getSamplesofSpace(spaceIdentifier);</span>
+
+<span class="nc bnc" id="L2153" title="All 2 branches missed.">    if (this.connectedPersons.size() == 0) {</span>
+<span class="nc bnc" id="L2154" title="All 2 branches missed.">      for (PropertyType p : this.getOpenBisClient()</span>
+<span class="nc" id="L2155">          .listPropertiesForType(this.getOpenBisClient().getSampleTypeByString((&quot;Q_USER&quot;)))) {</span>
+<span class="nc" id="L2156">        this.connectedPersons.addContainerProperty(p.getLabel(), String.class, null);</span>
+<span class="nc" id="L2157">      }</span>
+<span class="nc" id="L2158">      this.connectedPersons.addContainerProperty(&quot;Project&quot;, String.class, null);</span>
+    }
+
+<span class="nc bnc" id="L2161" title="All 2 branches missed.">    for (Sample s : samplesOfSpace) {</span>
+<span class="nc" id="L2162">      List&lt;Sample&gt; parents = this.getOpenBisClient().getParentsBySearchService(s.getCode());</span>
+<span class="nc" id="L2163">      Map&lt;String, String&gt; labelMap = this.getOpenBisClient().getLabelsofProperties(</span>
+<span class="nc" id="L2164">          this.getOpenBisClient().getSampleTypeByString(s.getSampleTypeCode()));</span>
+
+<span class="nc bnc" id="L2166" title="All 2 branches missed.">      for (Sample parent : parents) {</span>
+<span class="nc" id="L2167">        Object newPerson = this.connectedPersons.addItem();</span>
+<span class="nc" id="L2168">        Iterator it = s.getProperties().entrySet().iterator();</span>
+<span class="nc bnc" id="L2169" title="All 2 branches missed.">        while (it.hasNext()) {</span>
+<span class="nc" id="L2170">          Entry pairs = (Entry) it.next();</span>
+<span class="nc" id="L2171">          this.connectedPersons.getContainerProperty(newPerson, labelMap.get(pairs.getKey()))</span>
+<span class="nc" id="L2172">              .setValue(pairs.getValue());</span>
+<span class="nc" id="L2173">        }</span>
+<span class="nc" id="L2174">        this.connectedPersons.getContainerProperty(newPerson, &quot;Project&quot;)</span>
+<span class="nc" id="L2175">            .setValue(this.getOpenBisClient()</span>
+<span class="nc" id="L2176">                .getProjectOfExperimentByIdentifier(parent.getExperimentIdentifierOrNull())</span>
+<span class="nc" id="L2177">                .getCode().toString());</span>
+
+<span class="nc" id="L2179">      }</span>
+<span class="nc" id="L2180">    }</span>
+<span class="nc" id="L2181">  }</span>
+
+  public void registerNewPatients(int numberPatients, List&lt;String&gt; secondaryNames,
+      BeanItemContainer&lt;NewIvacSampleBean&gt; samplesToRegister, String space, String description,
+      Map&lt;String, List&lt;String&gt;&gt; hlaTyping) {
+
+    // get prefix code for projects for corresponding space
+<span class="nc" id="L2188">    String projectPrefix = spaceToProjectPrefixMap.myMap.get(space);</span>
+
+    // extract to function for that
+<span class="nc" id="L2191">    List&lt;Integer&gt; projectCodes = new ArrayList&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L2192" title="All 2 branches missed.">    for (Project p : getOpenBisClient().getProjectsOfSpace(space)) {</span>
+      // String maxValue = Collections.max(p.getCode());
+<span class="nc" id="L2194">      String maxValue = p.getCode().replaceAll(&quot;\\D+&quot;, &quot;&quot;);</span>
+      int codeAsNumber;
+      try {
+<span class="nc" id="L2197">        codeAsNumber = Integer.parseInt(maxValue);</span>
+<span class="nc" id="L2198">      } catch (NumberFormatException nfe) {</span>
+        // bad data - set to sentinel
+<span class="nc" id="L2200">        codeAsNumber = 0;</span>
+<span class="nc" id="L2201">      }</span>
+
+<span class="nc" id="L2203">      projectCodes.add(codeAsNumber);</span>
+<span class="nc" id="L2204">    }</span>
+
+    int numberOfProject;
+
+<span class="nc bnc" id="L2208" title="All 2 branches missed.">    if (projectCodes.size() == 0) {</span>
+<span class="nc" id="L2209">      numberOfProject = 0;</span>
+    } else {
+<span class="nc" id="L2211">      numberOfProject = Collections.max(projectCodes);</span>
+    }
+
+<span class="nc bnc" id="L2214" title="All 2 branches missed.">    for (int i = 0; i &lt; numberPatients; i++) {</span>
+<span class="nc" id="L2215">      Map&lt;String, Object&gt; projectMap = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L2216">      Map&lt;String, Object&gt; firstLevel = new HashMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L2218">      numberOfProject += 1;</span>
+<span class="nc" id="L2219">      int numberOfRegisteredExperiments = 1;</span>
+<span class="nc" id="L2220">      int numberOfRegisteredSamples = 1;</span>
+
+      // register new patient (project), project prefixes differ in length
+<span class="nc" id="L2223">      String newProjectCode =</span>
+<span class="nc" id="L2224">          projectPrefix + Utils.createCountString(numberOfProject, 5 - projectPrefix.length());</span>
+
+<span class="nc" id="L2226">      projectMap.put(&quot;code&quot;, newProjectCode);</span>
+<span class="nc" id="L2227">      projectMap.put(&quot;space&quot;, space);</span>
+<span class="nc" id="L2228">      projectMap.put(&quot;desc&quot;, description + &quot; [&quot; + secondaryNames.get(i) + &quot;]&quot;);</span>
+<span class="nc" id="L2229">      projectMap.put(&quot;user&quot;, PortalUtils.getNonNullScreenName());</span>
+
+      // call of ingestion service to register project
+<span class="nc" id="L2232">      this.getOpenBisClient().triggerIngestionService(&quot;register-proj&quot;, projectMap);</span>
+      // helpers.Utils.printMapContent(projectMap);
+
+<span class="nc" id="L2235">      String newProjectDetailsCode =</span>
+<span class="nc" id="L2236">          projectPrefix + Utils.createCountString(numberOfProject, 3) + &quot;E_INFO&quot;;</span>
+<span class="nc" id="L2237">      String newProjectDetailsID = &quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newProjectDetailsCode;</span>
+
+<span class="nc" id="L2239">      String newExperimentalDesignCode = projectPrefix + Utils.createCountString(numberOfProject, 3)</span>
+          + &quot;E&quot; + numberOfRegisteredExperiments;
+<span class="nc" id="L2241">      String newExperimentalDesignID =</span>
+          &quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newExperimentalDesignCode;
+<span class="nc" id="L2243">      numberOfRegisteredExperiments += 1;</span>
+
+      // String newBiologicalEntitiyCode =
+      // newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;H&quot;;
+      // String newBiologicalEntitiyID =
+      // &quot;/&quot; + space + &quot;/&quot; + newBiologicalEntitiyCode
+      // + helpers.BarcodeFunctions.checksum(newBiologicalEntitiyCode);
+<span class="nc" id="L2250">      String newBiologicalEntitiyID =</span>
+<span class="nc" id="L2251">          String.format(&quot;/&quot; + space + &quot;/&quot; + &quot;%sENTITY-1&quot;, newProjectCode);</span>
+
+<span class="nc" id="L2253">      numberOfRegisteredSamples += 1;</span>
+
+      // register first level of new patient
+<span class="nc" id="L2256">      firstLevel.put(&quot;lvl&quot;, &quot;1&quot;);</span>
+<span class="nc" id="L2257">      firstLevel.put(&quot;projectDetails&quot;, newProjectDetailsID);</span>
+<span class="nc" id="L2258">      firstLevel.put(&quot;experimentalDesign&quot;, newExperimentalDesignID);</span>
+<span class="nc" id="L2259">      firstLevel.put(&quot;secondaryName&quot;, secondaryNames.get(i));</span>
+<span class="nc" id="L2260">      firstLevel.put(&quot;biologicalEntity&quot;, newBiologicalEntitiyID);</span>
+<span class="nc" id="L2261">      firstLevel.put(&quot;user&quot;, PortalUtils.getNonNullScreenName());</span>
+
+<span class="nc" id="L2263">      this.getOpenBisClient().triggerIngestionService(&quot;register-ivac-lvl&quot;, firstLevel);</span>
+
+      // helpers.Utils.printMapContent(firstLevel);
+
+<span class="nc" id="L2267">      Map&lt;String, Object&gt; fithLevel = new HashMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L2269">      List&lt;String&gt; newHLATypingIDs = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2270">      List&lt;String&gt; newHLATypingSampleIDs = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2271">      List&lt;String&gt; hlaClasses = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2272">      List&lt;String&gt; typings = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2273">      List&lt;String&gt; typingMethods = new ArrayList&lt;String&gt;();</span>
+
+      // TODO choose parent sample for hlaTyping
+<span class="nc" id="L2276">      String parentHLA = &quot;&quot;;</span>
+
+
+<span class="nc bnc" id="L2279" title="All 2 branches missed.">      for (Iterator iter = samplesToRegister.getItemIds().iterator(); iter.hasNext();) {</span>
+
+<span class="nc" id="L2281">        NewIvacSampleBean sampleBean = (NewIvacSampleBean) iter.next();</span>
+
+<span class="nc bnc" id="L2283" title="All 2 branches missed.">        for (int ii = 1; ii &lt;= sampleBean.getAmount(); ii++) {</span>
+<span class="nc" id="L2284">          Map&lt;String, Object&gt; secondLevel = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L2285">          Map&lt;String, Object&gt; thirdLevel = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L2286">          Map&lt;String, Object&gt; fourthLevel = new HashMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L2288">          List&lt;String&gt; newSamplePreparationIDs = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2289">          List&lt;String&gt; newTestSampleIDs = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2290">          List&lt;String&gt; testTypes = new ArrayList&lt;String&gt;();</span>
+
+<span class="nc" id="L2292">          List&lt;String&gt; newNGSMeasurementIDs = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2293">          List&lt;String&gt; newNGSRunIDs = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2294">          List&lt;Boolean&gt; additionalInfo = new ArrayList&lt;Boolean&gt;();</span>
+<span class="nc" id="L2295">          List&lt;String&gt; parents = new ArrayList&lt;String&gt;();</span>
+
+<span class="nc" id="L2297">          List&lt;String&gt; newSampleExtractionIDs = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2298">          List&lt;String&gt; newBiologicalSampleIDs = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2299">          List&lt;String&gt; primaryTissues = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2300">          List&lt;String&gt; detailedTissue = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2301">          List&lt;String&gt; sequencerDevice = new ArrayList&lt;String&gt;();</span>
+
+<span class="nc" id="L2303">          String newSampleExtractionCode = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
+<span class="nc" id="L2304">          newSampleExtractionIDs</span>
+<span class="nc" id="L2305">              .add(&quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newSampleExtractionCode);</span>
+<span class="nc" id="L2306">          numberOfRegisteredExperiments += 1;</span>
+
+<span class="nc" id="L2308">          String newBiologicalSampleCode =</span>
+<span class="nc" id="L2309">              newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;B&quot;;</span>
+<span class="nc" id="L2310">          String newBiologicalSampleID = &quot;/&quot; + space + &quot;/&quot; + newBiologicalSampleCode</span>
+<span class="nc" id="L2311">              + BarcodeFunctions.checksum(newBiologicalSampleCode);</span>
+
+<span class="nc" id="L2313">          parentHLA = newBiologicalSampleID;</span>
+
+<span class="nc" id="L2315">          newBiologicalSampleIDs.add(newBiologicalSampleID);</span>
+<span class="nc" id="L2316">          numberOfRegisteredSamples += 1;</span>
+
+<span class="nc" id="L2318">          primaryTissues.add(sampleBean.getTissue());</span>
+<span class="nc" id="L2319">          detailedTissue.add(sampleBean.getType());</span>
+
+          // register second level of new patient
+<span class="nc" id="L2322">          secondLevel.put(&quot;lvl&quot;, &quot;2&quot;);</span>
+<span class="nc" id="L2323">          secondLevel.put(&quot;sampleExtraction&quot;, newSampleExtractionIDs);</span>
+<span class="nc" id="L2324">          secondLevel.put(&quot;biologicalSamples&quot;, newBiologicalSampleIDs);</span>
+
+<span class="nc bnc" id="L2326" title="All 2 branches missed.">          if (sampleBean.getSecondaryName() == null) {</span>
+<span class="nc" id="L2327">            secondLevel.put(&quot;secondaryNames&quot;, &quot;&quot;);</span>
+          } else {
+<span class="nc" id="L2329">            secondLevel.put(&quot;secondaryNames&quot;, sampleBean.getSecondaryName());</span>
+          }
+<span class="nc" id="L2331">          secondLevel.put(&quot;parent&quot;, newBiologicalEntitiyID);</span>
+<span class="nc" id="L2332">          secondLevel.put(&quot;primaryTissue&quot;, primaryTissues);</span>
+<span class="nc" id="L2333">          secondLevel.put(&quot;detailedTissue&quot;, detailedTissue);</span>
+<span class="nc" id="L2334">          secondLevel.put(&quot;user&quot;, PortalUtils.getNonNullScreenName());</span>
+
+<span class="nc" id="L2336">          this.getOpenBisClient().triggerIngestionService(&quot;register-ivac-lvl&quot;, secondLevel);</span>
+          // helpers.Utils.printMapContent(secondLevel);
+
+<span class="nc bnc" id="L2339" title="All 2 branches missed.">          if (sampleBean.getDnaSeq()) {</span>
+<span class="nc" id="L2340">            String newSamplePreparationCode = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
+<span class="nc" id="L2341">            String newSamplePreparationID =</span>
+                &quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newSamplePreparationCode;
+<span class="nc" id="L2343">            newSamplePreparationIDs.add(newSamplePreparationID);</span>
+<span class="nc" id="L2344">            numberOfRegisteredExperiments += 1;</span>
+
+<span class="nc" id="L2346">            String newTestSampleCode =</span>
+<span class="nc" id="L2347">                newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;B&quot;;</span>
+<span class="nc" id="L2348">            String newTestSampleID = &quot;/&quot; + space + &quot;/&quot; + newTestSampleCode</span>
+<span class="nc" id="L2349">                + BarcodeFunctions.checksum(newTestSampleCode);</span>
+<span class="nc" id="L2350">            newTestSampleIDs.add(newTestSampleID);</span>
+<span class="nc" id="L2351">            numberOfRegisteredSamples += 1;</span>
+<span class="nc" id="L2352">            testTypes.add(&quot;DNA&quot;);</span>
+
+<span class="nc" id="L2354">            String newNGSMeasurementCode = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
+<span class="nc" id="L2355">            String newNGSMeasurementID =</span>
+                &quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newNGSMeasurementCode;
+<span class="nc" id="L2357">            newNGSMeasurementIDs.add(newNGSMeasurementID);</span>
+<span class="nc" id="L2358">            numberOfRegisteredExperiments += 1;</span>
+
+<span class="nc" id="L2360">            String newNGSRunCode =</span>
+<span class="nc" id="L2361">                newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;R&quot;;</span>
+<span class="nc" id="L2362">            String newNGSRunID =</span>
+<span class="nc" id="L2363">                &quot;/&quot; + space + &quot;/&quot; + newNGSRunCode + BarcodeFunctions.checksum(newNGSRunCode);</span>
+<span class="nc" id="L2364">            newNGSRunIDs.add(newNGSRunID);</span>
+<span class="nc" id="L2365">            numberOfRegisteredSamples += 1;</span>
+
+<span class="nc" id="L2367">            additionalInfo.add(false);</span>
+<span class="nc" id="L2368">            sequencerDevice.add(sampleBean.getSeqDevice());</span>
+<span class="nc" id="L2369">            parents.add(newTestSampleID);</span>
+
+          }
+
+<span class="nc bnc" id="L2373" title="All 2 branches missed.">          if (sampleBean.getRnaSeq()) {</span>
+<span class="nc" id="L2374">            String newSamplePreparationCode = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
+<span class="nc" id="L2375">            String newSamplePreparationID =</span>
+                &quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newSamplePreparationCode;
+<span class="nc" id="L2377">            newSamplePreparationIDs.add(newSamplePreparationID);</span>
+<span class="nc" id="L2378">            numberOfRegisteredExperiments += 1;</span>
+
+<span class="nc" id="L2380">            String newTestSampleCode =</span>
+<span class="nc" id="L2381">                newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;B&quot;;</span>
+<span class="nc" id="L2382">            String newTestSampleID = &quot;/&quot; + space + &quot;/&quot; + newTestSampleCode</span>
+<span class="nc" id="L2383">                + BarcodeFunctions.checksum(newTestSampleCode);</span>
+<span class="nc" id="L2384">            newTestSampleIDs.add(newTestSampleID);</span>
+<span class="nc" id="L2385">            numberOfRegisteredSamples += 1;</span>
+<span class="nc" id="L2386">            testTypes.add(&quot;RNA&quot;);</span>
+
+<span class="nc" id="L2388">            String newNGSMeasurementCode = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
+<span class="nc" id="L2389">            String newNGSMeasurementID =</span>
+                &quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newNGSMeasurementCode;
+<span class="nc" id="L2391">            newNGSMeasurementIDs.add(newNGSMeasurementID);</span>
+<span class="nc" id="L2392">            numberOfRegisteredExperiments += 1;</span>
+
+<span class="nc" id="L2394">            String newNGSRunCode =</span>
+<span class="nc" id="L2395">                newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;R&quot;;</span>
+<span class="nc" id="L2396">            String newNGSRunID =</span>
+<span class="nc" id="L2397">                &quot;/&quot; + space + &quot;/&quot; + newNGSRunCode + BarcodeFunctions.checksum(newNGSRunCode);</span>
+<span class="nc" id="L2398">            newNGSRunIDs.add(newNGSRunID);</span>
+<span class="nc" id="L2399">            numberOfRegisteredSamples += 1;</span>
+
+<span class="nc" id="L2401">            additionalInfo.add(false);</span>
+<span class="nc" id="L2402">            sequencerDevice.add(sampleBean.getSeqDevice());</span>
+<span class="nc" id="L2403">            parents.add(newTestSampleID);</span>
+          }
+
+<span class="nc bnc" id="L2406" title="All 2 branches missed.">          if (sampleBean.getDeepSeq()) {</span>
+<span class="nc" id="L2407">            String newSamplePreparationCode = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
+<span class="nc" id="L2408">            String newSamplePreparationID =</span>
+                &quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newSamplePreparationCode;
+<span class="nc" id="L2410">            newSamplePreparationIDs.add(newSamplePreparationID);</span>
+<span class="nc" id="L2411">            numberOfRegisteredExperiments += 1;</span>
+
+<span class="nc" id="L2413">            String newTestSampleCode =</span>
+<span class="nc" id="L2414">                newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;B&quot;;</span>
+<span class="nc" id="L2415">            String newTestSampleID = &quot;/&quot; + space + &quot;/&quot; + newTestSampleCode</span>
+<span class="nc" id="L2416">                + BarcodeFunctions.checksum(newTestSampleCode);</span>
+<span class="nc" id="L2417">            newTestSampleIDs.add(newTestSampleID);</span>
+<span class="nc" id="L2418">            numberOfRegisteredSamples += 1;</span>
+<span class="nc" id="L2419">            testTypes.add(&quot;DNA&quot;);</span>
+
+<span class="nc" id="L2421">            String newNGSMeasurementCode = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
+<span class="nc" id="L2422">            String newNGSMeasurementID =</span>
+                &quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newNGSMeasurementCode;
+<span class="nc" id="L2424">            newNGSMeasurementIDs.add(newNGSMeasurementID);</span>
+<span class="nc" id="L2425">            numberOfRegisteredExperiments += 1;</span>
+
+<span class="nc" id="L2427">            String newNGSRunCode =</span>
+<span class="nc" id="L2428">                newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;R&quot;;</span>
+<span class="nc" id="L2429">            String newNGSRunID =</span>
+<span class="nc" id="L2430">                &quot;/&quot; + space + &quot;/&quot; + newNGSRunCode + BarcodeFunctions.checksum(newNGSRunCode);</span>
+<span class="nc" id="L2431">            newNGSRunIDs.add(newNGSRunID);</span>
+<span class="nc" id="L2432">            numberOfRegisteredSamples += 1;</span>
+
+<span class="nc" id="L2434">            additionalInfo.add(true);</span>
+<span class="nc" id="L2435">            sequencerDevice.add(sampleBean.getSeqDevice());</span>
+<span class="nc" id="L2436">            parents.add(newTestSampleID);</span>
+          }
+
+          // register third and fourth level of new patient
+<span class="nc" id="L2440">          thirdLevel.put(&quot;lvl&quot;, &quot;3&quot;);</span>
+<span class="nc" id="L2441">          thirdLevel.put(&quot;parent&quot;, newBiologicalSampleID);</span>
+<span class="nc" id="L2442">          thirdLevel.put(&quot;experiments&quot;, newSamplePreparationIDs);</span>
+<span class="nc" id="L2443">          thirdLevel.put(&quot;samples&quot;, newTestSampleIDs);</span>
+<span class="nc" id="L2444">          thirdLevel.put(&quot;types&quot;, testTypes);</span>
+<span class="nc" id="L2445">          thirdLevel.put(&quot;user&quot;, PortalUtils.getNonNullScreenName());</span>
+
+<span class="nc" id="L2447">          fourthLevel.put(&quot;lvl&quot;, &quot;4&quot;);</span>
+<span class="nc" id="L2448">          fourthLevel.put(&quot;experiments&quot;, newNGSMeasurementIDs);</span>
+<span class="nc" id="L2449">          fourthLevel.put(&quot;samples&quot;, newNGSRunIDs);</span>
+<span class="nc" id="L2450">          fourthLevel.put(&quot;parents&quot;, parents);</span>
+<span class="nc" id="L2451">          fourthLevel.put(&quot;types&quot;, testTypes);</span>
+<span class="nc" id="L2452">          fourthLevel.put(&quot;info&quot;, additionalInfo);</span>
+<span class="nc" id="L2453">          fourthLevel.put(&quot;device&quot;, sequencerDevice);</span>
+<span class="nc" id="L2454">          fourthLevel.put(&quot;user&quot;, PortalUtils.getNonNullScreenName());</span>
+
+          // TODO additional level for HLA typing
+
+          // call of ingestion services for differeny levels
+          // helpers.Utils.printMapContent(thirdLevel);
+          // helpers.Utils.printMapContent(fourthLevel);
+<span class="nc" id="L2461">          this.getOpenBisClient().triggerIngestionService(&quot;register-ivac-lvl&quot;, thirdLevel);</span>
+<span class="nc" id="L2462">          this.getOpenBisClient().triggerIngestionService(&quot;register-ivac-lvl&quot;, fourthLevel);</span>
+        }
+<span class="nc" id="L2464">      }</span>
+
+<span class="nc bnc" id="L2466" title="All 2 branches missed.">      for (Entry&lt;String, List&lt;String&gt;&gt; entry : hlaTyping.entrySet()) {</span>
+
+<span class="nc" id="L2468">        String newHLATyping = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
+
+<span class="nc" id="L2470">        newHLATypingIDs.add(&quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newHLATyping);</span>
+
+<span class="nc" id="L2472">        numberOfRegisteredExperiments += 1;</span>
+
+<span class="nc" id="L2474">        String newHLATypingSampleCode =</span>
+<span class="nc" id="L2475">            newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;H&quot;;</span>
+
+<span class="nc" id="L2477">        String newHLATypingSampleID = &quot;/&quot; + space + &quot;/&quot; + newHLATypingSampleCode</span>
+<span class="nc" id="L2478">            + BarcodeFunctions.checksum(newHLATypingSampleCode);</span>
+
+<span class="nc" id="L2480">        newHLATypingSampleIDs.add(newHLATypingSampleID);</span>
+<span class="nc" id="L2481">        numberOfRegisteredSamples += 1;</span>
+
+<span class="nc" id="L2483">        hlaClasses.add(entry.getKey());</span>
+<span class="nc" id="L2484">        typings.add(entry.getValue().get(0));</span>
+<span class="nc" id="L2485">        typingMethods.add(entry.getValue().get(1));</span>
+<span class="nc" id="L2486">      }</span>
+
+<span class="nc" id="L2488">      fithLevel.put(&quot;lvl&quot;, &quot;5&quot;);</span>
+<span class="nc" id="L2489">      fithLevel.put(&quot;experiments&quot;, newHLATypingIDs);</span>
+<span class="nc" id="L2490">      fithLevel.put(&quot;samples&quot;, newHLATypingSampleIDs);</span>
+<span class="nc" id="L2491">      fithLevel.put(&quot;typings&quot;, typings);</span>
+<span class="nc" id="L2492">      fithLevel.put(&quot;classes&quot;, hlaClasses);</span>
+<span class="nc" id="L2493">      fithLevel.put(&quot;methods&quot;, typingMethods);</span>
+<span class="nc" id="L2494">      fithLevel.put(&quot;parent&quot;, parentHLA);</span>
+
+<span class="nc" id="L2496">      this.getOpenBisClient().triggerIngestionService(&quot;register-ivac-lvl&quot;, fithLevel);</span>
+
+    }
+<span class="nc" id="L2499">  }</span>
+
+  /**
+   * 
+   * @param statusValues
+   * @return
+   * @deprecated
+   */
+  public VerticalLayout createProjectStatusComponent(Map&lt;String, Integer&gt; statusValues) {
+<span class="nc" id="L2508">    VerticalLayout projectStatusContent = new VerticalLayout();</span>
+
+<span class="nc" id="L2510">    Iterator&lt;Entry&lt;String, Integer&gt;&gt; it = statusValues.entrySet().iterator();</span>
+<span class="nc" id="L2511">    int finishedExperiments = 0;</span>
+
+<span class="nc bnc" id="L2513" title="All 2 branches missed.">    while (it.hasNext()) {</span>
+<span class="nc" id="L2514">      Entry&lt;String, Integer&gt; pairs = (Entry&lt;String, Integer&gt;) it.next();</span>
+
+<span class="nc bnc" id="L2516" title="All 2 branches missed.">      if ((Integer) pairs.getValue() == 0) {</span>
+<span class="nc" id="L2517">        Label statusLabel =</span>
+<span class="nc" id="L2518">            new Label(pairs.getKey() + &quot;: &quot; + FontAwesome.TIMES.getHtml(), ContentMode.HTML);</span>
+<span class="nc" id="L2519">        statusLabel.addStyleName(&quot;redicon&quot;);</span>
+<span class="nc" id="L2520">        projectStatusContent.addComponent(statusLabel);</span>
+<span class="nc" id="L2521">      }</span>
+
+      else {
+<span class="nc" id="L2524">        Label statusLabel =</span>
+<span class="nc" id="L2525">            new Label(pairs.getKey() + &quot;: &quot; + FontAwesome.CHECK.getHtml(), ContentMode.HTML);</span>
+<span class="nc" id="L2526">        statusLabel.addStyleName(&quot;greenicon&quot;);</span>
+
+<span class="nc bnc" id="L2528" title="All 2 branches missed.">        if (pairs.getKey().equals(&quot;Project Planned&quot;)) {</span>
+<span class="nc" id="L2529">          projectStatusContent.addComponentAsFirst(statusLabel);</span>
+        } else {
+<span class="nc" id="L2531">          projectStatusContent.addComponent(statusLabel);</span>
+
+        }
+<span class="nc" id="L2534">        finishedExperiments += (Integer) pairs.getValue();</span>
+      }
+<span class="nc" id="L2536">    }</span>
+    // ProgressBar progressBar = new ProgressBar();
+    // progressBar.setValue((float) finishedExperiments / statusValues.keySet().size());
+    // projectStatusContent.addComponent(progressBar);
+
+<span class="nc" id="L2541">    return projectStatusContent;</span>
+  }
+
+  /**
+   * 
+   * @param statusValues
+   * @return
+   */
+  public VerticalLayout createProjectStatusComponentNew(Map&lt;String, Integer&gt; statusValues) {
+<span class="nc" id="L2550">    VerticalLayout projectStatusContent = new VerticalLayout();</span>
+<span class="nc" id="L2551">    projectStatusContent.setResponsive(true);</span>
+<span class="nc" id="L2552">    projectStatusContent.setMargin(true);</span>
+<span class="nc" id="L2553">    projectStatusContent.setSpacing(true);</span>
+
+<span class="nc" id="L2555">    Label planned = new Label();</span>
+<span class="nc" id="L2556">    Label design = new Label();</span>
+<span class="nc" id="L2557">    Label raw = new Label();</span>
+<span class="nc" id="L2558">    Label results = new Label();</span>
+
+<span class="nc" id="L2560">    Iterator&lt;Entry&lt;String, Integer&gt;&gt; it = statusValues.entrySet().iterator();</span>
+
+<span class="nc bnc" id="L2562" title="All 2 branches missed.">    while (it.hasNext()) {</span>
+<span class="nc" id="L2563">      Entry&lt;String, Integer&gt; pairs = (Entry&lt;String, Integer&gt;) it.next();</span>
+
+<span class="nc bnc" id="L2565" title="All 2 branches missed.">      if ((Integer) pairs.getValue() == 0) {</span>
+<span class="nc" id="L2566">        Label statusLabel = new Label(pairs.getKey());</span>
+<span class="nc" id="L2567">        statusLabel.setStyleName(ValoTheme.LABEL_FAILURE);</span>
+<span class="nc" id="L2568">        statusLabel.setResponsive(true);</span>
+        // statusLabel.addStyleName(&quot;redicon&quot;);
+<span class="nc bnc" id="L2570" title="All 2 branches missed.">        if (pairs.getKey().equals(&quot;Project planned&quot;)) {</span>
+<span class="nc" id="L2571">          planned = statusLabel;</span>
+<span class="nc bnc" id="L2572" title="All 2 branches missed.">        } else if (pairs.getKey().equals(&quot;Experimental design registered&quot;)) {</span>
+<span class="nc" id="L2573">          design = statusLabel;</span>
+<span class="nc bnc" id="L2574" title="All 2 branches missed.">        } else if (pairs.getKey().equals(&quot;Raw data registered&quot;)) {</span>
+<span class="nc" id="L2575">          raw = statusLabel;</span>
+<span class="nc bnc" id="L2576" title="All 2 branches missed.">        } else if (pairs.getKey().equals(&quot;Results registered&quot;)) {</span>
+<span class="nc" id="L2577">          results = statusLabel;</span>
+        }
+<span class="nc" id="L2579">      }</span>
+
+      else {
+<span class="nc" id="L2582">        Label statusLabel = new Label(pairs.getKey());</span>
+<span class="nc" id="L2583">        statusLabel.setStyleName(ValoTheme.LABEL_SUCCESS);</span>
+<span class="nc" id="L2584">        statusLabel.setResponsive(true);</span>
+
+        // statusLabel.addStyleName(&quot;greenicon&quot;);
+
+<span class="nc bnc" id="L2588" title="All 2 branches missed.">        if (pairs.getKey().equals(&quot;Project planned&quot;)) {</span>
+<span class="nc" id="L2589">          planned = statusLabel;</span>
+<span class="nc bnc" id="L2590" title="All 2 branches missed.">        } else if (pairs.getKey().equals(&quot;Experimental design registered&quot;)) {</span>
+<span class="nc" id="L2591">          design = statusLabel;</span>
+<span class="nc bnc" id="L2592" title="All 2 branches missed.">        } else if (pairs.getKey().equals(&quot;Raw data registered&quot;)) {</span>
+<span class="nc" id="L2593">          raw = statusLabel;</span>
+<span class="nc bnc" id="L2594" title="All 2 branches missed.">        } else if (pairs.getKey().equals(&quot;Results registered&quot;)) {</span>
+<span class="nc" id="L2595">          results = statusLabel;</span>
+        }
+      }
+<span class="nc" id="L2598">    }</span>
+
+<span class="nc" id="L2600">    projectStatusContent.addComponent(planned);</span>
+<span class="nc" id="L2601">    projectStatusContent.addComponent(design);</span>
+<span class="nc" id="L2602">    projectStatusContent.addComponent(raw);</span>
+<span class="nc" id="L2603">    projectStatusContent.addComponent(results);</span>
+
+    // ProgressBar progressBar = new ProgressBar();
+    // progressBar.setValue((float) finishedExperiments / statusValues.keySet().size());
+    // projectStatusContent.addComponent(progressBar);
+
+<span class="nc" id="L2609">    return projectStatusContent;</span>
+  }
+
+  /**
+   * Get secondary Name of parent or parents of parent
+   * 
+   * @param samp
+   * @return
+   */
+  public String getSecondaryName(Sample samp, String datsetSecName) {
+<span class="nc" id="L2619">    List&lt;Sample&gt; firstParents = samp.getParents();</span>
+<span class="nc" id="L2620">    String secondaryName = &quot;&quot;;</span>
+<span class="nc" id="L2621">    Set&lt;String&gt; secNamesTest = new LinkedHashSet&lt;String&gt;();</span>
+<span class="nc" id="L2622">    Set&lt;String&gt; secNamesBiological = new LinkedHashSet&lt;String&gt;();</span>
+<span class="nc" id="L2623">    Set&lt;String&gt; secNamesEntities = new LinkedHashSet&lt;String&gt;();</span>
+<span class="nc" id="L2624">    Set&lt;String&gt; allDescriptions = new LinkedHashSet&lt;String&gt;();</span>
+<span class="nc" id="L2625">    List&lt;Sample&gt; allParents = new ArrayList&lt;Sample&gt;();</span>
+
+<span class="nc bnc" id="L2627" title="All 2 branches missed.">    for (Sample p : firstParents) {</span>
+<span class="nc" id="L2628">      allParents.add(p);</span>
+<span class="nc bnc" id="L2629" title="All 2 branches missed.">      for (Sample q : p.getParents()) {</span>
+<span class="nc" id="L2630">        allParents.add(q);</span>
+<span class="nc bnc" id="L2631" title="All 2 branches missed.">        for (Sample r : q.getParents()) {</span>
+<span class="nc" id="L2632">          allParents.add(r);</span>
+<span class="nc bnc" id="L2633" title="All 2 branches missed.">          for (Sample s : r.getParents()) {</span>
+<span class="nc" id="L2634">            allParents.add(s);</span>
+<span class="nc" id="L2635">          }</span>
+<span class="nc" id="L2636">        }</span>
+<span class="nc" id="L2637">      }</span>
+<span class="nc" id="L2638">    }</span>
+
+<span class="nc bnc" id="L2640" title="All 2 branches missed.">    for (Sample pp : allParents) {</span>
+<span class="nc bnc" id="L2641" title="All 2 branches missed.">      if (pp.getSampleTypeCode().equals(&quot;Q_TEST_SAMPLE&quot;)) {</span>
+<span class="nc" id="L2642">        String new_sec = pp.getProperties().get(&quot;Q_SECONDARY_NAME&quot;);</span>
+<span class="nc bnc" id="L2643" title="All 2 branches missed.">        if (new_sec != null) {</span>
+<span class="nc" id="L2644">          secNamesTest.add(new_sec);</span>
+        }
+<span class="nc bnc" id="L2646" title="All 2 branches missed.">      } else if (pp.getSampleTypeCode().equals(&quot;Q_BIOLOGICAL_SAMPLE&quot;)) {</span>
+<span class="nc" id="L2647">        String new_sec = pp.getProperties().get(&quot;Q_SECONDARY_NAME&quot;);</span>
+<span class="nc bnc" id="L2648" title="All 2 branches missed.">        if (new_sec != null) {</span>
+<span class="nc" id="L2649">          secNamesBiological.add(new_sec);</span>
+        }
+
+<span class="nc bnc" id="L2652" title="All 2 branches missed.">      } else if (pp.getSampleTypeCode().equals(&quot;Q_BIOLOGICAL_ENTITY&quot;)) {</span>
+<span class="nc" id="L2653">        String new_sec = pp.getProperties().get(&quot;Q_SECONDARY_NAME&quot;);</span>
+<span class="nc bnc" id="L2654" title="All 2 branches missed.">        if (new_sec != null) {</span>
+<span class="nc" id="L2655">          secNamesEntities.add(new_sec);</span>
+        }
+      }
+<span class="nc" id="L2658">    }</span>
+
+<span class="nc" id="L2660">    allDescriptions.addAll(secNamesEntities);</span>
+<span class="nc" id="L2661">    allDescriptions.addAll(secNamesBiological);</span>
+<span class="nc" id="L2662">    allDescriptions.addAll(secNamesTest);</span>
+
+<span class="nc bnc" id="L2664" title="All 2 branches missed.">    if (datsetSecName != null) {</span>
+<span class="nc" id="L2665">      allDescriptions.add(datsetSecName);</span>
+    }
+
+<span class="nc" id="L2668">    secondaryName = String.join(&quot;_&quot;, allDescriptions);</span>
+
+<span class="nc" id="L2670">    return secondaryName.replace(&quot;__&quot;, &quot;_&quot;).replaceAll(&quot;^_+&quot;, &quot;&quot;).replaceAll(&quot;_+$&quot;, &quot;&quot;);</span>
+  }
+
+
+  public OpenBisClient getOpenBisClient() {
+<span class="nc" id="L2675">    return openBisClient;</span>
+  }
+
+
+  public void setOpenBisClient(OpenBisClient openBisClient) {
+<span class="nc" id="L2680">    this.openBisClient = openBisClient;</span>
+<span class="nc" id="L2681">  }</span>
+
+
+  public DBManager getDatabaseManager() {
+<span class="nc" id="L2685">    return databaseManager;</span>
+  }
+
+
+  public void setDatabaseManager(DBManager databaseManager) {
+<span class="nc" id="L2690">    this.databaseManager = databaseManager;</span>
+<span class="nc" id="L2691">  }</span>
+
+
+  public Set&lt;String&gt; getFactorLabels() {
+<span class="nc" id="L2695">    return experimentalFactorLabels;</span>
+  }
+
+
+  public Map&lt;Pair&lt;String, String&gt;, Property&gt; getFactorsForLabelsAndSamples() {
+<span class="nc" id="L2700">    return experimentalFactorsForLabelsAndSamples;</span>
+  }
+
+  public Map&lt;String, List&lt;Property&gt;&gt; getPropertiesForSamples() {
+<span class="nc" id="L2704">    return propertiesForSamples;</span>
+  }
+
+  public JAXBElement&lt;Qexperiment&gt; getExperimentalSetup() {
+<span class="nc" id="L2708">    return experimentalSetup;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>
