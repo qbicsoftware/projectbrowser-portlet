@@ -154,16 +154,21 @@ public class InputFilesComponent extends WorkflowParameterComponent {
       List<Column> cols = newGrid.getColumns();
       Object[] props = new Object[cols.size()];
       int i = 0;
+      boolean infoColExists = false;
       for (Column c : cols) {
         Object prop = c.getPropertyId();
         // copy all the other columns in their previous order
         if (!prop.equals("additionalInfo")) {
           props[i] = prop;
           i++;
+        } else {
+          infoColExists = true;
         }
       }
       // add additional info last, as it used to be before this update
-      props[cols.size() - 1] = "additionalInfo";
+      if (infoColExists) {
+        props[cols.size() - 1] = "additionalInfo";
+      }
       // set the new order
       newGrid.setColumnOrder(props);
 
