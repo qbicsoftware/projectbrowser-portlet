@@ -107,7 +107,7 @@ ProjectBrowser Portlet,life.qbic.projectbrowser.components,BiologicalSamplesComp
 ProjectBrowser Portlet,life.qbic.projectbrowser.components,BiologicalSamplesComponent.new PropertyValueGenerator() {...},10,0,0,0,3,0,3,0,3,0
 ProjectBrowser Portlet,life.qbic.projectbrowser.components,QuantificationLabelComponent,120,0,0,0,29,0,8,0,8,0
 ProjectBrowser Portlet,life.qbic.projectbrowser.components,AttachmentUploadComponent,107,0,0,0,23,0,3,0,3,0
-ProjectBrowser Portlet,life.qbic.projectbrowser.components,InputFilesComponent,1174,0,118,0,286,0,82,0,23,0
+ProjectBrowser Portlet,life.qbic.projectbrowser.components,InputFilesComponent,1181,0,120,0,289,0,83,0,23,0
 ProjectBrowser Portlet,life.qbic.projectbrowser.components,ChangeExperimentMetadataComponent,453,0,22,0,98,0,18,0,7,0
 ProjectBrowser Portlet,life.qbic.projectbrowser.components,UploadComponent.new Button.ClickListener() {...},15,0,0,0,4,0,2,0,2,0
 ProjectBrowser Portlet,life.qbic.projectbrowser.components,ChangeMetadataComponent.new Button.ClickListener() {...},69,0,2,0,13,0,3,0,2,0
