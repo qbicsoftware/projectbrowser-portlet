@@ -25,6 +25,7 @@ import life.qbic.portal.utils.PortalUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.HashMap;
@@ -88,6 +89,19 @@ public class ProjectBrowserPortlet extends QBiCPortletUI {
     LOG.info("Generating content for {}", ProjectBrowserPortlet.class);
 
     manager = ConfigurationManagerFactory.getInstance();
+    
+    // initialize tmp folder
+    try {
+      File tmpFolder = new File(manager.getTmpFolder());
+      if (!tmpFolder.exists()) {
+        tmpFolder.mkdirs();
+      }
+    } catch (Exception e) {
+      LOG.warn("unsuccessfully tried to initialize temporary folder:"+manager.getTmpFolder());
+      LOG.warn(e.getMessage());
+    }
+
+    
     // check if we are allowed to display content to unauthenticated users
     if (PortalUtils.isLiferayPortlet() && PortalUtils.getUser() == null) {
       final ConfigurationManager configurationManager = ConfigurationManagerFactory.getInstance();
