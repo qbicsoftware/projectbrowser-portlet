@@ -27,7 +27,7 @@ under the License.
     <item>
       <title>File: 125,
              Errors: 0,
-             Warnings: 4243,
+             Warnings: 4250,
              Infos: 0
       </title>
             <link>http://github.com/qbicsoftware/projectbrowser-portlet/checkstyle.html</link>
@@ -346,7 +346,7 @@ under the License.
                   0
                 </td>
                 <td>
-                  189
+                  193
                 </td>
                 <td>
                   0
@@ -1158,7 +1158,7 @@ under the License.
                   0
                 </td>
                 <td>
-                  57
+                  60
                 </td>
                 <td>
                   0

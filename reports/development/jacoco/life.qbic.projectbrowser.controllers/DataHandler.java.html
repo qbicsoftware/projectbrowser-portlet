@@ -2231,271 +2231,273 @@ public class DataHandler implements Serializable {
 <span class="nc" id="L2231">      this.getOpenBisClient().triggerIngestionService(&quot;register-proj&quot;, projectMap);</span>
       // helpers.Utils.printMapContent(projectMap);
 
-<span class="nc" id="L2234">      String newProjectDetailsCode =</span>
-<span class="nc" id="L2235">          projectPrefix + Utils.createCountString(numberOfProject, 3) + &quot;E_INFO&quot;;</span>
-<span class="nc" id="L2236">      String newProjectDetailsID = &quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newProjectDetailsCode;</span>
+//      String newProjectDetailsCode =
+//          projectPrefix + Utils.createCountString(numberOfProject, 3) + &quot;E_INFO&quot;;
+//      String newProjectDetailsID = &quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newProjectDetailsCode;
+      
+<span class="nc" id="L2238">      String newProjectDetailsID = ExperimentCodeFunctions.getInfoExperimentID(space, newProjectCode);</span>
 
-<span class="nc" id="L2238">      String newExperimentalDesignCode = projectPrefix + Utils.createCountString(numberOfProject, 3)</span>
+<span class="nc" id="L2240">      String newExperimentalDesignCode = projectPrefix + Utils.createCountString(numberOfProject, 3)</span>
           + &quot;E&quot; + numberOfRegisteredExperiments;
-<span class="nc" id="L2240">      String newExperimentalDesignID =</span>
+<span class="nc" id="L2242">      String newExperimentalDesignID =</span>
           &quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newExperimentalDesignCode;
-<span class="nc" id="L2242">      numberOfRegisteredExperiments += 1;</span>
+<span class="nc" id="L2244">      numberOfRegisteredExperiments += 1;</span>
 
       // String newBiologicalEntitiyCode =
       // newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;H&quot;;
       // String newBiologicalEntitiyID =
       // &quot;/&quot; + space + &quot;/&quot; + newBiologicalEntitiyCode
       // + helpers.BarcodeFunctions.checksum(newBiologicalEntitiyCode);
-<span class="nc" id="L2249">      String newBiologicalEntitiyID =</span>
-<span class="nc" id="L2250">          String.format(&quot;/&quot; + space + &quot;/&quot; + &quot;%sENTITY-1&quot;, newProjectCode);</span>
+<span class="nc" id="L2251">      String newBiologicalEntitiyID =</span>
+<span class="nc" id="L2252">          String.format(&quot;/&quot; + space + &quot;/&quot; + &quot;%sENTITY-1&quot;, newProjectCode);</span>
 
-<span class="nc" id="L2252">      numberOfRegisteredSamples += 1;</span>
+<span class="nc" id="L2254">      numberOfRegisteredSamples += 1;</span>
 
       // register first level of new patient
-<span class="nc" id="L2255">      firstLevel.put(&quot;lvl&quot;, &quot;1&quot;);</span>
-<span class="nc" id="L2256">      firstLevel.put(&quot;projectDetails&quot;, newProjectDetailsID);</span>
-<span class="nc" id="L2257">      firstLevel.put(&quot;experimentalDesign&quot;, newExperimentalDesignID);</span>
-<span class="nc" id="L2258">      firstLevel.put(&quot;secondaryName&quot;, secondaryNames.get(i));</span>
-<span class="nc" id="L2259">      firstLevel.put(&quot;biologicalEntity&quot;, newBiologicalEntitiyID);</span>
-<span class="nc" id="L2260">      firstLevel.put(&quot;user&quot;, PortalUtils.getNonNullScreenName());</span>
+<span class="nc" id="L2257">      firstLevel.put(&quot;lvl&quot;, &quot;1&quot;);</span>
+<span class="nc" id="L2258">      firstLevel.put(&quot;projectDetails&quot;, newProjectDetailsID);</span>
+<span class="nc" id="L2259">      firstLevel.put(&quot;experimentalDesign&quot;, newExperimentalDesignID);</span>
+<span class="nc" id="L2260">      firstLevel.put(&quot;secondaryName&quot;, secondaryNames.get(i));</span>
+<span class="nc" id="L2261">      firstLevel.put(&quot;biologicalEntity&quot;, newBiologicalEntitiyID);</span>
+<span class="nc" id="L2262">      firstLevel.put(&quot;user&quot;, PortalUtils.getNonNullScreenName());</span>
 
-<span class="nc" id="L2262">      this.getOpenBisClient().triggerIngestionService(&quot;register-ivac-lvl&quot;, firstLevel);</span>
+<span class="nc" id="L2264">      this.getOpenBisClient().triggerIngestionService(&quot;register-ivac-lvl&quot;, firstLevel);</span>
 
       // helpers.Utils.printMapContent(firstLevel);
 
-<span class="nc" id="L2266">      Map&lt;String, Object&gt; fithLevel = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L2268">      Map&lt;String, Object&gt; fithLevel = new HashMap&lt;String, Object&gt;();</span>
 
-<span class="nc" id="L2268">      List&lt;String&gt; newHLATypingIDs = new ArrayList&lt;String&gt;();</span>
-<span class="nc" id="L2269">      List&lt;String&gt; newHLATypingSampleIDs = new ArrayList&lt;String&gt;();</span>
-<span class="nc" id="L2270">      List&lt;String&gt; hlaClasses = new ArrayList&lt;String&gt;();</span>
-<span class="nc" id="L2271">      List&lt;String&gt; typings = new ArrayList&lt;String&gt;();</span>
-<span class="nc" id="L2272">      List&lt;String&gt; typingMethods = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2270">      List&lt;String&gt; newHLATypingIDs = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2271">      List&lt;String&gt; newHLATypingSampleIDs = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2272">      List&lt;String&gt; hlaClasses = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2273">      List&lt;String&gt; typings = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2274">      List&lt;String&gt; typingMethods = new ArrayList&lt;String&gt;();</span>
 
       // TODO choose parent sample for hlaTyping
-<span class="nc" id="L2275">      String parentHLA = &quot;&quot;;</span>
+<span class="nc" id="L2277">      String parentHLA = &quot;&quot;;</span>
 
 
-<span class="nc bnc" id="L2278" title="All 2 branches missed.">      for (Iterator iter = samplesToRegister.getItemIds().iterator(); iter.hasNext();) {</span>
+<span class="nc bnc" id="L2280" title="All 2 branches missed.">      for (Iterator iter = samplesToRegister.getItemIds().iterator(); iter.hasNext();) {</span>
 
-<span class="nc" id="L2280">        NewIvacSampleBean sampleBean = (NewIvacSampleBean) iter.next();</span>
+<span class="nc" id="L2282">        NewIvacSampleBean sampleBean = (NewIvacSampleBean) iter.next();</span>
 
-<span class="nc bnc" id="L2282" title="All 2 branches missed.">        for (int ii = 1; ii &lt;= sampleBean.getAmount(); ii++) {</span>
-<span class="nc" id="L2283">          Map&lt;String, Object&gt; secondLevel = new HashMap&lt;String, Object&gt;();</span>
-<span class="nc" id="L2284">          Map&lt;String, Object&gt; thirdLevel = new HashMap&lt;String, Object&gt;();</span>
-<span class="nc" id="L2285">          Map&lt;String, Object&gt; fourthLevel = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc bnc" id="L2284" title="All 2 branches missed.">        for (int ii = 1; ii &lt;= sampleBean.getAmount(); ii++) {</span>
+<span class="nc" id="L2285">          Map&lt;String, Object&gt; secondLevel = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L2286">          Map&lt;String, Object&gt; thirdLevel = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L2287">          Map&lt;String, Object&gt; fourthLevel = new HashMap&lt;String, Object&gt;();</span>
 
-<span class="nc" id="L2287">          List&lt;String&gt; newSamplePreparationIDs = new ArrayList&lt;String&gt;();</span>
-<span class="nc" id="L2288">          List&lt;String&gt; newTestSampleIDs = new ArrayList&lt;String&gt;();</span>
-<span class="nc" id="L2289">          List&lt;String&gt; testTypes = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2289">          List&lt;String&gt; newSamplePreparationIDs = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2290">          List&lt;String&gt; newTestSampleIDs = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2291">          List&lt;String&gt; testTypes = new ArrayList&lt;String&gt;();</span>
 
-<span class="nc" id="L2291">          List&lt;String&gt; newNGSMeasurementIDs = new ArrayList&lt;String&gt;();</span>
-<span class="nc" id="L2292">          List&lt;String&gt; newNGSRunIDs = new ArrayList&lt;String&gt;();</span>
-<span class="nc" id="L2293">          List&lt;Boolean&gt; additionalInfo = new ArrayList&lt;Boolean&gt;();</span>
-<span class="nc" id="L2294">          List&lt;String&gt; parents = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2293">          List&lt;String&gt; newNGSMeasurementIDs = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2294">          List&lt;String&gt; newNGSRunIDs = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2295">          List&lt;Boolean&gt; additionalInfo = new ArrayList&lt;Boolean&gt;();</span>
+<span class="nc" id="L2296">          List&lt;String&gt; parents = new ArrayList&lt;String&gt;();</span>
 
-<span class="nc" id="L2296">          List&lt;String&gt; newSampleExtractionIDs = new ArrayList&lt;String&gt;();</span>
-<span class="nc" id="L2297">          List&lt;String&gt; newBiologicalSampleIDs = new ArrayList&lt;String&gt;();</span>
-<span class="nc" id="L2298">          List&lt;String&gt; primaryTissues = new ArrayList&lt;String&gt;();</span>
-<span class="nc" id="L2299">          List&lt;String&gt; detailedTissue = new ArrayList&lt;String&gt;();</span>
-<span class="nc" id="L2300">          List&lt;String&gt; sequencerDevice = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2298">          List&lt;String&gt; newSampleExtractionIDs = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2299">          List&lt;String&gt; newBiologicalSampleIDs = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2300">          List&lt;String&gt; primaryTissues = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2301">          List&lt;String&gt; detailedTissue = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L2302">          List&lt;String&gt; sequencerDevice = new ArrayList&lt;String&gt;();</span>
 
-<span class="nc" id="L2302">          String newSampleExtractionCode = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
-<span class="nc" id="L2303">          newSampleExtractionIDs</span>
-<span class="nc" id="L2304">              .add(&quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newSampleExtractionCode);</span>
-<span class="nc" id="L2305">          numberOfRegisteredExperiments += 1;</span>
+<span class="nc" id="L2304">          String newSampleExtractionCode = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
+<span class="nc" id="L2305">          newSampleExtractionIDs</span>
+<span class="nc" id="L2306">              .add(&quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newSampleExtractionCode);</span>
+<span class="nc" id="L2307">          numberOfRegisteredExperiments += 1;</span>
 
-<span class="nc" id="L2307">          String newBiologicalSampleCode =</span>
-<span class="nc" id="L2308">              newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;B&quot;;</span>
-<span class="nc" id="L2309">          String newBiologicalSampleID = &quot;/&quot; + space + &quot;/&quot; + newBiologicalSampleCode</span>
-<span class="nc" id="L2310">              + BarcodeFunctions.checksum(newBiologicalSampleCode);</span>
+<span class="nc" id="L2309">          String newBiologicalSampleCode =</span>
+<span class="nc" id="L2310">              newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;B&quot;;</span>
+<span class="nc" id="L2311">          String newBiologicalSampleID = &quot;/&quot; + space + &quot;/&quot; + newBiologicalSampleCode</span>
+<span class="nc" id="L2312">              + BarcodeFunctions.checksum(newBiologicalSampleCode);</span>
 
-<span class="nc" id="L2312">          parentHLA = newBiologicalSampleID;</span>
+<span class="nc" id="L2314">          parentHLA = newBiologicalSampleID;</span>
 
-<span class="nc" id="L2314">          newBiologicalSampleIDs.add(newBiologicalSampleID);</span>
-<span class="nc" id="L2315">          numberOfRegisteredSamples += 1;</span>
+<span class="nc" id="L2316">          newBiologicalSampleIDs.add(newBiologicalSampleID);</span>
+<span class="nc" id="L2317">          numberOfRegisteredSamples += 1;</span>
 
-<span class="nc" id="L2317">          primaryTissues.add(sampleBean.getTissue());</span>
-<span class="nc" id="L2318">          detailedTissue.add(sampleBean.getType());</span>
+<span class="nc" id="L2319">          primaryTissues.add(sampleBean.getTissue());</span>
+<span class="nc" id="L2320">          detailedTissue.add(sampleBean.getType());</span>
 
           // register second level of new patient
-<span class="nc" id="L2321">          secondLevel.put(&quot;lvl&quot;, &quot;2&quot;);</span>
-<span class="nc" id="L2322">          secondLevel.put(&quot;sampleExtraction&quot;, newSampleExtractionIDs);</span>
-<span class="nc" id="L2323">          secondLevel.put(&quot;biologicalSamples&quot;, newBiologicalSampleIDs);</span>
+<span class="nc" id="L2323">          secondLevel.put(&quot;lvl&quot;, &quot;2&quot;);</span>
+<span class="nc" id="L2324">          secondLevel.put(&quot;sampleExtraction&quot;, newSampleExtractionIDs);</span>
+<span class="nc" id="L2325">          secondLevel.put(&quot;biologicalSamples&quot;, newBiologicalSampleIDs);</span>
 
-<span class="nc bnc" id="L2325" title="All 2 branches missed.">          if (sampleBean.getSecondaryName() == null) {</span>
-<span class="nc" id="L2326">            secondLevel.put(&quot;secondaryNames&quot;, &quot;&quot;);</span>
+<span class="nc bnc" id="L2327" title="All 2 branches missed.">          if (sampleBean.getSecondaryName() == null) {</span>
+<span class="nc" id="L2328">            secondLevel.put(&quot;secondaryNames&quot;, &quot;&quot;);</span>
           } else {
-<span class="nc" id="L2328">            secondLevel.put(&quot;secondaryNames&quot;, sampleBean.getSecondaryName());</span>
+<span class="nc" id="L2330">            secondLevel.put(&quot;secondaryNames&quot;, sampleBean.getSecondaryName());</span>
           }
-<span class="nc" id="L2330">          secondLevel.put(&quot;parent&quot;, newBiologicalEntitiyID);</span>
-<span class="nc" id="L2331">          secondLevel.put(&quot;primaryTissue&quot;, primaryTissues);</span>
-<span class="nc" id="L2332">          secondLevel.put(&quot;detailedTissue&quot;, detailedTissue);</span>
-<span class="nc" id="L2333">          secondLevel.put(&quot;user&quot;, PortalUtils.getNonNullScreenName());</span>
+<span class="nc" id="L2332">          secondLevel.put(&quot;parent&quot;, newBiologicalEntitiyID);</span>
+<span class="nc" id="L2333">          secondLevel.put(&quot;primaryTissue&quot;, primaryTissues);</span>
+<span class="nc" id="L2334">          secondLevel.put(&quot;detailedTissue&quot;, detailedTissue);</span>
+<span class="nc" id="L2335">          secondLevel.put(&quot;user&quot;, PortalUtils.getNonNullScreenName());</span>
 
-<span class="nc" id="L2335">          this.getOpenBisClient().triggerIngestionService(&quot;register-ivac-lvl&quot;, secondLevel);</span>
+<span class="nc" id="L2337">          this.getOpenBisClient().triggerIngestionService(&quot;register-ivac-lvl&quot;, secondLevel);</span>
           // helpers.Utils.printMapContent(secondLevel);
 
-<span class="nc bnc" id="L2338" title="All 2 branches missed.">          if (sampleBean.getDnaSeq()) {</span>
-<span class="nc" id="L2339">            String newSamplePreparationCode = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
-<span class="nc" id="L2340">            String newSamplePreparationID =</span>
+<span class="nc bnc" id="L2340" title="All 2 branches missed.">          if (sampleBean.getDnaSeq()) {</span>
+<span class="nc" id="L2341">            String newSamplePreparationCode = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
+<span class="nc" id="L2342">            String newSamplePreparationID =</span>
                 &quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newSamplePreparationCode;
-<span class="nc" id="L2342">            newSamplePreparationIDs.add(newSamplePreparationID);</span>
-<span class="nc" id="L2343">            numberOfRegisteredExperiments += 1;</span>
+<span class="nc" id="L2344">            newSamplePreparationIDs.add(newSamplePreparationID);</span>
+<span class="nc" id="L2345">            numberOfRegisteredExperiments += 1;</span>
 
-<span class="nc" id="L2345">            String newTestSampleCode =</span>
-<span class="nc" id="L2346">                newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;B&quot;;</span>
-<span class="nc" id="L2347">            String newTestSampleID = &quot;/&quot; + space + &quot;/&quot; + newTestSampleCode</span>
-<span class="nc" id="L2348">                + BarcodeFunctions.checksum(newTestSampleCode);</span>
-<span class="nc" id="L2349">            newTestSampleIDs.add(newTestSampleID);</span>
-<span class="nc" id="L2350">            numberOfRegisteredSamples += 1;</span>
-<span class="nc" id="L2351">            testTypes.add(&quot;DNA&quot;);</span>
+<span class="nc" id="L2347">            String newTestSampleCode =</span>
+<span class="nc" id="L2348">                newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;B&quot;;</span>
+<span class="nc" id="L2349">            String newTestSampleID = &quot;/&quot; + space + &quot;/&quot; + newTestSampleCode</span>
+<span class="nc" id="L2350">                + BarcodeFunctions.checksum(newTestSampleCode);</span>
+<span class="nc" id="L2351">            newTestSampleIDs.add(newTestSampleID);</span>
+<span class="nc" id="L2352">            numberOfRegisteredSamples += 1;</span>
+<span class="nc" id="L2353">            testTypes.add(&quot;DNA&quot;);</span>
 
-<span class="nc" id="L2353">            String newNGSMeasurementCode = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
-<span class="nc" id="L2354">            String newNGSMeasurementID =</span>
+<span class="nc" id="L2355">            String newNGSMeasurementCode = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
+<span class="nc" id="L2356">            String newNGSMeasurementID =</span>
                 &quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newNGSMeasurementCode;
-<span class="nc" id="L2356">            newNGSMeasurementIDs.add(newNGSMeasurementID);</span>
-<span class="nc" id="L2357">            numberOfRegisteredExperiments += 1;</span>
+<span class="nc" id="L2358">            newNGSMeasurementIDs.add(newNGSMeasurementID);</span>
+<span class="nc" id="L2359">            numberOfRegisteredExperiments += 1;</span>
 
-<span class="nc" id="L2359">            String newNGSRunCode =</span>
-<span class="nc" id="L2360">                newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;R&quot;;</span>
-<span class="nc" id="L2361">            String newNGSRunID =</span>
-<span class="nc" id="L2362">                &quot;/&quot; + space + &quot;/&quot; + newNGSRunCode + BarcodeFunctions.checksum(newNGSRunCode);</span>
-<span class="nc" id="L2363">            newNGSRunIDs.add(newNGSRunID);</span>
-<span class="nc" id="L2364">            numberOfRegisteredSamples += 1;</span>
+<span class="nc" id="L2361">            String newNGSRunCode =</span>
+<span class="nc" id="L2362">                newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;R&quot;;</span>
+<span class="nc" id="L2363">            String newNGSRunID =</span>
+<span class="nc" id="L2364">                &quot;/&quot; + space + &quot;/&quot; + newNGSRunCode + BarcodeFunctions.checksum(newNGSRunCode);</span>
+<span class="nc" id="L2365">            newNGSRunIDs.add(newNGSRunID);</span>
+<span class="nc" id="L2366">            numberOfRegisteredSamples += 1;</span>
 
-<span class="nc" id="L2366">            additionalInfo.add(false);</span>
-<span class="nc" id="L2367">            sequencerDevice.add(sampleBean.getSeqDevice());</span>
-<span class="nc" id="L2368">            parents.add(newTestSampleID);</span>
+<span class="nc" id="L2368">            additionalInfo.add(false);</span>
+<span class="nc" id="L2369">            sequencerDevice.add(sampleBean.getSeqDevice());</span>
+<span class="nc" id="L2370">            parents.add(newTestSampleID);</span>
 
           }
 
-<span class="nc bnc" id="L2372" title="All 2 branches missed.">          if (sampleBean.getRnaSeq()) {</span>
-<span class="nc" id="L2373">            String newSamplePreparationCode = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
-<span class="nc" id="L2374">            String newSamplePreparationID =</span>
+<span class="nc bnc" id="L2374" title="All 2 branches missed.">          if (sampleBean.getRnaSeq()) {</span>
+<span class="nc" id="L2375">            String newSamplePreparationCode = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
+<span class="nc" id="L2376">            String newSamplePreparationID =</span>
                 &quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newSamplePreparationCode;
-<span class="nc" id="L2376">            newSamplePreparationIDs.add(newSamplePreparationID);</span>
-<span class="nc" id="L2377">            numberOfRegisteredExperiments += 1;</span>
+<span class="nc" id="L2378">            newSamplePreparationIDs.add(newSamplePreparationID);</span>
+<span class="nc" id="L2379">            numberOfRegisteredExperiments += 1;</span>
 
-<span class="nc" id="L2379">            String newTestSampleCode =</span>
-<span class="nc" id="L2380">                newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;B&quot;;</span>
-<span class="nc" id="L2381">            String newTestSampleID = &quot;/&quot; + space + &quot;/&quot; + newTestSampleCode</span>
-<span class="nc" id="L2382">                + BarcodeFunctions.checksum(newTestSampleCode);</span>
-<span class="nc" id="L2383">            newTestSampleIDs.add(newTestSampleID);</span>
-<span class="nc" id="L2384">            numberOfRegisteredSamples += 1;</span>
-<span class="nc" id="L2385">            testTypes.add(&quot;RNA&quot;);</span>
+<span class="nc" id="L2381">            String newTestSampleCode =</span>
+<span class="nc" id="L2382">                newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;B&quot;;</span>
+<span class="nc" id="L2383">            String newTestSampleID = &quot;/&quot; + space + &quot;/&quot; + newTestSampleCode</span>
+<span class="nc" id="L2384">                + BarcodeFunctions.checksum(newTestSampleCode);</span>
+<span class="nc" id="L2385">            newTestSampleIDs.add(newTestSampleID);</span>
+<span class="nc" id="L2386">            numberOfRegisteredSamples += 1;</span>
+<span class="nc" id="L2387">            testTypes.add(&quot;RNA&quot;);</span>
 
-<span class="nc" id="L2387">            String newNGSMeasurementCode = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
-<span class="nc" id="L2388">            String newNGSMeasurementID =</span>
+<span class="nc" id="L2389">            String newNGSMeasurementCode = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
+<span class="nc" id="L2390">            String newNGSMeasurementID =</span>
                 &quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newNGSMeasurementCode;
-<span class="nc" id="L2390">            newNGSMeasurementIDs.add(newNGSMeasurementID);</span>
-<span class="nc" id="L2391">            numberOfRegisteredExperiments += 1;</span>
+<span class="nc" id="L2392">            newNGSMeasurementIDs.add(newNGSMeasurementID);</span>
+<span class="nc" id="L2393">            numberOfRegisteredExperiments += 1;</span>
 
-<span class="nc" id="L2393">            String newNGSRunCode =</span>
-<span class="nc" id="L2394">                newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;R&quot;;</span>
-<span class="nc" id="L2395">            String newNGSRunID =</span>
-<span class="nc" id="L2396">                &quot;/&quot; + space + &quot;/&quot; + newNGSRunCode + BarcodeFunctions.checksum(newNGSRunCode);</span>
-<span class="nc" id="L2397">            newNGSRunIDs.add(newNGSRunID);</span>
-<span class="nc" id="L2398">            numberOfRegisteredSamples += 1;</span>
+<span class="nc" id="L2395">            String newNGSRunCode =</span>
+<span class="nc" id="L2396">                newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;R&quot;;</span>
+<span class="nc" id="L2397">            String newNGSRunID =</span>
+<span class="nc" id="L2398">                &quot;/&quot; + space + &quot;/&quot; + newNGSRunCode + BarcodeFunctions.checksum(newNGSRunCode);</span>
+<span class="nc" id="L2399">            newNGSRunIDs.add(newNGSRunID);</span>
+<span class="nc" id="L2400">            numberOfRegisteredSamples += 1;</span>
 
-<span class="nc" id="L2400">            additionalInfo.add(false);</span>
-<span class="nc" id="L2401">            sequencerDevice.add(sampleBean.getSeqDevice());</span>
-<span class="nc" id="L2402">            parents.add(newTestSampleID);</span>
+<span class="nc" id="L2402">            additionalInfo.add(false);</span>
+<span class="nc" id="L2403">            sequencerDevice.add(sampleBean.getSeqDevice());</span>
+<span class="nc" id="L2404">            parents.add(newTestSampleID);</span>
           }
 
-<span class="nc bnc" id="L2405" title="All 2 branches missed.">          if (sampleBean.getDeepSeq()) {</span>
-<span class="nc" id="L2406">            String newSamplePreparationCode = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
-<span class="nc" id="L2407">            String newSamplePreparationID =</span>
+<span class="nc bnc" id="L2407" title="All 2 branches missed.">          if (sampleBean.getDeepSeq()) {</span>
+<span class="nc" id="L2408">            String newSamplePreparationCode = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
+<span class="nc" id="L2409">            String newSamplePreparationID =</span>
                 &quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newSamplePreparationCode;
-<span class="nc" id="L2409">            newSamplePreparationIDs.add(newSamplePreparationID);</span>
-<span class="nc" id="L2410">            numberOfRegisteredExperiments += 1;</span>
+<span class="nc" id="L2411">            newSamplePreparationIDs.add(newSamplePreparationID);</span>
+<span class="nc" id="L2412">            numberOfRegisteredExperiments += 1;</span>
 
-<span class="nc" id="L2412">            String newTestSampleCode =</span>
-<span class="nc" id="L2413">                newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;B&quot;;</span>
-<span class="nc" id="L2414">            String newTestSampleID = &quot;/&quot; + space + &quot;/&quot; + newTestSampleCode</span>
-<span class="nc" id="L2415">                + BarcodeFunctions.checksum(newTestSampleCode);</span>
-<span class="nc" id="L2416">            newTestSampleIDs.add(newTestSampleID);</span>
-<span class="nc" id="L2417">            numberOfRegisteredSamples += 1;</span>
-<span class="nc" id="L2418">            testTypes.add(&quot;DNA&quot;);</span>
+<span class="nc" id="L2414">            String newTestSampleCode =</span>
+<span class="nc" id="L2415">                newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;B&quot;;</span>
+<span class="nc" id="L2416">            String newTestSampleID = &quot;/&quot; + space + &quot;/&quot; + newTestSampleCode</span>
+<span class="nc" id="L2417">                + BarcodeFunctions.checksum(newTestSampleCode);</span>
+<span class="nc" id="L2418">            newTestSampleIDs.add(newTestSampleID);</span>
+<span class="nc" id="L2419">            numberOfRegisteredSamples += 1;</span>
+<span class="nc" id="L2420">            testTypes.add(&quot;DNA&quot;);</span>
 
-<span class="nc" id="L2420">            String newNGSMeasurementCode = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
-<span class="nc" id="L2421">            String newNGSMeasurementID =</span>
+<span class="nc" id="L2422">            String newNGSMeasurementCode = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
+<span class="nc" id="L2423">            String newNGSMeasurementID =</span>
                 &quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newNGSMeasurementCode;
-<span class="nc" id="L2423">            newNGSMeasurementIDs.add(newNGSMeasurementID);</span>
-<span class="nc" id="L2424">            numberOfRegisteredExperiments += 1;</span>
+<span class="nc" id="L2425">            newNGSMeasurementIDs.add(newNGSMeasurementID);</span>
+<span class="nc" id="L2426">            numberOfRegisteredExperiments += 1;</span>
 
-<span class="nc" id="L2426">            String newNGSRunCode =</span>
-<span class="nc" id="L2427">                newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;R&quot;;</span>
-<span class="nc" id="L2428">            String newNGSRunID =</span>
-<span class="nc" id="L2429">                &quot;/&quot; + space + &quot;/&quot; + newNGSRunCode + BarcodeFunctions.checksum(newNGSRunCode);</span>
-<span class="nc" id="L2430">            newNGSRunIDs.add(newNGSRunID);</span>
-<span class="nc" id="L2431">            numberOfRegisteredSamples += 1;</span>
+<span class="nc" id="L2428">            String newNGSRunCode =</span>
+<span class="nc" id="L2429">                newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;R&quot;;</span>
+<span class="nc" id="L2430">            String newNGSRunID =</span>
+<span class="nc" id="L2431">                &quot;/&quot; + space + &quot;/&quot; + newNGSRunCode + BarcodeFunctions.checksum(newNGSRunCode);</span>
+<span class="nc" id="L2432">            newNGSRunIDs.add(newNGSRunID);</span>
+<span class="nc" id="L2433">            numberOfRegisteredSamples += 1;</span>
 
-<span class="nc" id="L2433">            additionalInfo.add(true);</span>
-<span class="nc" id="L2434">            sequencerDevice.add(sampleBean.getSeqDevice());</span>
-<span class="nc" id="L2435">            parents.add(newTestSampleID);</span>
+<span class="nc" id="L2435">            additionalInfo.add(true);</span>
+<span class="nc" id="L2436">            sequencerDevice.add(sampleBean.getSeqDevice());</span>
+<span class="nc" id="L2437">            parents.add(newTestSampleID);</span>
           }
 
           // register third and fourth level of new patient
-<span class="nc" id="L2439">          thirdLevel.put(&quot;lvl&quot;, &quot;3&quot;);</span>
-<span class="nc" id="L2440">          thirdLevel.put(&quot;parent&quot;, newBiologicalSampleID);</span>
-<span class="nc" id="L2441">          thirdLevel.put(&quot;experiments&quot;, newSamplePreparationIDs);</span>
-<span class="nc" id="L2442">          thirdLevel.put(&quot;samples&quot;, newTestSampleIDs);</span>
-<span class="nc" id="L2443">          thirdLevel.put(&quot;types&quot;, testTypes);</span>
-<span class="nc" id="L2444">          thirdLevel.put(&quot;user&quot;, PortalUtils.getNonNullScreenName());</span>
+<span class="nc" id="L2441">          thirdLevel.put(&quot;lvl&quot;, &quot;3&quot;);</span>
+<span class="nc" id="L2442">          thirdLevel.put(&quot;parent&quot;, newBiologicalSampleID);</span>
+<span class="nc" id="L2443">          thirdLevel.put(&quot;experiments&quot;, newSamplePreparationIDs);</span>
+<span class="nc" id="L2444">          thirdLevel.put(&quot;samples&quot;, newTestSampleIDs);</span>
+<span class="nc" id="L2445">          thirdLevel.put(&quot;types&quot;, testTypes);</span>
+<span class="nc" id="L2446">          thirdLevel.put(&quot;user&quot;, PortalUtils.getNonNullScreenName());</span>
 
-<span class="nc" id="L2446">          fourthLevel.put(&quot;lvl&quot;, &quot;4&quot;);</span>
-<span class="nc" id="L2447">          fourthLevel.put(&quot;experiments&quot;, newNGSMeasurementIDs);</span>
-<span class="nc" id="L2448">          fourthLevel.put(&quot;samples&quot;, newNGSRunIDs);</span>
-<span class="nc" id="L2449">          fourthLevel.put(&quot;parents&quot;, parents);</span>
-<span class="nc" id="L2450">          fourthLevel.put(&quot;types&quot;, testTypes);</span>
-<span class="nc" id="L2451">          fourthLevel.put(&quot;info&quot;, additionalInfo);</span>
-<span class="nc" id="L2452">          fourthLevel.put(&quot;device&quot;, sequencerDevice);</span>
-<span class="nc" id="L2453">          fourthLevel.put(&quot;user&quot;, PortalUtils.getNonNullScreenName());</span>
+<span class="nc" id="L2448">          fourthLevel.put(&quot;lvl&quot;, &quot;4&quot;);</span>
+<span class="nc" id="L2449">          fourthLevel.put(&quot;experiments&quot;, newNGSMeasurementIDs);</span>
+<span class="nc" id="L2450">          fourthLevel.put(&quot;samples&quot;, newNGSRunIDs);</span>
+<span class="nc" id="L2451">          fourthLevel.put(&quot;parents&quot;, parents);</span>
+<span class="nc" id="L2452">          fourthLevel.put(&quot;types&quot;, testTypes);</span>
+<span class="nc" id="L2453">          fourthLevel.put(&quot;info&quot;, additionalInfo);</span>
+<span class="nc" id="L2454">          fourthLevel.put(&quot;device&quot;, sequencerDevice);</span>
+<span class="nc" id="L2455">          fourthLevel.put(&quot;user&quot;, PortalUtils.getNonNullScreenName());</span>
 
           // TODO additional level for HLA typing
 
           // call of ingestion services for differeny levels
           // helpers.Utils.printMapContent(thirdLevel);
           // helpers.Utils.printMapContent(fourthLevel);
-<span class="nc" id="L2460">          this.getOpenBisClient().triggerIngestionService(&quot;register-ivac-lvl&quot;, thirdLevel);</span>
-<span class="nc" id="L2461">          this.getOpenBisClient().triggerIngestionService(&quot;register-ivac-lvl&quot;, fourthLevel);</span>
+<span class="nc" id="L2462">          this.getOpenBisClient().triggerIngestionService(&quot;register-ivac-lvl&quot;, thirdLevel);</span>
+<span class="nc" id="L2463">          this.getOpenBisClient().triggerIngestionService(&quot;register-ivac-lvl&quot;, fourthLevel);</span>
         }
-<span class="nc" id="L2463">      }</span>
+<span class="nc" id="L2465">      }</span>
 
-<span class="nc bnc" id="L2465" title="All 2 branches missed.">      for (Entry&lt;String, List&lt;String&gt;&gt; entry : hlaTyping.entrySet()) {</span>
+<span class="nc bnc" id="L2467" title="All 2 branches missed.">      for (Entry&lt;String, List&lt;String&gt;&gt; entry : hlaTyping.entrySet()) {</span>
 
-<span class="nc" id="L2467">        String newHLATyping = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
+<span class="nc" id="L2469">        String newHLATyping = newProjectCode + &quot;E&quot; + numberOfRegisteredExperiments;</span>
 
-<span class="nc" id="L2469">        newHLATypingIDs.add(&quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newHLATyping);</span>
+<span class="nc" id="L2471">        newHLATypingIDs.add(&quot;/&quot; + space + &quot;/&quot; + newProjectCode + &quot;/&quot; + newHLATyping);</span>
 
-<span class="nc" id="L2471">        numberOfRegisteredExperiments += 1;</span>
+<span class="nc" id="L2473">        numberOfRegisteredExperiments += 1;</span>
 
-<span class="nc" id="L2473">        String newHLATypingSampleCode =</span>
-<span class="nc" id="L2474">            newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;H&quot;;</span>
+<span class="nc" id="L2475">        String newHLATypingSampleCode =</span>
+<span class="nc" id="L2476">            newProjectCode + Utils.createCountString(numberOfRegisteredSamples, 3) + &quot;H&quot;;</span>
 
-<span class="nc" id="L2476">        String newHLATypingSampleID = &quot;/&quot; + space + &quot;/&quot; + newHLATypingSampleCode</span>
-<span class="nc" id="L2477">            + BarcodeFunctions.checksum(newHLATypingSampleCode);</span>
+<span class="nc" id="L2478">        String newHLATypingSampleID = &quot;/&quot; + space + &quot;/&quot; + newHLATypingSampleCode</span>
+<span class="nc" id="L2479">            + BarcodeFunctions.checksum(newHLATypingSampleCode);</span>
 
-<span class="nc" id="L2479">        newHLATypingSampleIDs.add(newHLATypingSampleID);</span>
-<span class="nc" id="L2480">        numberOfRegisteredSamples += 1;</span>
+<span class="nc" id="L2481">        newHLATypingSampleIDs.add(newHLATypingSampleID);</span>
+<span class="nc" id="L2482">        numberOfRegisteredSamples += 1;</span>
 
-<span class="nc" id="L2482">        hlaClasses.add(entry.getKey());</span>
-<span class="nc" id="L2483">        typings.add(entry.getValue().get(0));</span>
-<span class="nc" id="L2484">        typingMethods.add(entry.getValue().get(1));</span>
-<span class="nc" id="L2485">      }</span>
+<span class="nc" id="L2484">        hlaClasses.add(entry.getKey());</span>
+<span class="nc" id="L2485">        typings.add(entry.getValue().get(0));</span>
+<span class="nc" id="L2486">        typingMethods.add(entry.getValue().get(1));</span>
+<span class="nc" id="L2487">      }</span>
 
-<span class="nc" id="L2487">      fithLevel.put(&quot;lvl&quot;, &quot;5&quot;);</span>
-<span class="nc" id="L2488">      fithLevel.put(&quot;experiments&quot;, newHLATypingIDs);</span>
-<span class="nc" id="L2489">      fithLevel.put(&quot;samples&quot;, newHLATypingSampleIDs);</span>
-<span class="nc" id="L2490">      fithLevel.put(&quot;typings&quot;, typings);</span>
-<span class="nc" id="L2491">      fithLevel.put(&quot;classes&quot;, hlaClasses);</span>
-<span class="nc" id="L2492">      fithLevel.put(&quot;methods&quot;, typingMethods);</span>
-<span class="nc" id="L2493">      fithLevel.put(&quot;parent&quot;, parentHLA);</span>
+<span class="nc" id="L2489">      fithLevel.put(&quot;lvl&quot;, &quot;5&quot;);</span>
+<span class="nc" id="L2490">      fithLevel.put(&quot;experiments&quot;, newHLATypingIDs);</span>
+<span class="nc" id="L2491">      fithLevel.put(&quot;samples&quot;, newHLATypingSampleIDs);</span>
+<span class="nc" id="L2492">      fithLevel.put(&quot;typings&quot;, typings);</span>
+<span class="nc" id="L2493">      fithLevel.put(&quot;classes&quot;, hlaClasses);</span>
+<span class="nc" id="L2494">      fithLevel.put(&quot;methods&quot;, typingMethods);</span>
+<span class="nc" id="L2495">      fithLevel.put(&quot;parent&quot;, parentHLA);</span>
 
-<span class="nc" id="L2495">      this.getOpenBisClient().triggerIngestionService(&quot;register-ivac-lvl&quot;, fithLevel);</span>
+<span class="nc" id="L2497">      this.getOpenBisClient().triggerIngestionService(&quot;register-ivac-lvl&quot;, fithLevel);</span>
 
     }
-<span class="nc" id="L2498">  }</span>
+<span class="nc" id="L2500">  }</span>
 
   /**
    * 
@@ -2504,40 +2506,40 @@ public class DataHandler implements Serializable {
    * @deprecated
    */
   public VerticalLayout createProjectStatusComponent(Map&lt;String, Integer&gt; statusValues) {
-<span class="nc" id="L2507">    VerticalLayout projectStatusContent = new VerticalLayout();</span>
+<span class="nc" id="L2509">    VerticalLayout projectStatusContent = new VerticalLayout();</span>
 
-<span class="nc" id="L2509">    Iterator&lt;Entry&lt;String, Integer&gt;&gt; it = statusValues.entrySet().iterator();</span>
-<span class="nc" id="L2510">    int finishedExperiments = 0;</span>
+<span class="nc" id="L2511">    Iterator&lt;Entry&lt;String, Integer&gt;&gt; it = statusValues.entrySet().iterator();</span>
+<span class="nc" id="L2512">    int finishedExperiments = 0;</span>
 
-<span class="nc bnc" id="L2512" title="All 2 branches missed.">    while (it.hasNext()) {</span>
-<span class="nc" id="L2513">      Entry&lt;String, Integer&gt; pairs = (Entry&lt;String, Integer&gt;) it.next();</span>
+<span class="nc bnc" id="L2514" title="All 2 branches missed.">    while (it.hasNext()) {</span>
+<span class="nc" id="L2515">      Entry&lt;String, Integer&gt; pairs = (Entry&lt;String, Integer&gt;) it.next();</span>
 
-<span class="nc bnc" id="L2515" title="All 2 branches missed.">      if ((Integer) pairs.getValue() == 0) {</span>
-<span class="nc" id="L2516">        Label statusLabel =</span>
-<span class="nc" id="L2517">            new Label(pairs.getKey() + &quot;: &quot; + FontAwesome.TIMES.getHtml(), ContentMode.HTML);</span>
-<span class="nc" id="L2518">        statusLabel.addStyleName(&quot;redicon&quot;);</span>
-<span class="nc" id="L2519">        projectStatusContent.addComponent(statusLabel);</span>
-<span class="nc" id="L2520">      }</span>
+<span class="nc bnc" id="L2517" title="All 2 branches missed.">      if ((Integer) pairs.getValue() == 0) {</span>
+<span class="nc" id="L2518">        Label statusLabel =</span>
+<span class="nc" id="L2519">            new Label(pairs.getKey() + &quot;: &quot; + FontAwesome.TIMES.getHtml(), ContentMode.HTML);</span>
+<span class="nc" id="L2520">        statusLabel.addStyleName(&quot;redicon&quot;);</span>
+<span class="nc" id="L2521">        projectStatusContent.addComponent(statusLabel);</span>
+<span class="nc" id="L2522">      }</span>
 
       else {
-<span class="nc" id="L2523">        Label statusLabel =</span>
-<span class="nc" id="L2524">            new Label(pairs.getKey() + &quot;: &quot; + FontAwesome.CHECK.getHtml(), ContentMode.HTML);</span>
-<span class="nc" id="L2525">        statusLabel.addStyleName(&quot;greenicon&quot;);</span>
+<span class="nc" id="L2525">        Label statusLabel =</span>
+<span class="nc" id="L2526">            new Label(pairs.getKey() + &quot;: &quot; + FontAwesome.CHECK.getHtml(), ContentMode.HTML);</span>
+<span class="nc" id="L2527">        statusLabel.addStyleName(&quot;greenicon&quot;);</span>
 
-<span class="nc bnc" id="L2527" title="All 2 branches missed.">        if (pairs.getKey().equals(&quot;Project Planned&quot;)) {</span>
-<span class="nc" id="L2528">          projectStatusContent.addComponentAsFirst(statusLabel);</span>
+<span class="nc bnc" id="L2529" title="All 2 branches missed.">        if (pairs.getKey().equals(&quot;Project Planned&quot;)) {</span>
+<span class="nc" id="L2530">          projectStatusContent.addComponentAsFirst(statusLabel);</span>
         } else {
-<span class="nc" id="L2530">          projectStatusContent.addComponent(statusLabel);</span>
+<span class="nc" id="L2532">          projectStatusContent.addComponent(statusLabel);</span>
 
         }
-<span class="nc" id="L2533">        finishedExperiments += (Integer) pairs.getValue();</span>
+<span class="nc" id="L2535">        finishedExperiments += (Integer) pairs.getValue();</span>
       }
-<span class="nc" id="L2535">    }</span>
+<span class="nc" id="L2537">    }</span>
     // ProgressBar progressBar = new ProgressBar();
     // progressBar.setValue((float) finishedExperiments / statusValues.keySet().size());
     // projectStatusContent.addComponent(progressBar);
 
-<span class="nc" id="L2540">    return projectStatusContent;</span>
+<span class="nc" id="L2542">    return projectStatusContent;</span>
   }
 
   /**
@@ -2546,66 +2548,66 @@ public class DataHandler implements Serializable {
    * @return
    */
   public VerticalLayout createProjectStatusComponentNew(Map&lt;String, Integer&gt; statusValues) {
-<span class="nc" id="L2549">    VerticalLayout projectStatusContent = new VerticalLayout();</span>
-<span class="nc" id="L2550">    projectStatusContent.setResponsive(true);</span>
-<span class="nc" id="L2551">    projectStatusContent.setMargin(true);</span>
-<span class="nc" id="L2552">    projectStatusContent.setSpacing(true);</span>
+<span class="nc" id="L2551">    VerticalLayout projectStatusContent = new VerticalLayout();</span>
+<span class="nc" id="L2552">    projectStatusContent.setResponsive(true);</span>
+<span class="nc" id="L2553">    projectStatusContent.setMargin(true);</span>
+<span class="nc" id="L2554">    projectStatusContent.setSpacing(true);</span>
 
-<span class="nc" id="L2554">    Label planned = new Label();</span>
-<span class="nc" id="L2555">    Label design = new Label();</span>
-<span class="nc" id="L2556">    Label raw = new Label();</span>
-<span class="nc" id="L2557">    Label results = new Label();</span>
+<span class="nc" id="L2556">    Label planned = new Label();</span>
+<span class="nc" id="L2557">    Label design = new Label();</span>
+<span class="nc" id="L2558">    Label raw = new Label();</span>
+<span class="nc" id="L2559">    Label results = new Label();</span>
 
-<span class="nc" id="L2559">    Iterator&lt;Entry&lt;String, Integer&gt;&gt; it = statusValues.entrySet().iterator();</span>
+<span class="nc" id="L2561">    Iterator&lt;Entry&lt;String, Integer&gt;&gt; it = statusValues.entrySet().iterator();</span>
 
-<span class="nc bnc" id="L2561" title="All 2 branches missed.">    while (it.hasNext()) {</span>
-<span class="nc" id="L2562">      Entry&lt;String, Integer&gt; pairs = (Entry&lt;String, Integer&gt;) it.next();</span>
+<span class="nc bnc" id="L2563" title="All 2 branches missed.">    while (it.hasNext()) {</span>
+<span class="nc" id="L2564">      Entry&lt;String, Integer&gt; pairs = (Entry&lt;String, Integer&gt;) it.next();</span>
 
-<span class="nc bnc" id="L2564" title="All 2 branches missed.">      if ((Integer) pairs.getValue() == 0) {</span>
-<span class="nc" id="L2565">        Label statusLabel = new Label(pairs.getKey());</span>
-<span class="nc" id="L2566">        statusLabel.setStyleName(ValoTheme.LABEL_FAILURE);</span>
-<span class="nc" id="L2567">        statusLabel.setResponsive(true);</span>
+<span class="nc bnc" id="L2566" title="All 2 branches missed.">      if ((Integer) pairs.getValue() == 0) {</span>
+<span class="nc" id="L2567">        Label statusLabel = new Label(pairs.getKey());</span>
+<span class="nc" id="L2568">        statusLabel.setStyleName(ValoTheme.LABEL_FAILURE);</span>
+<span class="nc" id="L2569">        statusLabel.setResponsive(true);</span>
         // statusLabel.addStyleName(&quot;redicon&quot;);
-<span class="nc bnc" id="L2569" title="All 2 branches missed.">        if (pairs.getKey().equals(&quot;Project planned&quot;)) {</span>
-<span class="nc" id="L2570">          planned = statusLabel;</span>
-<span class="nc bnc" id="L2571" title="All 2 branches missed.">        } else if (pairs.getKey().equals(&quot;Experimental design registered&quot;)) {</span>
-<span class="nc" id="L2572">          design = statusLabel;</span>
-<span class="nc bnc" id="L2573" title="All 2 branches missed.">        } else if (pairs.getKey().equals(&quot;Raw data registered&quot;)) {</span>
-<span class="nc" id="L2574">          raw = statusLabel;</span>
-<span class="nc bnc" id="L2575" title="All 2 branches missed.">        } else if (pairs.getKey().equals(&quot;Results registered&quot;)) {</span>
-<span class="nc" id="L2576">          results = statusLabel;</span>
+<span class="nc bnc" id="L2571" title="All 2 branches missed.">        if (pairs.getKey().equals(&quot;Project planned&quot;)) {</span>
+<span class="nc" id="L2572">          planned = statusLabel;</span>
+<span class="nc bnc" id="L2573" title="All 2 branches missed.">        } else if (pairs.getKey().equals(&quot;Experimental design registered&quot;)) {</span>
+<span class="nc" id="L2574">          design = statusLabel;</span>
+<span class="nc bnc" id="L2575" title="All 2 branches missed.">        } else if (pairs.getKey().equals(&quot;Raw data registered&quot;)) {</span>
+<span class="nc" id="L2576">          raw = statusLabel;</span>
+<span class="nc bnc" id="L2577" title="All 2 branches missed.">        } else if (pairs.getKey().equals(&quot;Results registered&quot;)) {</span>
+<span class="nc" id="L2578">          results = statusLabel;</span>
         }
-<span class="nc" id="L2578">      }</span>
+<span class="nc" id="L2580">      }</span>
 
       else {
-<span class="nc" id="L2581">        Label statusLabel = new Label(pairs.getKey());</span>
-<span class="nc" id="L2582">        statusLabel.setStyleName(ValoTheme.LABEL_SUCCESS);</span>
-<span class="nc" id="L2583">        statusLabel.setResponsive(true);</span>
+<span class="nc" id="L2583">        Label statusLabel = new Label(pairs.getKey());</span>
+<span class="nc" id="L2584">        statusLabel.setStyleName(ValoTheme.LABEL_SUCCESS);</span>
+<span class="nc" id="L2585">        statusLabel.setResponsive(true);</span>
 
         // statusLabel.addStyleName(&quot;greenicon&quot;);
 
-<span class="nc bnc" id="L2587" title="All 2 branches missed.">        if (pairs.getKey().equals(&quot;Project planned&quot;)) {</span>
-<span class="nc" id="L2588">          planned = statusLabel;</span>
-<span class="nc bnc" id="L2589" title="All 2 branches missed.">        } else if (pairs.getKey().equals(&quot;Experimental design registered&quot;)) {</span>
-<span class="nc" id="L2590">          design = statusLabel;</span>
-<span class="nc bnc" id="L2591" title="All 2 branches missed.">        } else if (pairs.getKey().equals(&quot;Raw data registered&quot;)) {</span>
-<span class="nc" id="L2592">          raw = statusLabel;</span>
-<span class="nc bnc" id="L2593" title="All 2 branches missed.">        } else if (pairs.getKey().equals(&quot;Results registered&quot;)) {</span>
-<span class="nc" id="L2594">          results = statusLabel;</span>
+<span class="nc bnc" id="L2589" title="All 2 branches missed.">        if (pairs.getKey().equals(&quot;Project planned&quot;)) {</span>
+<span class="nc" id="L2590">          planned = statusLabel;</span>
+<span class="nc bnc" id="L2591" title="All 2 branches missed.">        } else if (pairs.getKey().equals(&quot;Experimental design registered&quot;)) {</span>
+<span class="nc" id="L2592">          design = statusLabel;</span>
+<span class="nc bnc" id="L2593" title="All 2 branches missed.">        } else if (pairs.getKey().equals(&quot;Raw data registered&quot;)) {</span>
+<span class="nc" id="L2594">          raw = statusLabel;</span>
+<span class="nc bnc" id="L2595" title="All 2 branches missed.">        } else if (pairs.getKey().equals(&quot;Results registered&quot;)) {</span>
+<span class="nc" id="L2596">          results = statusLabel;</span>
         }
       }
-<span class="nc" id="L2597">    }</span>
+<span class="nc" id="L2599">    }</span>
 
-<span class="nc" id="L2599">    projectStatusContent.addComponent(planned);</span>
-<span class="nc" id="L2600">    projectStatusContent.addComponent(design);</span>
-<span class="nc" id="L2601">    projectStatusContent.addComponent(raw);</span>
-<span class="nc" id="L2602">    projectStatusContent.addComponent(results);</span>
+<span class="nc" id="L2601">    projectStatusContent.addComponent(planned);</span>
+<span class="nc" id="L2602">    projectStatusContent.addComponent(design);</span>
+<span class="nc" id="L2603">    projectStatusContent.addComponent(raw);</span>
+<span class="nc" id="L2604">    projectStatusContent.addComponent(results);</span>
 
     // ProgressBar progressBar = new ProgressBar();
     // progressBar.setValue((float) finishedExperiments / statusValues.keySet().size());
     // projectStatusContent.addComponent(progressBar);
 
-<span class="nc" id="L2608">    return projectStatusContent;</span>
+<span class="nc" id="L2610">    return projectStatusContent;</span>
   }
 
   /**
@@ -2615,96 +2617,96 @@ public class DataHandler implements Serializable {
    * @return
    */
   public String getSecondaryName(Sample samp, String datsetSecName) {
-<span class="nc" id="L2618">    List&lt;Sample&gt; firstParents = samp.getParents();</span>
-<span class="nc" id="L2619">    String secondaryName = &quot;&quot;;</span>
-<span class="nc" id="L2620">    Set&lt;String&gt; secNamesTest = new LinkedHashSet&lt;String&gt;();</span>
-<span class="nc" id="L2621">    Set&lt;String&gt; secNamesBiological = new LinkedHashSet&lt;String&gt;();</span>
-<span class="nc" id="L2622">    Set&lt;String&gt; secNamesEntities = new LinkedHashSet&lt;String&gt;();</span>
-<span class="nc" id="L2623">    Set&lt;String&gt; allDescriptions = new LinkedHashSet&lt;String&gt;();</span>
-<span class="nc" id="L2624">    List&lt;Sample&gt; allParents = new ArrayList&lt;Sample&gt;();</span>
+<span class="nc" id="L2620">    List&lt;Sample&gt; firstParents = samp.getParents();</span>
+<span class="nc" id="L2621">    String secondaryName = &quot;&quot;;</span>
+<span class="nc" id="L2622">    Set&lt;String&gt; secNamesTest = new LinkedHashSet&lt;String&gt;();</span>
+<span class="nc" id="L2623">    Set&lt;String&gt; secNamesBiological = new LinkedHashSet&lt;String&gt;();</span>
+<span class="nc" id="L2624">    Set&lt;String&gt; secNamesEntities = new LinkedHashSet&lt;String&gt;();</span>
+<span class="nc" id="L2625">    Set&lt;String&gt; allDescriptions = new LinkedHashSet&lt;String&gt;();</span>
+<span class="nc" id="L2626">    List&lt;Sample&gt; allParents = new ArrayList&lt;Sample&gt;();</span>
 
-<span class="nc bnc" id="L2626" title="All 2 branches missed.">    for (Sample p : firstParents) {</span>
-<span class="nc" id="L2627">      allParents.add(p);</span>
-<span class="nc bnc" id="L2628" title="All 2 branches missed.">      for (Sample q : p.getParents()) {</span>
-<span class="nc" id="L2629">        allParents.add(q);</span>
-<span class="nc bnc" id="L2630" title="All 2 branches missed.">        for (Sample r : q.getParents()) {</span>
-<span class="nc" id="L2631">          allParents.add(r);</span>
-<span class="nc bnc" id="L2632" title="All 2 branches missed.">          for (Sample s : r.getParents()) {</span>
-<span class="nc" id="L2633">            allParents.add(s);</span>
-<span class="nc" id="L2634">          }</span>
-<span class="nc" id="L2635">        }</span>
-<span class="nc" id="L2636">      }</span>
-<span class="nc" id="L2637">    }</span>
+<span class="nc bnc" id="L2628" title="All 2 branches missed.">    for (Sample p : firstParents) {</span>
+<span class="nc" id="L2629">      allParents.add(p);</span>
+<span class="nc bnc" id="L2630" title="All 2 branches missed.">      for (Sample q : p.getParents()) {</span>
+<span class="nc" id="L2631">        allParents.add(q);</span>
+<span class="nc bnc" id="L2632" title="All 2 branches missed.">        for (Sample r : q.getParents()) {</span>
+<span class="nc" id="L2633">          allParents.add(r);</span>
+<span class="nc bnc" id="L2634" title="All 2 branches missed.">          for (Sample s : r.getParents()) {</span>
+<span class="nc" id="L2635">            allParents.add(s);</span>
+<span class="nc" id="L2636">          }</span>
+<span class="nc" id="L2637">        }</span>
+<span class="nc" id="L2638">      }</span>
+<span class="nc" id="L2639">    }</span>
 
-<span class="nc bnc" id="L2639" title="All 2 branches missed.">    for (Sample pp : allParents) {</span>
-<span class="nc bnc" id="L2640" title="All 2 branches missed.">      if (pp.getSampleTypeCode().equals(&quot;Q_TEST_SAMPLE&quot;)) {</span>
-<span class="nc" id="L2641">        String new_sec = pp.getProperties().get(&quot;Q_SECONDARY_NAME&quot;);</span>
-<span class="nc bnc" id="L2642" title="All 2 branches missed.">        if (new_sec != null) {</span>
-<span class="nc" id="L2643">          secNamesTest.add(new_sec);</span>
+<span class="nc bnc" id="L2641" title="All 2 branches missed.">    for (Sample pp : allParents) {</span>
+<span class="nc bnc" id="L2642" title="All 2 branches missed.">      if (pp.getSampleTypeCode().equals(&quot;Q_TEST_SAMPLE&quot;)) {</span>
+<span class="nc" id="L2643">        String new_sec = pp.getProperties().get(&quot;Q_SECONDARY_NAME&quot;);</span>
+<span class="nc bnc" id="L2644" title="All 2 branches missed.">        if (new_sec != null) {</span>
+<span class="nc" id="L2645">          secNamesTest.add(new_sec);</span>
         }
-<span class="nc bnc" id="L2645" title="All 2 branches missed.">      } else if (pp.getSampleTypeCode().equals(&quot;Q_BIOLOGICAL_SAMPLE&quot;)) {</span>
-<span class="nc" id="L2646">        String new_sec = pp.getProperties().get(&quot;Q_SECONDARY_NAME&quot;);</span>
-<span class="nc bnc" id="L2647" title="All 2 branches missed.">        if (new_sec != null) {</span>
-<span class="nc" id="L2648">          secNamesBiological.add(new_sec);</span>
+<span class="nc bnc" id="L2647" title="All 2 branches missed.">      } else if (pp.getSampleTypeCode().equals(&quot;Q_BIOLOGICAL_SAMPLE&quot;)) {</span>
+<span class="nc" id="L2648">        String new_sec = pp.getProperties().get(&quot;Q_SECONDARY_NAME&quot;);</span>
+<span class="nc bnc" id="L2649" title="All 2 branches missed.">        if (new_sec != null) {</span>
+<span class="nc" id="L2650">          secNamesBiological.add(new_sec);</span>
         }
 
-<span class="nc bnc" id="L2651" title="All 2 branches missed.">      } else if (pp.getSampleTypeCode().equals(&quot;Q_BIOLOGICAL_ENTITY&quot;)) {</span>
-<span class="nc" id="L2652">        String new_sec = pp.getProperties().get(&quot;Q_SECONDARY_NAME&quot;);</span>
-<span class="nc bnc" id="L2653" title="All 2 branches missed.">        if (new_sec != null) {</span>
-<span class="nc" id="L2654">          secNamesEntities.add(new_sec);</span>
+<span class="nc bnc" id="L2653" title="All 2 branches missed.">      } else if (pp.getSampleTypeCode().equals(&quot;Q_BIOLOGICAL_ENTITY&quot;)) {</span>
+<span class="nc" id="L2654">        String new_sec = pp.getProperties().get(&quot;Q_SECONDARY_NAME&quot;);</span>
+<span class="nc bnc" id="L2655" title="All 2 branches missed.">        if (new_sec != null) {</span>
+<span class="nc" id="L2656">          secNamesEntities.add(new_sec);</span>
         }
       }
-<span class="nc" id="L2657">    }</span>
+<span class="nc" id="L2659">    }</span>
 
-<span class="nc" id="L2659">    allDescriptions.addAll(secNamesEntities);</span>
-<span class="nc" id="L2660">    allDescriptions.addAll(secNamesBiological);</span>
-<span class="nc" id="L2661">    allDescriptions.addAll(secNamesTest);</span>
+<span class="nc" id="L2661">    allDescriptions.addAll(secNamesEntities);</span>
+<span class="nc" id="L2662">    allDescriptions.addAll(secNamesBiological);</span>
+<span class="nc" id="L2663">    allDescriptions.addAll(secNamesTest);</span>
 
-<span class="nc bnc" id="L2663" title="All 2 branches missed.">    if (datsetSecName != null) {</span>
-<span class="nc" id="L2664">      allDescriptions.add(datsetSecName);</span>
+<span class="nc bnc" id="L2665" title="All 2 branches missed.">    if (datsetSecName != null) {</span>
+<span class="nc" id="L2666">      allDescriptions.add(datsetSecName);</span>
     }
 
-<span class="nc" id="L2667">    secondaryName = String.join(&quot;_&quot;, allDescriptions);</span>
+<span class="nc" id="L2669">    secondaryName = String.join(&quot;_&quot;, allDescriptions);</span>
 
-<span class="nc" id="L2669">    return secondaryName.replace(&quot;__&quot;, &quot;_&quot;).replaceAll(&quot;^_+&quot;, &quot;&quot;).replaceAll(&quot;_+$&quot;, &quot;&quot;);</span>
+<span class="nc" id="L2671">    return secondaryName.replace(&quot;__&quot;, &quot;_&quot;).replaceAll(&quot;^_+&quot;, &quot;&quot;).replaceAll(&quot;_+$&quot;, &quot;&quot;);</span>
   }
 
 
   public OpenBisClient getOpenBisClient() {
-<span class="nc" id="L2674">    return openBisClient;</span>
+<span class="nc" id="L2676">    return openBisClient;</span>
   }
 
 
   public void setOpenBisClient(OpenBisClient openBisClient) {
-<span class="nc" id="L2679">    this.openBisClient = openBisClient;</span>
-<span class="nc" id="L2680">  }</span>
+<span class="nc" id="L2681">    this.openBisClient = openBisClient;</span>
+<span class="nc" id="L2682">  }</span>
 
 
   public DBManager getDatabaseManager() {
-<span class="nc" id="L2684">    return databaseManager;</span>
+<span class="nc" id="L2686">    return databaseManager;</span>
   }
 
 
   public void setDatabaseManager(DBManager databaseManager) {
-<span class="nc" id="L2689">    this.databaseManager = databaseManager;</span>
-<span class="nc" id="L2690">  }</span>
+<span class="nc" id="L2691">    this.databaseManager = databaseManager;</span>
+<span class="nc" id="L2692">  }</span>
 
 
   public Set&lt;String&gt; getFactorLabels() {
-<span class="nc" id="L2694">    return experimentalFactorLabels;</span>
+<span class="nc" id="L2696">    return experimentalFactorLabels;</span>
   }
 
 
   public Map&lt;Pair&lt;String, String&gt;, Property&gt; getFactorsForLabelsAndSamples() {
-<span class="nc" id="L2699">    return experimentalFactorsForLabelsAndSamples;</span>
+<span class="nc" id="L2701">    return experimentalFactorsForLabelsAndSamples;</span>
   }
 
   public Map&lt;String, List&lt;Property&gt;&gt; getPropertiesForSamples() {
-<span class="nc" id="L2703">    return propertiesForSamples;</span>
+<span class="nc" id="L2705">    return propertiesForSamples;</span>
   }
 
   public JAXBElement&lt;Qexperiment&gt; getExperimentalSetup() {
-<span class="nc" id="L2707">    return experimentalSetup;</span>
+<span class="nc" id="L2709">    return experimentalSetup;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>
