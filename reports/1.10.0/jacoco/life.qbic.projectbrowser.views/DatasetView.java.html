@@ -1,0 +1,755 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DatasetView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.views</a> &gt; <span class="el_source">DatasetView.java</span></div><h1>DatasetView.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.views;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Paths;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.portlet.PortletSession;
+
+import life.qbic.portal.portlet.ProjectBrowserPortlet;
+import life.qbic.portal.utils.PortalUtils;
+import org.tepi.filtertable.FilterTreeTable;
+
+import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.theme.ThemeDisplay;
+import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.data.Property.ValueChangeListener;
+import com.vaadin.data.util.HierarchicalContainer;
+import com.vaadin.navigator.View;
+import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
+import com.vaadin.server.ExternalResource;
+import com.vaadin.server.FontAwesome;
+import com.vaadin.server.Page;
+import com.vaadin.server.RequestHandler;
+import com.vaadin.server.Resource;
+import com.vaadin.server.StreamResource;
+import com.vaadin.server.VaadinService;
+import com.vaadin.ui.BrowserFrame;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.CheckBox;
+import com.vaadin.ui.CustomTable.RowHeaderMode;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.Notification;
+import com.vaadin.ui.Notification.Type;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Window;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import life.qbic.projectbrowser.helpers.QcMlOpenbisSource;
+import life.qbic.projectbrowser.helpers.DatasetViewFilterDecorator;
+import life.qbic.projectbrowser.helpers.DatasetViewFilterGenerator;
+import life.qbic.projectbrowser.helpers.ProxyForGenomeViewerRestApi;
+import life.qbic.projectbrowser.model.DatasetBean;
+import life.qbic.projectbrowser.components.ButtonLink;
+import life.qbic.projectbrowser.controllers.*;
+
+public class DatasetView extends VerticalLayout implements View {
+
+
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 8672873911284888801L;
+
+<span class="nc" id="L86">  private static final Logger LOG = LogManager.getLogger(DatasetView.class);</span>
+  private final FilterTreeTable table;
+  private HierarchicalContainer datasets;
+  VerticalLayout vert;
+<span class="nc" id="L90">  private final String DOWNLOAD_BUTTON_CAPTION = &quot;Download&quot;;</span>
+<span class="nc" id="L91">  private final String VISUALIZE_BUTTON_CAPTION = &quot;Visualize&quot;;</span>
+  public final static String navigateToLabel = &quot;datasetview&quot;;
+  private DataHandler datahandler;
+  private State state;
+  private String resourceUrl;
+<span class="nc" id="L96">  private final ButtonLink download =</span>
+      new ButtonLink(DOWNLOAD_BUTTON_CAPTION, new ExternalResource(&quot;&quot;));
+
+<span class="nc" id="L99">  private final String[] FILTER_TABLE_COLUMNS = new String[] {&quot;Select&quot;, &quot;Project&quot;, &quot;Sample&quot;,</span>
+      &quot;File Name&quot;, &quot;Dataset Type&quot;, &quot;Registration Date&quot;, &quot;File Size&quot;};
+
+  private int numberOfDatasets;
+
+<span class="nc" id="L104">  public DatasetView(DataHandler dh, State state, String resourceurl) {</span>
+<span class="nc" id="L105">    this.datahandler = dh;</span>
+<span class="nc" id="L106">    this.resourceUrl = resourceurl;</span>
+<span class="nc" id="L107">    this.state = state;</span>
+
+<span class="nc" id="L109">    this.vert = new VerticalLayout();</span>
+<span class="nc" id="L110">    this.table = buildFilterTable();</span>
+    // this.setContent(vert);
+<span class="nc" id="L112">    this.addComponent(vert);</span>
+<span class="nc" id="L113">  }</span>
+
+
+<span class="nc" id="L116">  public DatasetView(HierarchicalContainer dataset) {</span>
+<span class="nc" id="L117">    this.vert = new VerticalLayout();</span>
+<span class="nc" id="L118">    this.datasets = dataset;</span>
+<span class="nc" id="L119">    this.table = buildFilterTable();</span>
+<span class="nc" id="L120">    this.buildLayout();</span>
+<span class="nc" id="L121">    this.setContainerDataSource(this.datasets);</span>
+    // this.setContent(vert);
+<span class="nc" id="L123">    this.addComponent(vert);</span>
+<span class="nc" id="L124">  }</span>
+
+
+  public void setContainerDataSource(HierarchicalContainer newDataSource) {
+<span class="nc" id="L128">    this.datasets = (HierarchicalContainer) newDataSource;</span>
+<span class="nc" id="L129">    this.table.setContainerDataSource(this.datasets);</span>
+
+    // TODO does this affect the datasetview?
+    // this.table.setColumnCollapsed(&quot;state&quot;, true);
+
+<span class="nc" id="L134">    this.table.setVisibleColumns((Object[]) FILTER_TABLE_COLUMNS);</span>
+
+<span class="nc" id="L136">    this.table.setSizeFull();</span>
+<span class="nc" id="L137">    this.buildLayout();</span>
+<span class="nc" id="L138">  }</span>
+
+  public HierarchicalContainer getContainerDataSource() {
+<span class="nc" id="L141">    return this.datasets;</span>
+  }
+
+  /**
+   * Precondition: {DatasetView#table} has to be initialized. e.g. with
+   * {DatasetView#buildFilterTable} If it is not, strange behaviour has to be expected. builds the
+   * Layout of this view.
+   */
+  private void buildLayout() {
+<span class="nc" id="L150">    this.vert.removeAllComponents();</span>
+
+<span class="nc" id="L152">    int browserWidth = UI.getCurrent().getPage().getBrowserWindowWidth();</span>
+<span class="nc" id="L153">    int browserHeight = UI.getCurrent().getPage().getBrowserWindowHeight();</span>
+
+<span class="nc" id="L155">    this.vert.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L156">    this.setWidth(String.format(&quot;%spx&quot;, (browserWidth * 0.6)));</span>
+    // this.setHeight(String.format(&quot;%spx&quot;, (browserHeight * 0.8)));
+
+<span class="nc" id="L159">    VerticalLayout statistics = new VerticalLayout();</span>
+<span class="nc" id="L160">    HorizontalLayout statContent = new HorizontalLayout();</span>
+<span class="nc" id="L161">    statContent.setCaption(&quot;Statistics&quot;);</span>
+<span class="nc" id="L162">    statContent.setIcon(FontAwesome.BAR_CHART_O);</span>
+<span class="nc" id="L163">    statContent</span>
+<span class="nc" id="L164">        .addComponent(new Label(String.format(&quot;%s registered dataset(s).&quot;, numberOfDatasets)));</span>
+<span class="nc" id="L165">    statContent.setMargin(true);</span>
+<span class="nc" id="L166">    statContent.setSpacing(true);</span>
+<span class="nc" id="L167">    statistics.addComponent(statContent);</span>
+<span class="nc" id="L168">    statistics.setMargin(true);</span>
+<span class="nc" id="L169">    this.vert.addComponent(statistics);</span>
+
+
+    // Table (containing datasets) section
+<span class="nc" id="L173">    VerticalLayout tableSection = new VerticalLayout();</span>
+<span class="nc" id="L174">    HorizontalLayout tableSectionContent = new HorizontalLayout();</span>
+
+<span class="nc" id="L176">    tableSectionContent.setCaption(&quot;Registered Datasets&quot;);</span>
+<span class="nc" id="L177">    tableSectionContent.setIcon(FontAwesome.FLASK);</span>
+<span class="nc" id="L178">    tableSectionContent.addComponent(this.table);</span>
+
+<span class="nc" id="L180">    tableSectionContent.setMargin(true);</span>
+<span class="nc" id="L181">    tableSection.setMargin(true);</span>
+
+<span class="nc" id="L183">    tableSection.addComponent(tableSectionContent);</span>
+<span class="nc" id="L184">    this.vert.addComponent(tableSection);</span>
+
+<span class="nc" id="L186">    table.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L187">    tableSection.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L188">    tableSectionContent.setWidth(&quot;100%&quot;);</span>
+
+    // this.table.setSizeFull();
+
+<span class="nc" id="L192">    HorizontalLayout buttonLayout = new HorizontalLayout();</span>
+<span class="nc" id="L193">    buttonLayout.setHeight(null);</span>
+<span class="nc" id="L194">    buttonLayout.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L195">    buttonLayout.setSpacing(false);</span>
+
+<span class="nc" id="L197">    final Button visualize = new Button(VISUALIZE_BUTTON_CAPTION);</span>
+<span class="nc" id="L198">    buttonLayout.addComponent(this.download);</span>
+<span class="nc" id="L199">    buttonLayout.addComponent(visualize);</span>
+
+<span class="nc" id="L201">    Button checkAll = new Button(&quot;Select all datasets&quot;);</span>
+<span class="nc" id="L202">    checkAll.addClickListener(new ClickListener() {</span>
+
+      @Override
+      public void buttonClick(ClickEvent event) {
+<span class="nc bnc" id="L206" title="All 2 branches missed.">        for (Object itemId : table.getItemIds()) {</span>
+<span class="nc" id="L207">          ((CheckBox) table.getItem(itemId).getItemProperty(&quot;Select&quot;).getValue()).setValue(true);</span>
+<span class="nc" id="L208">        }</span>
+<span class="nc" id="L209">      }</span>
+    });
+
+<span class="nc" id="L212">    Button uncheckAll = new Button(&quot;Unselect all datasets&quot;);</span>
+<span class="nc" id="L213">    uncheckAll.addClickListener(new ClickListener() {</span>
+
+      @Override
+      public void buttonClick(ClickEvent event) {
+<span class="nc bnc" id="L217" title="All 2 branches missed.">        for (Object itemId : table.getItemIds()) {</span>
+<span class="nc" id="L218">          ((CheckBox) table.getItem(itemId).getItemProperty(&quot;Select&quot;).getValue()).setValue(false);</span>
+<span class="nc" id="L219">        }</span>
+<span class="nc" id="L220">      }</span>
+    });
+
+<span class="nc" id="L223">    buttonLayout.addComponent(checkAll);</span>
+<span class="nc" id="L224">    buttonLayout.addComponent(uncheckAll);</span>
+    /**
+     * prepare download.
+     */
+<span class="nc" id="L228">    download.setResource(new ExternalResource(&quot;javascript:&quot;));</span>
+<span class="nc" id="L229">    download.setEnabled(false);</span>
+<span class="nc" id="L230">    visualize.setEnabled(false);</span>
+
+<span class="nc bnc" id="L232" title="All 2 branches missed.">    for (final Object itemId : this.table.getItemIds()) {</span>
+<span class="nc" id="L233">      setCheckedBox(itemId, (String) this.table.getItem(itemId).getItemProperty(&quot;CODE&quot;).getValue());</span>
+<span class="nc" id="L234">    }</span>
+
+
+
+    /*
+     * Update the visualize button. It is only enabled, if the files can be visualized.
+     */
+<span class="nc" id="L241">    this.table.addValueChangeListener(new ValueChangeListener() {</span>
+      /**
+       * 
+       */
+      private static final long serialVersionUID = -4875903343717437913L;
+
+
+      /**
+       * check for what selection can be visualized. If so, enable the button. TODO change to
+       * checked.
+       */
+      @Override
+      public void valueChange(ValueChangeEvent event) {
+        // Nothing selected or more than one selected.
+<span class="nc" id="L255">        Set&lt;Object&gt; selectedValues = (Set&lt;Object&gt;) event.getProperty().getValue();</span>
+<span class="nc bnc" id="L256" title="All 6 branches missed.">        if (selectedValues == null || selectedValues.size() == 0 || selectedValues.size() &gt; 1) {</span>
+<span class="nc" id="L257">          visualize.setEnabled(false);</span>
+<span class="nc" id="L258">          return;</span>
+        }
+        // if one selected check whether its dataset type is either fastqc or qcml.
+        // For now we only visulize these two file types.
+<span class="nc" id="L262">        Iterator&lt;Object&gt; iterator = selectedValues.iterator();</span>
+<span class="nc" id="L263">        Object next = iterator.next();</span>
+<span class="nc" id="L264">        String datasetType =</span>
+<span class="nc" id="L265">            (String) table.getItem(next).getItemProperty(&quot;Dataset Type&quot;).getValue();</span>
+<span class="nc" id="L266">        String fileName = (String) table.getItem(next).getItemProperty(&quot;File Name&quot;).getValue();</span>
+        // TODO: No hardcoding!!
+        // if (datasetType.equals(&quot;FASTQC&quot;) || datasetType.equals(&quot;QCML&quot;) ||
+        // datasetType.equals(&quot;BAM&quot;)
+        // || datasetType.equals(&quot;VCF&quot;)) {
+<span class="nc bnc" id="L271" title="All 2 branches missed.">        if (datasetType.equals(&quot;Q_WF_MS_QUALITYCONTROL_RESULTS&quot;)</span>
+<span class="nc bnc" id="L272" title="All 4 branches missed.">            &amp;&amp; (fileName.endsWith(&quot;.html&quot;) || fileName.endsWith(&quot;.qcML&quot;))) {</span>
+<span class="nc" id="L273">          visualize.setEnabled(true);</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">        } else if (datasetType.equals(&quot;Q_WF_MS_QUALITYCONTROL_LOGS&quot;)</span>
+<span class="nc bnc" id="L275" title="All 4 branches missed.">            &amp;&amp; (fileName.endsWith(&quot;.err&quot;) || fileName.endsWith(&quot;.out&quot;))) {</span>
+<span class="nc" id="L276">          visualize.setEnabled(true);</span>
+        } else {
+<span class="nc" id="L278">          visualize.setEnabled(false);</span>
+        }
+<span class="nc" id="L280">      }</span>
+    });
+
+
+    // TODO Workflow Views should get those data and be happy
+    /*
+     * Send message that in datasetview the following was selected. WorkflowViews get those messages
+     * and save them, if it is valid information for them.
+     */
+<span class="nc" id="L289">    this.table.addValueChangeListener(new ValueChangeListener() {</span>
+      /**
+       * 
+       */
+      private static final long serialVersionUID = -3554627008191389648L;
+
+      @Override
+      public void valueChange(ValueChangeEvent event) {
+        // Nothing selected or more than one selected.
+<span class="nc" id="L298">        Set&lt;Object&gt; selectedValues = (Set&lt;Object&gt;) event.getProperty().getValue();</span>
+<span class="nc" id="L299">        State state = (State) UI.getCurrent().getSession().getAttribute(&quot;state&quot;);</span>
+<span class="nc" id="L300">        ArrayList&lt;String&gt; message = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L301">        message.add(&quot;DataSetView&quot;);</span>
+<span class="nc bnc" id="L302" title="All 4 branches missed.">        if (selectedValues != null &amp;&amp; selectedValues.size() == 1) {</span>
+<span class="nc" id="L303">          Iterator&lt;Object&gt; iterator = selectedValues.iterator();</span>
+<span class="nc" id="L304">          Object next = iterator.next();</span>
+<span class="nc" id="L305">          String datasetType =</span>
+<span class="nc" id="L306">              (String) table.getItem(next).getItemProperty(&quot;Dataset Type&quot;).getValue();</span>
+<span class="nc" id="L307">          message.add(datasetType);</span>
+<span class="nc" id="L308">          String project = (String) table.getItem(next).getItemProperty(&quot;Project&quot;).getValue();</span>
+
+<span class="nc" id="L310">          String space = datahandler.getOpenBisClient().getProjectByCode(project).getSpaceCode();// .getIdentifier().split(&quot;/&quot;)[1];</span>
+<span class="nc" id="L311">          message.add(project);</span>
+<span class="nc" id="L312">          message.add((String) table.getItem(next).getItemProperty(&quot;Sample&quot;).getValue());</span>
+          // message.add((String) table.getItem(next).getItemProperty(&quot;Sample Type&quot;).getValue());
+<span class="nc" id="L314">          message.add((String) table.getItem(next).getItemProperty(&quot;dl_link&quot;).getValue());</span>
+<span class="nc" id="L315">          message.add((String) table.getItem(next).getItemProperty(&quot;File Name&quot;).getValue());</span>
+<span class="nc" id="L316">          message.add(space);</span>
+          // state.notifyObservers(message);
+<span class="nc" id="L318">        } else {</span>
+<span class="nc" id="L319">          message.add(&quot;null&quot;);</span>
+        } // TODO
+          // state.notifyObservers(message);
+
+<span class="nc" id="L323">      }</span>
+    });
+
+
+    // TODO get the GV to work here. Together with reverse proxy
+    // Assumes that table Value Change listner is enabling or disabling the button if preconditions
+    // are not fullfilled
+<span class="nc" id="L330">    visualize.addClickListener(new ClickListener() {</span>
+      /**
+       * 
+       */
+      private static final long serialVersionUID = 9015273307461506369L;
+
+      @Override
+      public void buttonClick(ClickEvent event) {
+<span class="nc" id="L338">        Set&lt;Object&gt; selectedValues = (Set&lt;Object&gt;) table.getValue();</span>
+<span class="nc" id="L339">        Iterator&lt;Object&gt; iterator = selectedValues.iterator();</span>
+<span class="nc" id="L340">        Object next = iterator.next();</span>
+<span class="nc" id="L341">        String datasetCode = (String) table.getItem(next).getItemProperty(&quot;CODE&quot;).getValue();</span>
+<span class="nc" id="L342">        String datasetFileName =</span>
+<span class="nc" id="L343">            (String) table.getItem(next).getItemProperty(&quot;File Name&quot;).getValue();</span>
+        URL url;
+        try {
+<span class="nc" id="L346">          Object parent = table.getParent(next);</span>
+<span class="nc bnc" id="L347" title="All 2 branches missed.">          if (parent != null) {</span>
+<span class="nc" id="L348">            String parentDatasetFileName =</span>
+<span class="nc" id="L349">                (String) table.getItem(parent).getItemProperty(&quot;File Name&quot;).getValue();</span>
+<span class="nc" id="L350">            url = datahandler.getOpenBisClient().getUrlForDataset(datasetCode,</span>
+                parentDatasetFileName + &quot;/&quot; + datasetFileName);
+<span class="nc" id="L352">          } else {</span>
+<span class="nc" id="L353">            url = datahandler.getOpenBisClient().getUrlForDataset(datasetCode, datasetFileName);</span>
+          }
+
+<span class="nc" id="L356">          Window subWindow = new Window(</span>
+<span class="nc" id="L357">              &quot;QC of Sample: &quot; + (String) table.getItem(next).getItemProperty(&quot;Sample&quot;).getValue());</span>
+<span class="nc" id="L358">          VerticalLayout subContent = new VerticalLayout();</span>
+<span class="nc" id="L359">          subContent.setMargin(true);</span>
+<span class="nc" id="L360">          subWindow.setContent(subContent);</span>
+<span class="nc" id="L361">          ProjectBrowserPortlet ui = (ProjectBrowserPortlet) UI.getCurrent();</span>
+          // Put some components in it
+<span class="nc" id="L363">          Resource res = null;</span>
+<span class="nc" id="L364">          String datasetType =</span>
+<span class="nc" id="L365">              (String) table.getItem(next).getItemProperty(&quot;Dataset Type&quot;).getValue();</span>
+<span class="nc" id="L366">          final RequestHandler rh = new ProxyForGenomeViewerRestApi();</span>
+<span class="nc" id="L367">          boolean rhAttached = false;</span>
+<span class="nc bnc" id="L368" title="All 2 branches missed.">          if (datasetType.equals(&quot;Q_WF_MS_QUALITYCONTROL_RESULTS&quot;)</span>
+<span class="nc bnc" id="L369" title="All 2 branches missed.">              &amp;&amp; datasetFileName.endsWith(&quot;.qcML&quot;)) {</span>
+<span class="nc" id="L370">            QcMlOpenbisSource re = new QcMlOpenbisSource(url);</span>
+<span class="nc" id="L371">            StreamResource streamres = new StreamResource(re, datasetFileName);</span>
+<span class="nc" id="L372">            streamres.setMIMEType(&quot;application/xml&quot;);</span>
+<span class="nc" id="L373">            res = streamres;</span>
+<span class="nc bnc" id="L374" title="All 2 branches missed.">          } else if (datasetType.equals(&quot;Q_WF_MS_QUALITYCONTROL_RESULTS&quot;)</span>
+<span class="nc bnc" id="L375" title="All 2 branches missed.">              &amp;&amp; datasetFileName.endsWith(&quot;.html&quot;)) {</span>
+<span class="nc" id="L376">            QcMlOpenbisSource re = new QcMlOpenbisSource(url);</span>
+<span class="nc" id="L377">            StreamResource streamres = new StreamResource(re, datasetFileName);</span>
+<span class="nc" id="L378">            streamres.setMIMEType(&quot;text/html&quot;);</span>
+<span class="nc" id="L379">            res = streamres;</span>
+<span class="nc bnc" id="L380" title="All 2 branches missed.">          } else if (datasetType.equals(&quot;Q_WF_MS_QUALITYCONTROL_LOGS&quot;)</span>
+<span class="nc bnc" id="L381" title="All 4 branches missed.">              &amp;&amp; (datasetFileName.endsWith(&quot;.err&quot;) || datasetFileName.endsWith(&quot;.out&quot;))) {</span>
+<span class="nc" id="L382">            QcMlOpenbisSource re = new QcMlOpenbisSource(url);</span>
+<span class="nc" id="L383">            StreamResource streamres = new StreamResource(re, datasetFileName);</span>
+<span class="nc" id="L384">            streamres.setMIMEType(&quot;text/plain&quot;);</span>
+<span class="nc" id="L385">            res = streamres;</span>
+<span class="nc bnc" id="L386" title="All 2 branches missed.">          } else if (datasetType.equals(&quot;FASTQC&quot;)) {</span>
+<span class="nc" id="L387">            res = new ExternalResource(url);</span>
+<span class="nc bnc" id="L388" title="All 4 branches missed.">          } else if (datasetType.equals(&quot;BAM&quot;) || datasetType.equals(&quot;VCF&quot;)) {</span>
+<span class="nc" id="L389">            String filePath = (String) table.getItem(next).getItemProperty(&quot;dl_link&quot;).getValue();</span>
+<span class="nc" id="L390">            filePath = String.format(&quot;/store%s&quot;, filePath.split(&quot;store&quot;)[1]);</span>
+<span class="nc" id="L391">            String fileId = (String) table.getItem(next).getItemProperty(&quot;File Name&quot;).getValue();</span>
+            // fileId = &quot;control.1kg.panel.samples.vcf.gz&quot;;
+            // UI.getCurrent().getSession().addRequestHandler(rh);
+<span class="nc" id="L394">            rhAttached = true;</span>
+<span class="nc" id="L395">            ThemeDisplay themedisplay = (ThemeDisplay) VaadinService.getCurrentRequest()</span>
+<span class="nc" id="L396">                .getAttribute(WebKeys.THEME_DISPLAY);</span>
+<span class="nc" id="L397">            String hostTmp = &quot;http://localhost:7778/vizrest/rest&quot;;// &quot;http://localhost:8080/web/guest/mainportlet?p_p_id=QbicmainportletApplicationPortlet_WAR_QBiCMainPortlet_INSTANCE_5pPd5JQ8uGOt&amp;p_p_lifecycle=2&amp;p_p_state=normal&amp;p_p_mode=view&amp;p_p_cacheability=cacheLevelPage&amp;p_p_col_id=column-1&amp;p_p_col_count=1&quot;;</span>
+            // hostTmp +=
+            // &quot;&amp;qbicsession=&quot; + UI.getCurrent().getSession().getAttribute(&quot;gv-restapi-session&quot;)
+            // + &quot;&amp;someblabla=&quot;;
+            // String hostTmp = themedisplay.getURLPortal() +
+            // UI.getCurrent().getPage().getLocation().getPath() + &quot;?qbicsession=&quot; +
+            // UI.getCurrent().getSession().getAttribute(&quot;gv-restapi-session&quot;) + &quot;&amp;someblabla=&quot; ;
+            // String host = Base64.encode(hostTmp.getBytes());
+<span class="nc" id="L405">            String title = (String) table.getItem(next).getItemProperty(&quot;Sample&quot;).getValue();</span>
+            // res =
+            // new ExternalResource(
+            // String
+            // .format(
+            // &quot;http://localhost:7778/genomeviewer/?host=%s&amp;title=%s&amp;fileid=%s&amp;featuretype=alignments&amp;filepath=%s&amp;removeZeroGenotypes=false&quot;,
+            // host, title, fileId, filePath));
+          }
+<span class="nc" id="L413">          BrowserFrame frame = new BrowserFrame(&quot;&quot;, res);</span>
+<span class="nc bnc" id="L414" title="All 2 branches missed.">          if (rhAttached) {</span>
+<span class="nc" id="L415">            frame.addDetachListener(new DetachListener() {</span>
+
+              /**
+               * 
+               */
+              private static final long serialVersionUID = 1534523447730906543L;
+
+              @Override
+              public void detach(DetachEvent event) {
+<span class="nc" id="L424">                UI.getCurrent().getSession().removeRequestHandler(rh);</span>
+<span class="nc" id="L425">              }</span>
+
+            });
+          }
+
+<span class="nc" id="L430">          frame.setSizeFull();</span>
+<span class="nc" id="L431">          subContent.addComponent(frame);</span>
+
+          // Center it in the browser window
+<span class="nc" id="L434">          subWindow.center();</span>
+<span class="nc" id="L435">          subWindow.setModal(true);</span>
+<span class="nc" id="L436">          subWindow.setSizeFull();</span>
+
+<span class="nc" id="L438">          frame.setHeight((int) (ui.getPage().getBrowserWindowHeight() * 0.8), Unit.PIXELS);</span>
+          // Open it in the UI
+<span class="nc" id="L440">          ui.addWindow(subWindow);</span>
+<span class="nc" id="L441">        } catch (MalformedURLException e) {</span>
+<span class="nc" id="L442">          LOG.error(String.format(&quot;Visualization failed because of malformedURL for dataset: %s&quot;,</span>
+              datasetCode));
+<span class="nc" id="L444">          Notification.show(</span>
+              &quot;Given dataset has no file attached to it!! Please Contact your project manager. Or check whether it already has some data&quot;,
+              Type.ERROR_MESSAGE);
+<span class="nc" id="L447">        }</span>
+<span class="nc" id="L448">      }</span>
+    });
+
+<span class="nc" id="L451">    this.vert.addComponent(buttonLayout);</span>
+
+<span class="nc" id="L453">  }</span>
+
+
+  private void setCheckedBox(Object itemId, String parentFolder) {
+<span class="nc" id="L457">    CheckBox itemCheckBox =</span>
+<span class="nc" id="L458">        (CheckBox) this.table.getItem(itemId).getItemProperty(&quot;Select&quot;).getValue();</span>
+<span class="nc" id="L459">    itemCheckBox.addValueChangeListener(new TableCheckBoxValueChangeListener(itemId, parentFolder));</span>
+
+<span class="nc bnc" id="L461" title="All 2 branches missed.">    if (table.hasChildren(itemId)) {</span>
+<span class="nc bnc" id="L462" title="All 2 branches missed.">      for (Object childId : table.getChildren(itemId)) {</span>
+<span class="nc" id="L463">        String newParentFolder = Paths</span>
+<span class="nc" id="L464">            .get(parentFolder,</span>
+<span class="nc" id="L465">                (String) this.table.getItem(itemId).getItemProperty(&quot;File Name&quot;).getValue())</span>
+<span class="nc" id="L466">            .toString();</span>
+<span class="nc" id="L467">        setCheckedBox(childId, newParentFolder);</span>
+<span class="nc" id="L468">      }</span>
+    }
+
+<span class="nc" id="L471">  }</span>
+
+  private FilterTreeTable buildFilterTable() {
+<span class="nc" id="L474">    FilterTreeTable filterTable = new FilterTreeTable();</span>
+<span class="nc" id="L475">    filterTable.setSizeFull();</span>
+
+<span class="nc" id="L477">    filterTable.setFilterDecorator(new DatasetViewFilterDecorator());</span>
+<span class="nc" id="L478">    filterTable.setFilterGenerator(new DatasetViewFilterGenerator());</span>
+
+<span class="nc" id="L480">    filterTable.setFilterBarVisible(true);</span>
+
+<span class="nc" id="L482">    filterTable.setSelectable(true);</span>
+<span class="nc" id="L483">    filterTable.setImmediate(true);</span>
+<span class="nc" id="L484">    filterTable.setMultiSelect(true);</span>
+
+<span class="nc" id="L486">    filterTable.setRowHeaderMode(RowHeaderMode.INDEX);</span>
+
+<span class="nc" id="L488">    filterTable.setColumnCollapsingAllowed(true);</span>
+
+<span class="nc" id="L490">    filterTable.setColumnReorderingAllowed(true);</span>
+
+<span class="nc bnc" id="L492" title="All 2 branches missed.">    if (this.datasets != null) {</span>
+<span class="nc" id="L493">      filterTable.setContainerDataSource(this.datasets);</span>
+    }
+
+<span class="nc" id="L496">    return filterTable;</span>
+  }
+
+  @Override
+  public void enter(ViewChangeEvent event) {
+<span class="nc" id="L501">    Map&lt;String, String&gt; map = getMap(event.getParameters());</span>
+<span class="nc bnc" id="L502" title="All 2 branches missed.">    if (map == null)</span>
+<span class="nc" id="L503">      return;</span>
+    try {
+<span class="nc" id="L505">      HierarchicalContainer datasetContainer = new HierarchicalContainer();</span>
+<span class="nc" id="L506">      datasetContainer.addContainerProperty(&quot;Select&quot;, CheckBox.class, null);</span>
+<span class="nc" id="L507">      datasetContainer.addContainerProperty(&quot;Project&quot;, String.class, null);</span>
+<span class="nc" id="L508">      datasetContainer.addContainerProperty(&quot;Sample&quot;, String.class, null);</span>
+      // datasetContainer.addContainerProperty(&quot;Sample Type&quot;, String.class, null);
+<span class="nc" id="L510">      datasetContainer.addContainerProperty(&quot;File Name&quot;, String.class, null);</span>
+<span class="nc" id="L511">      datasetContainer.addContainerProperty(&quot;File Type&quot;, String.class, null);</span>
+<span class="nc" id="L512">      datasetContainer.addContainerProperty(&quot;Dataset Type&quot;, String.class, null);</span>
+<span class="nc" id="L513">      datasetContainer.addContainerProperty(&quot;Registration Date&quot;, Timestamp.class, null);</span>
+<span class="nc" id="L514">      datasetContainer.addContainerProperty(&quot;Validated&quot;, Boolean.class, null);</span>
+<span class="nc" id="L515">      datasetContainer.addContainerProperty(&quot;File Size&quot;, String.class, null);</span>
+<span class="nc" id="L516">      datasetContainer.addContainerProperty(&quot;file_size_bytes&quot;, Long.class, null);</span>
+<span class="nc" id="L517">      datasetContainer.addContainerProperty(&quot;dl_link&quot;, String.class, null);</span>
+<span class="nc" id="L518">      datasetContainer.addContainerProperty(&quot;CODE&quot;, String.class, null);</span>
+
+<span class="nc" id="L520">      List&lt;ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet&gt; retrievedDatasets = null;</span>
+
+<span class="nc bnc" id="L522" title="All 4 branches missed.">      switch (map.get(&quot;type&quot;)) {</span>
+        case &quot;project&quot;:
+<span class="nc" id="L524">          String projectIdentifier = map.get(&quot;id&quot;);</span>
+<span class="nc" id="L525">          retrievedDatasets = datahandler.getOpenBisClient()</span>
+<span class="nc" id="L526">              .getDataSetsOfProjectByIdentifierWithSearchCriteria(projectIdentifier);</span>
+<span class="nc" id="L527">          break;</span>
+
+        case &quot;experiment&quot;:
+<span class="nc" id="L530">          String experimentIdentifier = map.get(&quot;id&quot;);</span>
+<span class="nc" id="L531">          retrievedDatasets = datahandler.getOpenBisClient()</span>
+<span class="nc" id="L532">              .getDataSetsOfExperimentByCodeWithSearchCriteria(experimentIdentifier);</span>
+<span class="nc" id="L533">          break;</span>
+
+        case &quot;sample&quot;:
+<span class="nc" id="L536">          String sampleIdentifier = map.get(&quot;id&quot;);</span>
+<span class="nc" id="L537">          String sampleCode = sampleIdentifier.split(&quot;/&quot;)[2];</span>
+<span class="nc" id="L538">          retrievedDatasets = datahandler.getOpenBisClient().getDataSetsOfSample(sampleCode);</span>
+<span class="nc" id="L539">          break;</span>
+
+        default:
+<span class="nc" id="L542">          retrievedDatasets =</span>
+              new ArrayList&lt;ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet&gt;();
+          break;
+      }
+
+<span class="nc" id="L547">      numberOfDatasets = retrievedDatasets.size();</span>
+<span class="nc bnc" id="L548" title="All 2 branches missed.">      if (numberOfDatasets == 0) {</span>
+<span class="nc" id="L549">        new Notification(&quot;No datasets available.&quot;, &quot;&lt;br/&gt;Please contact the project manager.&quot;,</span>
+<span class="nc" id="L550">            Type.WARNING_MESSAGE, true).show(Page.getCurrent());</span>
+      } else {
+
+<span class="nc" id="L553">        Map&lt;String, String&gt; samples = new HashMap&lt;String, String&gt;();</span>
+
+        // project same for all datasets
+<span class="nc" id="L556">        String projectCode = retrievedDatasets.get(0).getExperimentIdentifier().split(&quot;/&quot;)[2];</span>
+<span class="nc bnc" id="L557" title="All 2 branches missed.">        for (ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet dataset : retrievedDatasets) {</span>
+<span class="nc" id="L558">          samples.put(dataset.getCode(), dataset.getSampleIdentifierOrNull().split(&quot;/&quot;)[2]);</span>
+<span class="nc" id="L559">        }</span>
+
+<span class="nc" id="L561">        List&lt;DatasetBean&gt; dsBeans = datahandler.queryDatasetsForFolderStructure(retrievedDatasets);</span>
+
+<span class="nc bnc" id="L563" title="All 2 branches missed.">        for (DatasetBean d : dsBeans) {</span>
+<span class="nc" id="L564">          Date date = d.getRegistrationDate();</span>
+<span class="nc" id="L565">          SimpleDateFormat sd = new SimpleDateFormat(&quot;yyyy-MM-dd hh:mm:ss&quot;);</span>
+<span class="nc" id="L566">          String dateString = sd.format(date);</span>
+<span class="nc" id="L567">          Timestamp ts = Timestamp.valueOf(dateString);</span>
+<span class="nc" id="L568">          String sampleID = samples.get(d.getCode());</span>
+
+<span class="nc" id="L570">          registerDatasetInTable(d, datasetContainer, projectCode, sampleID, ts, null);</span>
+<span class="nc" id="L571">        }</span>
+      }
+
+<span class="nc" id="L574">      this.setContainerDataSource(datasetContainer);</span>
+
+<span class="nc" id="L576">    } catch (Exception e) {</span>
+<span class="nc" id="L577">      e.printStackTrace();</span>
+<span class="nc" id="L578">      LOG.error(String.format(&quot;getting dataset failed for dataset %s&quot;, map.toString()),</span>
+<span class="nc" id="L579">          e.getStackTrace());</span>
+<span class="nc" id="L580">    }</span>
+<span class="nc" id="L581">  }</span>
+
+
+
+  public void registerDatasetInTable(DatasetBean d, HierarchicalContainer dataset_container,
+      String project, String sample, Timestamp ts, Object parent) {
+<span class="nc bnc" id="L587" title="All 2 branches missed.">    if (d.hasChildren()) {</span>
+
+<span class="nc" id="L589">      Object new_ds = dataset_container.addItem();</span>
+
+<span class="nc" id="L591">      List&lt;DatasetBean&gt; subList = d.getChildren();</span>
+
+
+<span class="nc" id="L594">      dataset_container.setChildrenAllowed(new_ds, true);</span>
+
+<span class="nc" id="L596">      dataset_container.getContainerProperty(new_ds, &quot;Select&quot;).setValue(new CheckBox());</span>
+
+<span class="nc" id="L598">      dataset_container.getContainerProperty(new_ds, &quot;Project&quot;).setValue(project);</span>
+<span class="nc" id="L599">      dataset_container.getContainerProperty(new_ds, &quot;Sample&quot;).setValue(sample);</span>
+      // dataset_container.getContainerProperty(new_ds, &quot;Sample Type&quot;).setValue(
+      // d.getSample().getType());
+<span class="nc" id="L602">      dataset_container.getContainerProperty(new_ds, &quot;File Name&quot;).setValue(d.getName());</span>
+<span class="nc" id="L603">      dataset_container.getContainerProperty(new_ds, &quot;File Type&quot;).setValue(&quot;Folder&quot;);</span>
+<span class="nc" id="L604">      dataset_container.getContainerProperty(new_ds, &quot;Dataset Type&quot;).setValue(d.getType());</span>
+<span class="nc" id="L605">      dataset_container.getContainerProperty(new_ds, &quot;Registration Date&quot;).setValue(ts);</span>
+<span class="nc" id="L606">      dataset_container.getContainerProperty(new_ds, &quot;Validated&quot;).setValue(true);</span>
+<span class="nc" id="L607">      dataset_container.getContainerProperty(new_ds, &quot;dl_link&quot;).setValue(d.getDssPath());</span>
+<span class="nc" id="L608">      dataset_container.getContainerProperty(new_ds, &quot;CODE&quot;).setValue(d.getCode());</span>
+<span class="nc" id="L609">      dataset_container.getContainerProperty(new_ds, &quot;file_size_bytes&quot;).setValue(d.getFileSize());</span>
+
+<span class="nc bnc" id="L611" title="All 2 branches missed.">      if (parent != null) {</span>
+<span class="nc" id="L612">        dataset_container.setParent(new_ds, parent);</span>
+      }
+
+<span class="nc bnc" id="L615" title="All 2 branches missed.">      for (DatasetBean file : subList) {</span>
+<span class="nc" id="L616">        registerDatasetInTable(file, dataset_container, project, sample, ts, new_ds);</span>
+<span class="nc" id="L617">      }</span>
+
+<span class="nc" id="L619">    } else {</span>
+      // System.out.println(&quot;Now it should be a file: &quot; + filelist[0].getPathInDataSet());
+
+<span class="nc" id="L622">      Object new_file = dataset_container.addItem();</span>
+<span class="nc" id="L623">      dataset_container.setChildrenAllowed(new_file, false);</span>
+
+<span class="nc" id="L625">      dataset_container.getContainerProperty(new_file, &quot;Select&quot;).setValue(new CheckBox());</span>
+<span class="nc" id="L626">      dataset_container.getContainerProperty(new_file, &quot;Project&quot;).setValue(project);</span>
+<span class="nc" id="L627">      dataset_container.getContainerProperty(new_file, &quot;Sample&quot;).setValue(sample);</span>
+      // dataset_container.getContainerProperty(new_file, &quot;Sample Type&quot;).setValue(sampleType);
+<span class="nc" id="L629">      dataset_container.getContainerProperty(new_file, &quot;File Name&quot;).setValue(d.getFileName());</span>
+<span class="nc" id="L630">      dataset_container.getContainerProperty(new_file, &quot;File Type&quot;).setValue(d.getFileType());</span>
+<span class="nc" id="L631">      dataset_container.getContainerProperty(new_file, &quot;Dataset Type&quot;).setValue(d.getType());</span>
+<span class="nc" id="L632">      dataset_container.getContainerProperty(new_file, &quot;Registration Date&quot;).setValue(ts);</span>
+<span class="nc" id="L633">      dataset_container.getContainerProperty(new_file, &quot;Validated&quot;).setValue(true);</span>
+<span class="nc" id="L634">      dataset_container.getContainerProperty(new_file, &quot;File Size&quot;)</span>
+<span class="nc" id="L635">          .setValue(PortalUtils.humanReadableByteCount(d.getFileSize(), true));</span>
+<span class="nc" id="L636">      dataset_container.getContainerProperty(new_file, &quot;dl_link&quot;).setValue(d.getDssPath());</span>
+<span class="nc" id="L637">      dataset_container.getContainerProperty(new_file, &quot;CODE&quot;).setValue(d.getCode());</span>
+<span class="nc" id="L638">      dataset_container.getContainerProperty(new_file, &quot;file_size_bytes&quot;).setValue(d.getFileSize());</span>
+<span class="nc bnc" id="L639" title="All 2 branches missed.">      if (parent != null) {</span>
+<span class="nc" id="L640">        dataset_container.setParent(new_file, parent);</span>
+      }
+    }
+<span class="nc" id="L643">  }</span>
+
+
+
+  private class TableCheckBoxValueChangeListener implements ValueChangeListener {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -7177199525909283879L;
+    private Object itemId;
+    private String itemFolderName;
+
+<span class="nc" id="L656">    public TableCheckBoxValueChangeListener(final Object itemId, String itemFolderName) {</span>
+<span class="nc" id="L657">      this.itemFolderName = itemFolderName;</span>
+<span class="nc" id="L658">      this.itemId = itemId;</span>
+<span class="nc" id="L659">    }</span>
+
+    @Override
+    public void valueChange(ValueChangeEvent event) {
+
+<span class="nc" id="L664">      PortletSession portletSession = ((ProjectBrowserPortlet) UI.getCurrent()).getPortletSession();</span>
+<span class="nc" id="L665">      Map&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entries =</span>
+          (Map&lt;String, SimpleEntry&lt;String, Long&gt;&gt;) portletSession
+<span class="nc" id="L667">              .getAttribute(&quot;qbic_download&quot;, PortletSession.APPLICATION_SCOPE);</span>
+
+<span class="nc" id="L669">      boolean itemSelected = (Boolean) event.getProperty().getValue();</span>
+      /*
+       * String fileName = &quot;&quot;; Object parentId = table.getParent(itemId); //In order to prevent
+       * infinity loop int folderDepth = 0; while(parentId != null &amp;&amp; folderDepth &lt; 100){ fileName =
+       * Paths.get((String) table.getItem(parentId).getItemProperty(&quot;File Name&quot;).getValue(),
+       * fileName).toString(); parentId = table.getParent(parentId); folderDepth++; }
+       */
+
+<span class="nc" id="L677">      valueChange(itemId, itemSelected, entries, itemFolderName);</span>
+<span class="nc" id="L678">      portletSession.setAttribute(&quot;qbic_download&quot;, entries, PortletSession.APPLICATION_SCOPE);</span>
+
+<span class="nc bnc" id="L680" title="All 4 branches missed.">      if (entries == null || entries.isEmpty()) {</span>
+<span class="nc" id="L681">        download.setResource(new ExternalResource(&quot;javascript:&quot;));</span>
+<span class="nc" id="L682">        download.setEnabled(false);</span>
+      } else {
+<span class="nc" id="L684">        String resourceUrl =</span>
+<span class="nc" id="L685">            (String) portletSession.getAttribute(&quot;resURL&quot;, PortletSession.APPLICATION_SCOPE);</span>
+<span class="nc" id="L686">        download.setResource(new ExternalResource(resourceUrl));</span>
+<span class="nc" id="L687">        download.setEnabled(true);</span>
+      }
+
+<span class="nc" id="L690">    }</span>
+
+    /**
+     * updates entries (puts and removes) for selected table item and all its children. Means
+     * Checkbox is updated. And in case download button is clicked all checked items will be
+     * downloaded.
+     * 
+     * @param itemId Container id
+     * @param itemSelected checkbox value of the item
+     * @param entries all checked items
+     * @param fileName fileName of current item
+     */
+    private void valueChange(Object itemId, boolean itemSelected,
+        Map&lt;String, SimpleEntry&lt;String, Long&gt;&gt; entries, String fileName) {
+
+<span class="nc" id="L705">      ((CheckBox) table.getItem(itemId).getItemProperty(&quot;Select&quot;).getValue())</span>
+<span class="nc" id="L706">          .setValue(itemSelected);</span>
+<span class="nc" id="L707">      fileName = Paths</span>
+<span class="nc" id="L708">          .get(fileName, (String) table.getItem(itemId).getItemProperty(&quot;File Name&quot;).getValue())</span>
+<span class="nc" id="L709">          .toString();</span>
+
+      // System.out.println(fileName);
+<span class="nc bnc" id="L712" title="All 2 branches missed.">      if (table.hasChildren(itemId)) {</span>
+<span class="nc bnc" id="L713" title="All 2 branches missed.">        for (Object childId : table.getChildren(itemId)) {</span>
+<span class="nc" id="L714">          valueChange(childId, itemSelected, entries, fileName);</span>
+<span class="nc" id="L715">        }</span>
+<span class="nc bnc" id="L716" title="All 2 branches missed.">      } else if (itemSelected) {</span>
+<span class="nc" id="L717">        String datasetCode = (String) table.getItem(itemId).getItemProperty(&quot;CODE&quot;).getValue();</span>
+<span class="nc" id="L718">        Long datasetFileSize =</span>
+<span class="nc" id="L719">            (Long) table.getItem(itemId).getItemProperty(&quot;file_size_bytes&quot;).getValue();</span>
+<span class="nc" id="L720">        entries.put(fileName,</span>
+            new SimpleEntry&lt;String, Long&gt;(datasetCode, datasetFileSize));
+<span class="nc" id="L722">      } else {</span>
+<span class="nc" id="L723">        entries.remove(fileName);</span>
+      }
+<span class="nc" id="L725">    }</span>
+  }
+
+  /**
+   * The input should have the following form: type=openbis_type&amp;id=openbis_id e.g.
+   * type=sample&amp;id=/ABI_SYSBIO/QMARI117AV It is specifically designed to be used in the case of
+   * datasetView. In other cases there is no guarantee that it will work correctly. returns a map
+   * with two entries: &quot;type&quot;: &quot;openbistype&quot; &quot;id&quot; : &quot;openbisId&quot;
+   * 
+   * @param parameters
+   * @return
+   */
+  public static Map&lt;String, String&gt; getMap(String parameters) {
+<span class="nc bnc" id="L738" title="All 4 branches missed.">    if (parameters == null || parameters.equals(&quot;&quot;))</span>
+<span class="nc" id="L739">      return null;</span>
+<span class="nc" id="L740">    String[] params = parameters.split(&quot;&amp;&quot;);</span>
+    // TODO check for length == 2 needed ?
+    // if (params == null || params.length != 2)
+<span class="nc bnc" id="L743" title="All 4 branches missed.">    if (params == null || params.length &gt; 3)</span>
+<span class="nc" id="L744">      return null;</span>
+<span class="nc" id="L745">    HashMap&lt;String, String&gt; map = new HashMap&lt;String, String&gt;();</span>
+<span class="nc bnc" id="L746" title="All 2 branches missed.">    for (String p : params) {</span>
+<span class="nc" id="L747">      String[] kv = p.split(&quot;=&quot;);</span>
+<span class="nc bnc" id="L748" title="All 2 branches missed.">      if (kv.length != 2)</span>
+<span class="nc" id="L749">        return null;</span>
+<span class="nc" id="L750">      map.put(kv[0], kv[1]);</span>
+    }
+<span class="nc" id="L752">    return map;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

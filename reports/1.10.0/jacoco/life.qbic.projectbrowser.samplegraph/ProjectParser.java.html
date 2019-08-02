@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProjectParser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.samplegraph</a> &gt; <span class="el_source">ProjectParser.java</span></div><h1>ProjectParser.java</h1><pre class="source lang-java linenums">package life.qbic.projectbrowser.samplegraph;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+
+import javax.xml.bind.JAXBException;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.WordUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
+import ch.systemsx.cisd.openbis.dss.client.api.v1.DataSet;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
+import life.qbic.datamodel.samples.ISampleBean;
+import life.qbic.datamodel.samples.SampleSummary;
+import life.qbic.xml.properties.Property;
+import life.qbic.xml.properties.PropertyType;
+
+
+public class ProjectParser {
+
+  private Map&lt;String, String&gt; taxMap;
+  private Map&lt;String, String&gt; tissueMap;
+<span class="nc" id="L34">  private Set&lt;String&gt; validLeafs =</span>
+<span class="nc" id="L35">      new HashSet&lt;String&gt;(Arrays.asList(&quot;Q_TEST_SAMPLE&quot;, &quot;Q_MHC_LIGAND_EXTRACT&quot;));</span>
+<span class="nc" id="L36">  private Set&lt;String&gt; validSamples = new HashSet&lt;String&gt;(Arrays.asList(&quot;Q_TEST_SAMPLE&quot;,</span>
+      &quot;Q_MHC_LIGAND_EXTRACT&quot;, &quot;Q_BIOLOGICAL_ENTITY&quot;, &quot;Q_BIOLOGICAL_SAMPLE&quot;));
+  private Map&lt;String, List&lt;DataSet&gt;&gt; sampCodeToDS;
+  private Set&lt;String&gt; codesWithDatasets;
+  private Map&lt;String, Sample&gt; sampCodeToSamp;
+  private Set&lt;String&gt; factorLabels;
+  private Map&lt;Pair&lt;String, String&gt;, Property&gt; factorsForLabelsAndSamples;
+
+<span class="nc" id="L44">  public ProjectParser(Map&lt;String, String&gt; taxMap, Map&lt;String, String&gt; tissueMap) {</span>
+<span class="nc" id="L45">    this.taxMap = taxMap;</span>
+<span class="nc" id="L46">    this.tissueMap = tissueMap;</span>
+<span class="nc" id="L47">  }</span>
+
+  private boolean collectCodesOfDatasetsAttachedToSamples(List&lt;ISampleBean&gt; samples,
+      Set&lt;String&gt; nodeCodes, int maxDepth) {
+<span class="nc" id="L51">    boolean hasDatasets = false;</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">    if (maxDepth &gt;= 0) {</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">      for (ISampleBean s : samples) {</span>
+        OpenbisSampleAdapter sample;
+        try {
+<span class="nc" id="L56">          sample = (OpenbisSampleAdapter) s;</span>
+<span class="nc" id="L57">        } catch (Exception e) {</span>
+<span class="nc" id="L58">          return false;</span>
+<span class="nc" id="L59">        }</span>
+<span class="nc" id="L60">        hasDatasets = false;</span>
+<span class="nc" id="L61">        String code = s.getCode();</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        if (sampCodeToDS.containsKey(code)) {</span>
+<span class="nc" id="L63">          hasDatasets = true;</span>
+        }
+<span class="nc" id="L65">        hasDatasets |=</span>
+<span class="nc" id="L66">            collectCodesOfDatasetsAttachedToSamples(sample.getChildren(), nodeCodes, maxDepth - 1);</span>
+<span class="nc bnc" id="L67" title="All 4 branches missed.">        if (hasDatasets &amp;&amp; validSamples.contains(s.getType())) {</span>
+<span class="nc" id="L68">          nodeCodes.add(code);</span>
+        }
+<span class="nc" id="L70">      }</span>
+    }
+<span class="nc" id="L72">    return hasDatasets;</span>
+  }
+
+  // add percentage of expected datasets that are found in the data store
+  private void addDataSetCount(Collection&lt;SampleSummary&gt; summaries) {
+<span class="nc" id="L77">    int maxDepth = 1; // maximum child levels from a sample that datasets count for</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">    for (SampleSummary node : summaries) {</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">      if (validLeafs.contains(node.getSampleType())) {</span>
+<span class="nc" id="L80">        Set&lt;String&gt; nodeCodes = new HashSet&lt;String&gt;();</span>
+<span class="nc" id="L81">        collectCodesOfDatasetsAttachedToSamples(node.getSamples(), nodeCodes, maxDepth);</span>
+<span class="nc" id="L82">        int expected = node.getSamples().size();</span>
+<span class="nc" id="L83">        int numData = nodeCodes.size();</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">        if (numData &gt; expected) {</span>
+<span class="nc" id="L85">          expected = numData;</span>
+        }
+<span class="nc" id="L87">        node.setMeasuredPercent(numData * 100 / expected);</span>
+
+<span class="nc" id="L89">        codesWithDatasets.addAll(nodeCodes);</span>
+      }
+<span class="nc" id="L91">    }</span>
+<span class="nc" id="L92">  }</span>
+
+  private Property getFactorOfSampleOrNull(final Sample s, final String factorLabel)
+      throws JAXBException {
+<span class="nc" id="L96">    Pair&lt;String, String&gt; key = new ImmutablePair&lt;&gt;(factorLabel, s.getCode());</span>
+<span class="nc" id="L97">    return factorsForLabelsAndSamples.get(key);</span>
+    // final Map&lt;String, String&gt; props = s.getProperties();
+    // final String xmlProperties = props.get(&quot;Q_PROPERTIES&quot;);
+    // final List&lt;Property&gt; factors = (xmlProperties == null ? Collections.EMPTY_LIST
+    // : xmlParser.getAllProperties(xmlParser.parseXMLString(xmlProperties)));
+    //
+    // for (final Property f : factors) {
+    // if (f.getLabel().equals(factorLabel)) {
+    // return f;
+    // }
+    // }
+    // return null;
+  }
+
+  public StructuredExperiment parseSamplesBreadthFirst(List&lt;Sample&gt; samples, List&lt;DataSet&gt; datasets,
+      Set&lt;String&gt; factorLabels, Map&lt;Pair&lt;String, String&gt;, Property&gt; factorsForLabelsAndSamples)
+      throws JAXBException {
+<span class="nc" id="L114">    this.factorLabels = factorLabels;</span>
+<span class="nc" id="L115">    this.factorsForLabelsAndSamples = factorsForLabelsAndSamples;</span>
+<span class="nc" id="L116">    sampCodeToDS = new HashMap&lt;String, List&lt;DataSet&gt;&gt;();</span>
+<span class="nc" id="L117">    codesWithDatasets = new HashSet&lt;String&gt;();</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">    for (DataSet d : datasets) {</span>
+<span class="nc" id="L119">      String code = d.getSampleIdentifierOrNull().split(&quot;/&quot;)[2];</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">      if (sampCodeToDS.containsKey(code)) {</span>
+<span class="nc" id="L121">        sampCodeToDS.get(code).add(d);</span>
+      } else {
+<span class="nc" id="L123">        sampCodeToDS.put(code, new ArrayList&lt;DataSet&gt;(Arrays.asList(d)));</span>
+      }
+<span class="nc" id="L125">    }</span>
+
+    // this.xmlParser = new XMLParser();
+<span class="nc" id="L128">    Map&lt;String, List&lt;SampleSummary&gt;&gt; factorsToSamples = new HashMap&lt;String, List&lt;SampleSummary&gt;&gt;();</span>
+
+<span class="nc" id="L130">    Set&lt;String&gt; knownFactors = new HashSet&lt;String&gt;();</span>
+<span class="nc" id="L131">    knownFactors = factorLabels;</span>
+<span class="nc" id="L132">    sampCodeToSamp = new HashMap&lt;String, Sample&gt;();</span>
+<span class="nc" id="L133">    knownFactors.add(&quot;None&quot;);</span>
+
+<span class="nc" id="L135">    Queue&lt;Sample&gt; samplesBreadthFirst = new LinkedList&lt;Sample&gt;();</span>
+<span class="nc" id="L136">    Set&lt;Sample&gt; visited = new HashSet&lt;Sample&gt;();</span>
+    // init
+<span class="nc bnc" id="L138" title="All 2 branches missed.">    for (Sample sample : samples) {</span>
+<span class="nc" id="L139">      sampCodeToSamp.put(sample.getCode(), sample);</span>
+<span class="nc" id="L140">      String type = sample.getSampleTypeCode();</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">      if (validSamples.contains(type)) {</span>
+        // Map&lt;String, String&gt; propertiesMap = sample.getProperties();
+        // List&lt;Property&gt; factors = new ArrayList&lt;Property&gt;();
+        // if (propertiesMap.containsKey(&quot;Q_PROPERTIES&quot;)) {
+        // // TODO: all props?
+        // factors = xmlParser
+        // .getAllProperties(xmlParser.parseXMLString(propertiesMap.get(&quot;Q_PROPERTIES&quot;)));
+        // }
+        // for (Property f : factors) {
+        // knownFactors.add(f.getLabel());
+        // }
+        // collect roots
+<span class="nc bnc" id="L153" title="All 2 branches missed.">        if (sample.getParents().isEmpty()) {</span>
+<span class="nc" id="L154">          samplesBreadthFirst.add(sample);</span>
+        }
+      }
+<span class="nc" id="L157">    }</span>
+    // TODO maybe fill queue (then copy queue) and map to parents outside this loop
+<span class="nc" id="L159">    Map&lt;String, Integer&gt; idCounterPerLabel = new HashMap&lt;String, Integer&gt;();</span>
+<span class="nc" id="L160">    Map&lt;String, Map&lt;Sample, Set&lt;SampleSummary&gt;&gt;&gt; sampleToParentNodesPerLabel =</span>
+        new HashMap&lt;String, Map&lt;Sample, Set&lt;SampleSummary&gt;&gt;&gt;();
+<span class="nc" id="L162">    Map&lt;String, Set&lt;SampleSummary&gt;&gt; nodesForFactorPerLabel =</span>
+        new HashMap&lt;String, Set&lt;SampleSummary&gt;&gt;();
+<span class="nc bnc" id="L164" title="All 2 branches missed.">    for (String label : knownFactors) {</span>
+<span class="nc" id="L165">      idCounterPerLabel.put(label, 1);</span>
+<span class="nc" id="L166">      sampleToParentNodesPerLabel.put(label, new HashMap&lt;Sample, Set&lt;SampleSummary&gt;&gt;());</span>
+<span class="nc" id="L167">      nodesForFactorPerLabel.put(label, new LinkedHashSet&lt;SampleSummary&gt;());</span>
+<span class="nc" id="L168">    }</span>
+
+    // breadth first queue loop
+<span class="nc bnc" id="L171" title="All 2 branches missed.">    while (!samplesBreadthFirst.isEmpty()) {</span>
+<span class="nc" id="L172">      Sample s = samplesBreadthFirst.poll();</span>
+<span class="nc" id="L173">      String type = s.getSampleTypeCode();</span>
+<span class="nc bnc" id="L174" title="All 4 branches missed.">      if (validSamples.contains(type) &amp;&amp; !visited.contains(s)) {</span>
+<span class="nc" id="L175">        visited.add(s);</span>
+<span class="nc" id="L176">        List&lt;Sample&gt; children = s.getChildren();</span>
+
+<span class="nc bnc" id="L178" title="All 2 branches missed.">        for (String label : knownFactors) {</span>
+          // compute new summary
+<span class="nc" id="L180">          Map&lt;Sample, Set&lt;SampleSummary&gt;&gt; sampleToParentNodes =</span>
+<span class="nc" id="L181">              sampleToParentNodesPerLabel.get(label);</span>
+<span class="nc" id="L182">          Set&lt;SampleSummary&gt; parentSummaries = sampleToParentNodes.get(s);</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">          if (parentSummaries == null) {</span>
+<span class="nc" id="L184">            parentSummaries = new LinkedHashSet&lt;SampleSummary&gt;();</span>
+          }
+<span class="nc" id="L186">          SampleSummary node =</span>
+<span class="nc" id="L187">              createSummary(s, parentSummaries, label, idCounterPerLabel.get(label));</span>
+          // check for hashcode and add current sample s if node exists
+<span class="nc" id="L189">          boolean exists = false;</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">          for (SampleSummary oldNode : nodesForFactorPerLabel.get(label)) {</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">            if (oldNode.equals(node)) {</span>
+<span class="nc" id="L192">              oldNode.addSample(new OpenbisSampleAdapter(s));</span>
+<span class="nc" id="L193">              exists = true;</span>
+<span class="nc" id="L194">              node = oldNode;</span>
+            }
+<span class="nc" id="L196">          }</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">          if (!exists) {</span>
+<span class="nc" id="L198">            idCounterPerLabel.put(label, idCounterPerLabel.get(label) + 1);</span>
+          }
+          // adds node if not already contained in set
+<span class="nc" id="L201">          Set&lt;SampleSummary&gt; theseNodes = nodesForFactorPerLabel.get(label);</span>
+<span class="nc" id="L202">          theseNodes.add(node);</span>
+<span class="nc" id="L203">          nodesForFactorPerLabel.put(label, theseNodes);</span>
+          // add this id to parents' child ids
+<span class="nc bnc" id="L205" title="All 2 branches missed.">          for (SampleSummary parentSummary : parentSummaries) {</span>
+<span class="nc" id="L206">            parentSummary.addChildID(node.getId());</span>
+<span class="nc" id="L207">          }</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">          for (Sample c : children) {</span>
+<span class="nc" id="L209">            samplesBreadthFirst.add(c);</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">            if (!sampleToParentNodes.containsKey(c)) {</span>
+<span class="nc" id="L211">              sampleToParentNodes.put(c, new LinkedHashSet&lt;SampleSummary&gt;());</span>
+            }
+<span class="nc" id="L213">            sampleToParentNodes.get(c).add(node);</span>
+<span class="nc" id="L214">            sampleToParentNodesPerLabel.put(label, sampleToParentNodes);</span>
+<span class="nc" id="L215">          }</span>
+<span class="nc" id="L216">        }</span>
+      }
+<span class="nc" id="L218">    }</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">    for (String label : nodesForFactorPerLabel.keySet()) {</span>
+<span class="nc" id="L220">      Set&lt;SampleSummary&gt; nodes = nodesForFactorPerLabel.get(label);</span>
+<span class="nc" id="L221">      addDataSetCount(nodes);</span>
+<span class="nc" id="L222">      factorsToSamples.put(label, new ArrayList&lt;SampleSummary&gt;(nodes));</span>
+<span class="nc" id="L223">    }</span>
+<span class="nc" id="L224">    return new StructuredExperiment(factorsToSamples);</span>
+  }
+
+  // new &quot;sample to bucket&quot; function, creates new summaries from sample metadata in reference to
+  // parent summaries and experimental factor
+  private SampleSummary createSummary(Sample s, Set&lt;SampleSummary&gt; parents, String label,
+      int currentID) throws JAXBException {
+    // name: should be the visible discriminating factor between nodes
+    // 1. contains the source, if the source is not the selected factor (e.g. tissues)
+    // 2. contains the selected factor's value, except
+    // a) if parent sample has the same factor value
+    // b) if it has no factor
+    // factor: the current selected factor object. If none exists, parents' sources are used.
+
+    // the name alone is not enough to discriminate between different nodes! (e.g. different parent
+    // nodes, same child node name)
+<span class="nc" id="L240">    String type = s.getSampleTypeCode();</span>
+<span class="nc" id="L241">    String source = &quot;unknown&quot;;</span>
+<span class="nc" id="L242">    Property factor = getFactorOfSampleOrNull(s, label);</span>
+<span class="nc" id="L243">    boolean newFactor = true;</span>
+<span class="nc" id="L244">    Set&lt;String&gt; parentSources = new HashSet&lt;String&gt;();</span>
+<span class="nc" id="L245">    Set&lt;Integer&gt; parentIDs = new HashSet&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">    for (SampleSummary parentSum : parents) {</span>
+<span class="nc" id="L247">      parentIDs.add(parentSum.getId());</span>
+<span class="nc" id="L248">      String factorVal = parentSum.getFactorValue();</span>
+<span class="nc bnc" id="L249" title="All 4 branches missed.">      if (factorVal != null &amp;&amp; !factorVal.isEmpty()) {</span>
+<span class="nc" id="L250">        newFactor = false;</span>
+      }
+<span class="nc" id="L252">      parentSources.add(parentSum.getSource());</span>
+<span class="nc" id="L253">    }</span>
+<span class="nc bnc" id="L254" title="All 2 branches missed.">    if (factor == null) {</span>
+<span class="nc" id="L255">      factor = new Property(&quot;parents&quot;, StringUtils.join(parentSources, &quot;+&quot;), PropertyType.Factor);</span>
+<span class="nc" id="L256">      newFactor = false;</span>
+    }
+<span class="nc bnc" id="L258" title="All 2 branches missed.">    String value = newFactor ? factor.getValue() : &quot;&quot;;</span>
+
+<span class="nc" id="L260">    Map&lt;String, String&gt; props = s.getProperties();</span>
+<span class="nc bnc" id="L261" title="All 5 branches missed.">    switch (type) {</span>
+      case &quot;Q_BIOLOGICAL_ENTITY&quot;:
+<span class="nc" id="L263">        source = taxMap.get(props.get(&quot;Q_NCBI_ORGANISM&quot;));</span>
+<span class="nc" id="L264">        value = source + ' ' + value;</span>
+<span class="nc" id="L265">        break;</span>
+      case &quot;Q_BIOLOGICAL_SAMPLE&quot;:
+<span class="nc" id="L267">        source = tissueMap.get(props.get(&quot;Q_PRIMARY_TISSUE&quot;));</span>
+<span class="nc" id="L268">        boolean isCellLine = source.equals(&quot;Cell Line&quot;);</span>
+<span class="nc bnc" id="L269" title="All 4 branches missed.">        if (source.equals(&quot;Other&quot;) || isCellLine) {</span>
+<span class="nc" id="L270">          String detail = props.get(&quot;Q_TISSUE_DETAILED&quot;);</span>
+<span class="nc bnc" id="L271" title="All 4 branches missed.">          if (detail != null &amp;&amp; !detail.isEmpty()) {</span>
+<span class="nc" id="L272">            source = detail;</span>
+          }
+        }
+<span class="nc bnc" id="L275" title="All 4 branches missed.">        value = !newFactor || source.equals(value) ? source : source + ' ' + value;</span>
+<span class="nc" id="L276">        break;</span>
+      case &quot;Q_TEST_SAMPLE&quot;:
+<span class="nc" id="L278">        source = props.get(&quot;Q_SAMPLE_TYPE&quot;);</span>
+<span class="nc" id="L279">        value = source + ' ' + value;</span>
+<span class="nc" id="L280">        break;</span>
+      case &quot;Q_MHC_LIGAND_EXTRACT&quot;:
+<span class="nc" id="L282">        source = props.get(&quot;Q_MHC_CLASS&quot;);</span>
+<span class="nc" id="L283">        value = source;</span>
+        break;
+    }
+<span class="nc" id="L286">    boolean leaf = true;</span>
+<span class="nc bnc" id="L287" title="All 2 branches missed.">    for (Sample c : s.getChildren()) {</span>
+<span class="nc bnc" id="L288" title="All 2 branches missed.">      if (validSamples.contains(c.getSampleTypeCode())) {</span>
+<span class="nc" id="L289">        leaf = false;</span>
+<span class="nc" id="L290">        break;</span>
+      }
+<span class="nc" id="L292">    }</span>
+<span class="nc" id="L293">    return new SampleSummary(currentID, parentIDs,</span>
+<span class="nc" id="L294">        new ArrayList&lt;ISampleBean&gt;(Arrays.asList(new OpenbisSampleAdapter(s))), factor.getValue(),</span>
+<span class="nc" id="L295">        tryShortenName(value, s), type, leaf);</span>
+  }
+
+  private String tryShortenName(String key, Sample s) {
+<span class="nc bnc" id="L299" title="All 5 branches missed.">    switch (s.getSampleTypeCode()) {</span>
+      case &quot;Q_BIOLOGICAL_ENTITY&quot;:
+<span class="nc" id="L301">        return key;</span>
+      case &quot;Q_BIOLOGICAL_SAMPLE&quot;:
+<span class="nc" id="L303">        return key;</span>
+      case &quot;Q_TEST_SAMPLE&quot;:
+<span class="nc" id="L305">        String type = s.getProperties().get(&quot;Q_SAMPLE_TYPE&quot;);</span>
+<span class="nc" id="L306">        return key.replace(type, &quot;&quot;) + &quot; &quot; + shortenInfo(type);</span>
+      case &quot;Q_MHC_LIGAND_EXTRACT&quot;:
+<span class="nc" id="L308">        return s.getProperties().get(&quot;Q_MHC_CLASS&quot;).replace(&quot;_&quot;, &quot; &quot;).replace(&quot;CLASS&quot;, &quot;Class&quot;);</span>
+    }
+<span class="nc" id="L310">    return key;</span>
+  }
+
+  private String shortenInfo(String info) {
+<span class="nc bnc" id="L314" title="All 5 branches missed.">    switch (info) {</span>
+      case &quot;CARBOHYDRATES&quot;:
+<span class="nc" id="L316">        return &quot;Carbohydrates&quot;;</span>
+      case &quot;SMALLMOLECULES&quot;:
+<span class="nc" id="L318">        return &quot;Smallmolecules&quot;;</span>
+      case &quot;DNA&quot;:
+<span class="nc" id="L320">        return &quot;DNA&quot;;</span>
+      case &quot;RNA&quot;:
+<span class="nc" id="L322">        return &quot;RNA&quot;;</span>
+      default:
+<span class="nc" id="L324">        return WordUtils.capitalizeFully(info.replace(&quot;_&quot;, &quot; &quot;));</span>
+    }
+  }
+
+  public Sample getSampleFromCode(String code) {
+<span class="nc" id="L329">    return sampCodeToSamp.get(code);</span>
+  }
+
+  public List&lt;DataSet&gt; getDatasetsOfCode(String code) {
+<span class="nc" id="L333">    return sampCodeToDS.get(code);</span>
+  }
+
+  public boolean codeHasDatasets(String code) {
+<span class="nc" id="L337">    return codesWithDatasets.contains(code);</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BiologicalSamplesComponent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.components</a> &gt; <span class="el_source">BiologicalSamplesComponent.java</span></div><h1>BiologicalSamplesComponent.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.components;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import com.vaadin.data.Item;
+import com.vaadin.data.util.BeanItem;
+import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.data.util.GeneratedPropertyContainer;
+import com.vaadin.data.util.PropertyValueGenerator;
+import com.vaadin.event.ItemClickEvent;
+import com.vaadin.event.ItemClickEvent.ItemClickListener;
+import com.vaadin.event.SelectionEvent;
+import com.vaadin.event.SelectionEvent.SelectionListener;
+import com.vaadin.server.FileDownloader;
+import com.vaadin.server.FontAwesome;
+import com.vaadin.server.StreamResource;
+import com.vaadin.shared.ui.MarginInfo;
+import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.TextField;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Window;
+import com.vaadin.ui.Window.CloseEvent;
+import com.vaadin.ui.Window.CloseListener;
+import com.vaadin.ui.renderers.ButtonRenderer;
+import com.vaadin.ui.renderers.ClickableRenderer.RendererClickEvent;
+import com.vaadin.ui.renderers.ClickableRenderer.RendererClickListener;
+import com.vaadin.ui.renderers.HtmlRenderer;
+
+import life.qbic.portal.portlet.ProjectBrowserPortlet;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Vocabulary;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.VocabularyTerm;
+
+import life.qbic.projectbrowser.helpers.*;
+import life.qbic.projectbrowser.controllers.*;
+import life.qbic.projectbrowser.model.BiologicalEntitySampleBean;
+import life.qbic.projectbrowser.model.BiologicalSampleBean;
+import life.qbic.xml.manager.StudyXMLParser;
+import life.qbic.xml.properties.Property;
+
+
+public class BiologicalSamplesComponent extends CustomComponent {
+
+<span class="nc" id="L75">  private enum sampleTypes {</span>
+<span class="nc" id="L76">    Q_BIOLOGICAL_ENTITY, Q_BIOLOGICAL_SAMPLE</span>
+  };
+
+<span class="nc" id="L79">  private enum propertyTypes {</span>
+<span class="nc" id="L80">    Q_ADDIIONAL_INFO, Q_EXTERNALDB_ID, Q_SECONDARY_NAME, Q_NCBI_ORGANISM</span>
+  };
+
+  private static final long serialVersionUID = 8672873911284888801L;
+  private VerticalLayout mainLayout;
+<span class="nc" id="L85">  private static final Logger LOG = LogManager.getLogger(BiologicalSamplesComponent.class);</span>
+  private Grid sampleBioGrid;
+  private Grid sampleEntityGrid;
+  private ChangeSampleMetadataComponent changeMetadata;
+  private VerticalLayout vert;
+  private DataHandler datahandler;
+  private State state;
+  private String resourceUrl;
+  private int numberOfBioSamples;
+  private int numberOfEntitySamples;
+  private BeanItemContainer&lt;BiologicalSampleBean&gt; samplesBio;
+  private BeanItemContainer&lt;BiologicalEntitySampleBean&gt; samplesEntity;
+  private String currentID;
+<span class="nc" id="L98">  private Button exportSources = new Button(&quot;Export as TSV&quot;);</span>
+<span class="nc" id="L99">  private Button exportSamples = new Button(&quot;Export as TSV&quot;);</span>
+  private FileDownloader fileDownloaderSources;
+  private FileDownloader fileDownloaderSamples;
+
+
+
+  /**
+   * 
+   * @param dh
+   * @param state
+   * @param resourceurl
+   * @param caption
+   */
+  public BiologicalSamplesComponent(DataHandler dh, State state, String resourceurl,
+<span class="nc" id="L113">      String caption) {</span>
+<span class="nc" id="L114">    this.datahandler = dh;</span>
+<span class="nc" id="L115">    this.resourceUrl = resourceurl;</span>
+<span class="nc" id="L116">    this.state = state;</span>
+<span class="nc" id="L117">    changeMetadata = new ChangeSampleMetadataComponent(dh, state, resourceurl);</span>
+
+<span class="nc" id="L119">    this.setCaption(caption);</span>
+
+<span class="nc" id="L121">    this.initUI();</span>
+<span class="nc" id="L122">  }</span>
+
+  /**
+   * 
+   */
+  private void initUI() {
+<span class="nc" id="L128">    vert = new VerticalLayout();</span>
+<span class="nc" id="L129">    sampleBioGrid = new Grid();</span>
+<span class="nc" id="L130">    sampleEntityGrid = new Grid();</span>
+
+<span class="nc" id="L132">    vert.setMargin(new MarginInfo(false, true, false, false));</span>
+
+<span class="nc" id="L134">    sampleEntityGrid.addSelectionListener(new SelectionListener() {</span>
+
+      @Override
+      public void select(SelectionEvent event) {
+<span class="nc" id="L138">        BeanItem&lt;BiologicalEntitySampleBean&gt; selectedBean =</span>
+<span class="nc" id="L139">            samplesEntity.getItem(sampleEntityGrid.getSelectedRow());</span>
+
+<span class="nc bnc" id="L141" title="All 2 branches missed.">        if (selectedBean == null) {</span>
+<span class="nc" id="L142">          TextField filterField =</span>
+<span class="nc" id="L143">              (TextField) sampleBioGrid.getHeaderRow(1).getCell(&quot;biologicalEntity&quot;).getComponent();</span>
+<span class="nc" id="L144">          filterField.setValue(&quot;&quot;);</span>
+<span class="nc" id="L145">        } else {</span>
+<span class="nc" id="L146">          TextField filterField =</span>
+<span class="nc" id="L147">              (TextField) sampleBioGrid.getHeaderRow(1).getCell(&quot;biologicalEntity&quot;).getComponent();</span>
+<span class="nc" id="L148">          filterField.setValue(selectedBean.getBean().getCode());</span>
+          // samplesBio.addContainerFilter(&quot;biologicalEntity&quot;,
+          // selectedBean.getBean().getSecondaryName(), false, false);
+        }
+<span class="nc" id="L152">      }</span>
+
+    });
+
+<span class="nc" id="L156">    mainLayout = new VerticalLayout(vert);</span>
+<span class="nc" id="L157">    mainLayout.setResponsive(true);</span>
+<span class="nc" id="L158">    setResponsive(true);</span>
+
+<span class="nc" id="L160">    exportSources.setIcon(FontAwesome.DOWNLOAD);</span>
+<span class="nc" id="L161">    exportSamples.setIcon(FontAwesome.DOWNLOAD);</span>
+
+    // this.setWidth(Page.getCurrent().getBrowserWindowWidth() * 0.8f, Unit.PIXELS);
+<span class="nc" id="L164">    this.setCompositionRoot(mainLayout);</span>
+<span class="nc" id="L165">  }</span>
+
+  /**
+   * 
+   * @param id
+   */
+  public void updateUI(String id) {
+
+<span class="nc" id="L173">    currentID = id;</span>
+<span class="nc" id="L174">    sampleBioGrid = new Grid();</span>
+<span class="nc" id="L175">    sampleEntityGrid = new Grid();</span>
+
+<span class="nc" id="L177">    sampleEntityGrid.addSelectionListener(new SelectionListener() {</span>
+
+      @Override
+      public void select(SelectionEvent event) {
+<span class="nc" id="L181">        BeanItem&lt;BiologicalEntitySampleBean&gt; selectedBean =</span>
+<span class="nc" id="L182">            samplesEntity.getItem(sampleEntityGrid.getSelectedRow());</span>
+
+<span class="nc bnc" id="L184" title="All 2 branches missed.">        if (selectedBean == null) {</span>
+<span class="nc" id="L185">          TextField filterField =</span>
+<span class="nc" id="L186">              (TextField) sampleBioGrid.getHeaderRow(1).getCell(&quot;biologicalEntity&quot;).getComponent();</span>
+<span class="nc" id="L187">          filterField.setValue(&quot;&quot;);</span>
+<span class="nc" id="L188">        } else {</span>
+<span class="nc" id="L189">          TextField filterField =</span>
+<span class="nc" id="L190">              (TextField) sampleBioGrid.getHeaderRow(1).getCell(&quot;biologicalEntity&quot;).getComponent();</span>
+<span class="nc" id="L191">          filterField.setValue(selectedBean.getBean().getCode());</span>
+          // samplesBio.addContainerFilter(&quot;biologicalEntity&quot;,
+          // selectedBean.getBean().getSecondaryName(), false, false);
+        }
+<span class="nc" id="L195">      }</span>
+
+    });
+
+<span class="nc bnc" id="L199" title="All 2 branches missed.">    if (id == null)</span>
+<span class="nc" id="L200">      return;</span>
+
+
+<span class="nc" id="L203">    BeanItemContainer&lt;BiologicalSampleBean&gt; samplesBioContainer =</span>
+        new BeanItemContainer&lt;BiologicalSampleBean&gt;(BiologicalSampleBean.class);
+<span class="nc" id="L205">    BeanItemContainer&lt;BiologicalEntitySampleBean&gt; samplesEntityContainer =</span>
+        new BeanItemContainer&lt;BiologicalEntitySampleBean&gt;(BiologicalEntitySampleBean.class);
+
+<span class="nc" id="L208">    List&lt;Sample&gt; allSamples =</span>
+<span class="nc" id="L209">        datahandler.getOpenBisClient().getSamplesWithParentsAndChildrenOfProjectBySearchService(id);</span>
+
+<span class="nc" id="L211">    List&lt;VocabularyTerm&gt; terms = null;</span>
+<span class="nc" id="L212">    Map&lt;String, String&gt; termsMap = new HashMap&lt;String, String&gt;();</span>
+    
+<span class="nc" id="L214">    StudyXMLParser xmlParser = new StudyXMLParser();</span>
+
+<span class="nc bnc" id="L216" title="All 2 branches missed.">    for (Sample sample : allSamples) {</span>
+
+<span class="nc bnc" id="L218" title="All 2 branches missed.">      if (sample.getSampleTypeCode().equals(sampleTypes.Q_BIOLOGICAL_ENTITY.toString())) {</span>
+
+<span class="nc" id="L220">        Map&lt;String, String&gt; sampleProperties = sample.getProperties();</span>
+
+<span class="nc" id="L222">        BiologicalEntitySampleBean newEntityBean = new BiologicalEntitySampleBean();</span>
+<span class="nc" id="L223">        newEntityBean.setCode(sample.getCode());</span>
+<span class="nc" id="L224">        newEntityBean.setId(sample.getIdentifier());</span>
+<span class="nc" id="L225">        newEntityBean.setType(sample.getSampleTypeCode());</span>
+<span class="nc" id="L226">        newEntityBean.setAdditionalInfo(sampleProperties.get(&quot;Q_ADDITIONAL_INFO&quot;));</span>
+<span class="nc" id="L227">        newEntityBean.setExternalDB(sampleProperties.get(&quot;Q_EXTERNALDB_ID&quot;));</span>
+<span class="nc" id="L228">        newEntityBean.setSecondaryName(sampleProperties.get(&quot;Q_SECONDARY_NAME&quot;));</span>
+
+<span class="nc" id="L230">        String organismID = sampleProperties.get(&quot;Q_NCBI_ORGANISM&quot;);</span>
+<span class="nc" id="L231">        newEntityBean.setOrganism(organismID);</span>
+
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        if (terms != null) {</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">          if (termsMap.containsKey(organismID)) {</span>
+<span class="nc" id="L235">            newEntityBean.setOrganismName(termsMap.get(organismID));</span>
+          } else {
+<span class="nc bnc" id="L237" title="All 2 branches missed.">            for (VocabularyTerm term : terms) {</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">              if (term.getCode().equals(organismID)) {</span>
+<span class="nc" id="L239">                newEntityBean.setOrganismName(term.getLabel());</span>
+<span class="nc" id="L240">                break;</span>
+              }
+<span class="nc" id="L242">            }</span>
+          }
+        } else {
+<span class="nc bnc" id="L245" title="All 2 branches missed.">          for (Vocabulary vocab : datahandler.getOpenBisClient().getFacade().listVocabularies()) {</span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">            if (vocab.getCode().equals(&quot;Q_NCBI_TAXONOMY&quot;)) {</span>
+<span class="nc" id="L247">              terms = vocab.getTerms();</span>
+<span class="nc bnc" id="L248" title="All 2 branches missed.">              for (VocabularyTerm term : vocab.getTerms()) {</span>
+<span class="nc bnc" id="L249" title="All 2 branches missed.">                if (term.getCode().equals(organismID)) {</span>
+<span class="nc" id="L250">                  newEntityBean.setOrganismName(term.getLabel());</span>
+<span class="nc" id="L251">                  termsMap.put(organismID, term.getLabel());</span>
+<span class="nc" id="L252">                  break;</span>
+                }
+<span class="nc" id="L254">              }</span>
+<span class="nc" id="L255">              break;</span>
+            }
+<span class="nc" id="L257">          }</span>
+        }
+
+        // data for complex xml properties
+<span class="nc" id="L261">        Map&lt;String, List&lt;Property&gt;&gt; propertiesForSamples = datahandler.getPropertiesForSamples();</span>
+<span class="nc" id="L262">        Set&lt;String&gt; factorLabels = datahandler.getFactorLabels();</span>
+<span class="nc" id="L263">        Map&lt;Pair&lt;String, String&gt;, Property&gt; factorsForSamples =</span>
+<span class="nc" id="L264">            datahandler.getFactorsForLabelsAndSamples();</span>
+
+<span class="nc" id="L266">        List&lt;Property&gt; complexProps = xmlParser.getFactorsAndPropertiesForSampleCode(datahandler.getExperimentalSetup(), sample.getCode());</span>
+<span class="nc" id="L267">        newEntityBean.setProperties(sampleProperties, complexProps);</span>
+
+<span class="nc" id="L269">        newEntityBean.setGender(sampleProperties.get(&quot;Q_GENDER&quot;));</span>
+<span class="nc" id="L270">        samplesEntityContainer.addBean(newEntityBean);</span>
+
+        // for (Sample child : datahandler.getOpenBisClient().getChildrenSamples(sample)) {
+<span class="nc bnc" id="L273" title="All 2 branches missed.">        for (Sample realChild : sample.getChildren()) {</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">          if (realChild.getSampleTypeCode().equals(sampleTypes.Q_BIOLOGICAL_SAMPLE.toString())) {</span>
+            // Sample realChild =
+            // datahandler.getOpenBisClient().getSampleByIdentifier(child.getIdentifier());
+
+<span class="nc" id="L278">            Map&lt;String, String&gt; sampleBioProperties = realChild.getProperties();</span>
+
+<span class="nc" id="L280">            BiologicalSampleBean newBean = new BiologicalSampleBean();</span>
+<span class="nc" id="L281">            newBean.setCode(realChild.getCode());</span>
+<span class="nc" id="L282">            newBean.setId(realChild.getIdentifier());</span>
+<span class="nc" id="L283">            newBean.setType(realChild.getSampleTypeCode());</span>
+<span class="nc" id="L284">            newBean.setPrimaryTissue(sampleBioProperties.get(&quot;Q_PRIMARY_TISSUE&quot;));</span>
+<span class="nc" id="L285">            newBean.setTissueDetailed(sampleBioProperties.get(&quot;Q_TISSUE_DETAILED&quot;));</span>
+<span class="nc" id="L286">            newBean.setBiologicalEntity(sample.getCode());</span>
+
+<span class="nc" id="L288">            newBean.setAdditionalInfo(sampleBioProperties.get(&quot;Q_ADDITIONAL_INFO&quot;));</span>
+<span class="nc" id="L289">            newBean.setExternalDB(sampleBioProperties.get(&quot;Q_EXTERNALDB_ID&quot;));</span>
+<span class="nc" id="L290">            newBean.setSecondaryName(sampleBioProperties.get(&quot;Q_SECONDARY_NAME&quot;));</span>
+
+<span class="nc" id="L292">            complexProps = xmlParser.getFactorsAndPropertiesForSampleCode(datahandler.getExperimentalSetup(), realChild.getCode());</span>
+
+<span class="nc" id="L294">            newBean.setProperties(sampleBioProperties, complexProps);</span>
+
+<span class="nc" id="L296">            samplesBioContainer.addBean(newBean);</span>
+          }
+<span class="nc" id="L298">        }</span>
+      }
+<span class="nc" id="L300">    }</span>
+
+<span class="nc" id="L302">    numberOfBioSamples = samplesBioContainer.size();</span>
+<span class="nc" id="L303">    numberOfEntitySamples = samplesEntityContainer.size();</span>
+
+<span class="nc" id="L305">    samplesBio = samplesBioContainer;</span>
+<span class="nc" id="L306">    samplesEntity = samplesEntityContainer;</span>
+
+<span class="nc" id="L308">    sampleEntityGrid.removeAllColumns();</span>
+
+<span class="nc" id="L310">    final GeneratedPropertyContainer gpcEntity = new GeneratedPropertyContainer(samplesEntity);</span>
+<span class="nc" id="L311">    gpcEntity.removeContainerProperty(&quot;id&quot;);</span>
+<span class="nc" id="L312">    gpcEntity.removeContainerProperty(&quot;type&quot;);</span>
+<span class="nc" id="L313">    gpcEntity.removeContainerProperty(&quot;organismName&quot;);</span>
+<span class="nc" id="L314">    gpcEntity.removeContainerProperty(&quot;organism&quot;);</span>
+
+<span class="nc" id="L316">    sampleEntityGrid.setContainerDataSource(gpcEntity);</span>
+<span class="nc" id="L317">    sampleEntityGrid.setColumnReorderingAllowed(true);</span>
+
+<span class="nc" id="L319">    gpcEntity.addGeneratedProperty(&quot;Organism&quot;, new PropertyValueGenerator&lt;String&gt;() {</span>
+
+      @Override
+      public Class&lt;String&gt; getType() {
+<span class="nc" id="L323">        return String.class;</span>
+      }
+
+      @Override
+      public String getValue(Item item, Object itemId, Object propertyId) {
+<span class="nc" id="L328">        String ncbi = String.format(</span>
+            &quot;http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Undef&amp;name=%s&amp;lvl=0&amp;srchmode=1&amp;keep=1&amp;unlock' target='_blank'&gt;%s&lt;/a&gt;&quot;,
+<span class="nc" id="L330">            item.getItemProperty(&quot;organism&quot;).getValue(),</span>
+<span class="nc" id="L331">            item.getItemProperty(&quot;organismName&quot;).getValue());</span>
+<span class="nc" id="L332">        String link = String.format(&quot;&lt;a href='%s&quot;, ncbi);</span>
+
+<span class="nc" id="L334">        return link;</span>
+      }
+    });
+
+<span class="nc" id="L338">    sampleEntityGrid.getColumn(&quot;Organism&quot;).setRenderer(new HtmlRenderer());</span>
+
+<span class="nc" id="L340">    final GeneratedPropertyContainer gpcBio = new GeneratedPropertyContainer(samplesBio);</span>
+<span class="nc" id="L341">    gpcBio.removeContainerProperty(&quot;id&quot;);</span>
+<span class="nc" id="L342">    gpcBio.removeContainerProperty(&quot;type&quot;);</span>
+
+<span class="nc" id="L344">    sampleBioGrid.setContainerDataSource(gpcBio);</span>
+<span class="nc" id="L345">    sampleBioGrid.setColumnReorderingAllowed(true);</span>
+<span class="nc" id="L346">    sampleBioGrid.setColumnOrder(&quot;secondaryName&quot;, &quot;code&quot;);</span>
+
+<span class="nc" id="L348">    gpcEntity.addGeneratedProperty(&quot;edit&quot;, new PropertyValueGenerator&lt;String&gt;() {</span>
+      @Override
+      public String getValue(Item item, Object itemId, Object propertyId) {
+<span class="nc" id="L351">        return &quot;Edit&quot;;</span>
+      }
+
+      @Override
+      public Class&lt;String&gt; getType() {
+<span class="nc" id="L356">        return String.class;</span>
+      }
+    });
+
+<span class="nc" id="L360">    gpcBio.addGeneratedProperty(&quot;edit&quot;, new PropertyValueGenerator&lt;String&gt;() {</span>
+      @Override
+      public String getValue(Item item, Object itemId, Object propertyId) {
+<span class="nc" id="L363">        return &quot;Edit&quot;;</span>
+      }
+
+      @Override
+      public Class&lt;String&gt; getType() {
+<span class="nc" id="L368">        return String.class;</span>
+      }
+    });
+
+<span class="nc" id="L372">    sampleEntityGrid.addItemClickListener(new ItemClickListener() {</span>
+
+      @Override
+      public void itemClick(ItemClickEvent event) {
+
+<span class="nc" id="L377">        BeanItem selected = (BeanItem) samplesEntity.getItem(event.getItemId());</span>
+<span class="nc" id="L378">        BiologicalEntitySampleBean selectedExp = (BiologicalEntitySampleBean) selected.getBean();</span>
+
+<span class="nc" id="L380">        State state = (State) UI.getCurrent().getSession().getAttribute(&quot;state&quot;);</span>
+<span class="nc" id="L381">        ArrayList&lt;String&gt; message = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L382">        message.add(&quot;clicked&quot;);</span>
+<span class="nc" id="L383">        message.add(selectedExp.getId());</span>
+<span class="nc" id="L384">        message.add(&quot;sample&quot;);</span>
+<span class="nc" id="L385">        state.notifyObservers(message);</span>
+<span class="nc" id="L386">      }</span>
+    });
+
+<span class="nc" id="L389">    sampleEntityGrid.getColumn(&quot;edit&quot;).setRenderer(new ButtonRenderer(new RendererClickListener() {</span>
+
+      @Override
+      public void click(RendererClickEvent event) {
+<span class="nc" id="L393">        BeanItem selected = (BeanItem) samplesEntity.getItem(event.getItemId());</span>
+<span class="nc" id="L394">        BiologicalEntitySampleBean selectedSample = (BiologicalEntitySampleBean) selected.getBean();</span>
+
+<span class="nc" id="L396">        Window subWindow = new Window(&quot;Edit Metadata&quot;);</span>
+
+<span class="nc" id="L398">        changeMetadata.updateUI(selectedSample.getId(), selectedSample.getType());</span>
+<span class="nc" id="L399">        VerticalLayout subContent = new VerticalLayout();</span>
+<span class="nc" id="L400">        subContent.setMargin(true);</span>
+<span class="nc" id="L401">        subContent.addComponent(changeMetadata);</span>
+<span class="nc" id="L402">        subWindow.setContent(subContent);</span>
+        // Center it in the browser window
+<span class="nc" id="L404">        subWindow.center();</span>
+<span class="nc" id="L405">        subWindow.setModal(true);</span>
+<span class="nc" id="L406">        subWindow.setIcon(FontAwesome.PENCIL);</span>
+<span class="nc" id="L407">        subWindow.setHeight(&quot;75%&quot;);</span>
+
+<span class="nc" id="L409">        subWindow.addCloseListener(new CloseListener() {</span>
+          /**
+           * 
+           */
+          private static final long serialVersionUID = -1329152609834711109L;
+
+          @Override
+          public void windowClose(CloseEvent e) {
+<span class="nc" id="L417">            updateUI(currentID);</span>
+<span class="nc" id="L418">          }</span>
+        });
+
+<span class="nc" id="L421">        ProjectBrowserPortlet ui = (ProjectBrowserPortlet) UI.getCurrent();</span>
+<span class="nc" id="L422">        ui.addWindow(subWindow);</span>
+<span class="nc" id="L423">      }</span>
+    }));
+<span class="nc" id="L425">    sampleEntityGrid.getColumn(&quot;edit&quot;).setWidth(70);</span>
+<span class="nc" id="L426">    sampleEntityGrid.getColumn(&quot;edit&quot;).setHeaderCaption(&quot;&quot;);</span>
+<span class="nc" id="L427">    sampleEntityGrid.setColumnOrder(&quot;edit&quot;, &quot;secondaryName&quot;, &quot;Organism&quot;, &quot;properties&quot;, &quot;code&quot;,</span>
+        &quot;additionalInfo&quot;, &quot;gender&quot;, &quot;externalDB&quot;);
+
+<span class="nc" id="L430">    sampleBioGrid.addItemClickListener(new ItemClickListener() {</span>
+
+      @Override
+      public void itemClick(ItemClickEvent event) {
+
+<span class="nc" id="L435">        BeanItem selected = (BeanItem) samplesBio.getItem(event.getItemId());</span>
+<span class="nc" id="L436">        BiologicalSampleBean selectedExp = (BiologicalSampleBean) selected.getBean();</span>
+
+<span class="nc" id="L438">        State state = (State) UI.getCurrent().getSession().getAttribute(&quot;state&quot;);</span>
+<span class="nc" id="L439">        ArrayList&lt;String&gt; message = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L440">        message.add(&quot;clicked&quot;);</span>
+<span class="nc" id="L441">        message.add(selectedExp.getId());</span>
+<span class="nc" id="L442">        message.add(&quot;sample&quot;);</span>
+<span class="nc" id="L443">        state.notifyObservers(message);</span>
+<span class="nc" id="L444">      }</span>
+    });
+
+<span class="nc" id="L447">    sampleBioGrid.getColumn(&quot;edit&quot;).setRenderer(new ButtonRenderer(new RendererClickListener() {</span>
+
+      @Override
+      public void click(RendererClickEvent event) {
+<span class="nc" id="L451">        BeanItem selected = (BeanItem) samplesBio.getItem(event.getItemId());</span>
+
+        try {
+<span class="nc" id="L454">          BiologicalSampleBean selectedSample = (BiologicalSampleBean) selected.getBean();</span>
+
+<span class="nc" id="L456">          Window subWindow = new Window();</span>
+
+<span class="nc" id="L458">          changeMetadata.updateUI(selectedSample.getId(), selectedSample.getType());</span>
+<span class="nc" id="L459">          VerticalLayout subContent = new VerticalLayout();</span>
+<span class="nc" id="L460">          subContent.setMargin(true);</span>
+<span class="nc" id="L461">          subContent.addComponent(changeMetadata);</span>
+<span class="nc" id="L462">          subWindow.setContent(subContent);</span>
+          // Center it in the browser window
+<span class="nc" id="L464">          subWindow.center();</span>
+<span class="nc" id="L465">          subWindow.setModal(true);</span>
+<span class="nc" id="L466">          subWindow.setResizable(false);</span>
+
+<span class="nc" id="L468">          subWindow.addCloseListener(new CloseListener() {</span>
+            /**
+            * 
+            */
+            private static final long serialVersionUID = -1329152609834711109L;
+
+            @Override
+            public void windowClose(CloseEvent e) {
+<span class="nc" id="L476">              updateUI(currentID);</span>
+<span class="nc" id="L477">            }</span>
+          });
+
+<span class="nc" id="L480">          ProjectBrowserPortlet ui = (ProjectBrowserPortlet) UI.getCurrent();</span>
+<span class="nc" id="L481">          ui.addWindow(subWindow);</span>
+<span class="nc" id="L482">        } catch (NullPointerException e) {</span>
+<span class="nc" id="L483">          System.err</span>
+<span class="nc" id="L484">              .println(&quot;NullPointerException while trying to set metadata: &quot; + e.getMessage());</span>
+
+<span class="nc" id="L486">        }</span>
+<span class="nc" id="L487">      }</span>
+    }));
+
+<span class="nc" id="L490">    sampleBioGrid.getColumn(&quot;edit&quot;).setWidth(70);</span>
+<span class="nc" id="L491">    sampleBioGrid.getColumn(&quot;edit&quot;).setHeaderCaption(&quot;&quot;);</span>
+<span class="nc" id="L492">    sampleBioGrid.setColumnOrder(&quot;edit&quot;, &quot;secondaryName&quot;, &quot;primaryTissue&quot;, &quot;properties&quot;,</span>
+        &quot;tissueDetailed&quot;, &quot;code&quot;, &quot;additionalInfo&quot;, &quot;biologicalEntity&quot;, &quot;externalDB&quot;);
+
+<span class="nc" id="L495">    sampleBioGrid.getColumn(&quot;biologicalEntity&quot;).setHeaderCaption(&quot;Source&quot;);</span>
+
+<span class="nc" id="L497">    GridFunctions.addColumnFilters(sampleBioGrid, gpcBio);</span>
+<span class="nc" id="L498">    GridFunctions.addColumnFilters(sampleEntityGrid, gpcEntity);</span>
+
+
+<span class="nc bnc" id="L501" title="All 2 branches missed.">    if (fileDownloaderSources != null)</span>
+<span class="nc" id="L502">      exportSources.removeExtension(fileDownloaderSources);</span>
+<span class="nc" id="L503">    StreamResource srSource = Utils.getTSVStream(Utils.containerToString(samplesEntityContainer),</span>
+<span class="nc" id="L504">        String.format(&quot;%s_%s_&quot;, id.substring(1).replace(&quot;/&quot;, &quot;_&quot;), &quot;sample_sources&quot;));</span>
+<span class="nc" id="L505">    fileDownloaderSources = new FileDownloader(srSource);</span>
+<span class="nc" id="L506">    fileDownloaderSources.extend(exportSources);</span>
+
+
+<span class="nc bnc" id="L509" title="All 2 branches missed.">    if (fileDownloaderSamples != null)</span>
+<span class="nc" id="L510">      exportSamples.removeExtension(fileDownloaderSamples);</span>
+<span class="nc" id="L511">    StreamResource srSamples = Utils.getTSVStream(Utils.containerToString(samplesBioContainer),</span>
+<span class="nc" id="L512">        String.format(&quot;%s_%s_&quot;, id.substring(1).replace(&quot;/&quot;, &quot;_&quot;), &quot;extracted_samples&quot;));</span>
+<span class="nc" id="L513">    fileDownloaderSamples = new FileDownloader(srSamples);</span>
+<span class="nc" id="L514">    fileDownloaderSamples.extend(exportSamples);</span>
+
+<span class="nc" id="L516">    this.buildLayout();</span>
+<span class="nc" id="L517">  }</span>
+
+  /**
+   * Precondition: {DatasetView#table} has to be initialized. e.g. with
+   * {DatasetView#buildFilterTable} If it is not, strange behaviour has to be expected. builds the
+   * Layout of this view.
+   */
+  private void buildLayout() {
+<span class="nc" id="L525">    this.vert.removeAllComponents();</span>
+<span class="nc" id="L526">    this.vert.setSizeFull();</span>
+<span class="nc" id="L527">    vert.setResponsive(true);</span>
+
+    // Table (containing datasets) section
+<span class="nc" id="L530">    VerticalLayout tableSection = new VerticalLayout();</span>
+<span class="nc" id="L531">    HorizontalLayout tableSectionContent = new HorizontalLayout();</span>
+<span class="nc" id="L532">    HorizontalLayout sampletableSectionContent = new HorizontalLayout();</span>
+<span class="nc" id="L533">    tableSection.setResponsive(true);</span>
+<span class="nc" id="L534">    tableSectionContent.setResponsive(true);</span>
+<span class="nc" id="L535">    sampletableSectionContent.setResponsive(true);</span>
+
+<span class="nc" id="L537">    tableSectionContent.setMargin(new MarginInfo(true, false, false, false));</span>
+<span class="nc" id="L538">    sampletableSectionContent.setMargin(new MarginInfo(true, false, false, false));</span>
+
+    // tableSectionContent.setCaption(&quot;Datasets&quot;);
+    // tableSectionContent.setIcon(FontAwesome.FLASK);
+<span class="nc" id="L542">    tableSection.addComponent(new Label(String.format(</span>
+        &quot;This view shows the sample sources (e.g., human, mouse) to be studied and the corresponding extracted samples. With sample sources, information specific to the subject (e.g., age or BMI in the case of patient data) can be stored. The extracted sample is a sample which has been extracted from the corresponding sample source. This is the raw sample material that can be later prepared for specific analytical methods such as MS or NGS.&lt;br&gt; &quot;
+            + &quot;\n\n There are %s extracted  samples coming from %s distinct sample sources in this study.&quot;,
+<span class="nc" id="L545">        numberOfBioSamples, numberOfEntitySamples), ContentMode.HTML));</span>
+
+<span class="nc" id="L547">    tableSectionContent.addComponent(sampleBioGrid);</span>
+<span class="nc" id="L548">    sampletableSectionContent.addComponent(sampleEntityGrid);</span>
+
+<span class="nc" id="L550">    sampleEntityGrid.setCaption(&quot;Sample Sources&quot;);</span>
+<span class="nc" id="L551">    sampleBioGrid.setCaption(&quot;Extracted Samples&quot;);</span>
+
+<span class="nc" id="L553">    tableSection.setMargin(new MarginInfo(true, false, true, true));</span>
+<span class="nc" id="L554">    tableSection.setSpacing(true);</span>
+
+<span class="nc" id="L556">    tableSection.addComponent(sampletableSectionContent);</span>
+<span class="nc" id="L557">    tableSection.addComponent(exportSources);</span>
+<span class="nc" id="L558">    tableSection.addComponent(tableSectionContent);</span>
+<span class="nc" id="L559">    tableSection.addComponent(exportSamples);</span>
+<span class="nc" id="L560">    this.vert.addComponent(tableSection);</span>
+
+<span class="nc" id="L562">    sampleBioGrid.setWidth(100, Unit.PERCENTAGE);</span>
+<span class="nc" id="L563">    sampleEntityGrid.setWidth(100, Unit.PERCENTAGE);</span>
+
+    // sampleBioGrid.setHeightMode(HeightMode.ROW);
+    // sampleEntityGrid.setHeightMode(HeightMode.ROW);
+
+    // sampleBioGrid.setHeightByRows(Math.min(10, numberOfBioSamples));
+    // sampleEntityGrid.setHeightByRows(Math.min(10, 5));
+
+<span class="nc" id="L571">    tableSection.setSizeFull();</span>
+<span class="nc" id="L572">    sampletableSectionContent.setSizeFull();</span>
+<span class="nc" id="L573">    tableSectionContent.setSizeFull();</span>
+<span class="nc" id="L574">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

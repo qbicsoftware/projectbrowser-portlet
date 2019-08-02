@@ -1,0 +1,682 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WorkflowComponent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.components</a> &gt; <span class="el_source">WorkflowComponent.java</span></div><h1>WorkflowComponent.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016”
+ * Christopher Mohr, David Wojnar, Andreas Friedrich
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.components;
+
+import java.io.IOException;
+import java.net.ConnectException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import org.springframework.remoting.RemoteAccessException;
+
+import life.qbic.projectbrowser.model.maxquant.MaxQuantModel;
+import life.qbic.projectbrowser.model.maxquant.MaxquantConverterFactory;
+import life.qbic.projectbrowser.model.maxquant.RawFilesBean;
+import life.qbic.projectbrowser.helpers.Utils;
+
+import submitter.SubmitFailedException;
+import submitter.Workflow;
+import submitter.parameters.FileListParameter;
+import submitter.parameters.FileParameter;
+import submitter.parameters.Parameter;
+
+import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.data.util.GeneratedPropertyContainer;
+import com.vaadin.event.ItemClickEvent;
+import com.vaadin.event.ItemClickEvent.ItemClickListener;
+import com.vaadin.server.FontAwesome;
+import com.vaadin.server.Page;
+import com.vaadin.server.VaadinService;
+import com.vaadin.server.VaadinSession;
+import com.vaadin.server.WebBrowser;
+import com.vaadin.shared.Position;
+import com.vaadin.shared.ui.MarginInfo;
+import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.Grid.DetailsGenerator;
+import com.vaadin.ui.Grid.RowReference;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.Notification;
+import com.vaadin.ui.Notification.Type;
+import com.vaadin.ui.VerticalLayout;
+
+import life.qbic.projectbrowser.controllers.WorkflowViewController;
+
+// from workflow API
+import de.uni_tuebingen.qbic.beans.DatasetBean;
+import fasta.FastaBean;
+import fasta.FastaDB;
+
+public class WorkflowComponent extends CustomComponent {
+
+  /**
+	 * 
+	 */
+  private static final long serialVersionUID = -2235244881205474571L;
+
+<span class="nc" id="L83">  private static final Logger LOG = LogManager.getLogger(WorkflowComponent.class);</span>
+  private static final String WORKFKLOW_GRID_DESCRIPTION =
+      &quot;If you want to execute a workflow, click on one of the rows in the table. Then select the parameters, input files database/reference files and click on submit.&quot;;
+  private static final String SUBMISSION_CAPTION = &quot;Submission&quot;;
+  protected static final String SUBMISSION_FAILED_MESSAGE =
+      &quot;Workflow submission failed due to internal errors! Please try again later or contact your project manager.&quot;;
+
+  private WorkflowViewController controller;
+<span class="nc" id="L91">  private VerticalLayout viewContent = new VerticalLayout();</span>
+  private VerticalLayout workflows;
+<span class="nc" id="L93">  private Grid availableWorkflows = new Grid();</span>
+  private VerticalLayout submission;
+
+  // data
+  BeanItemContainer&lt;DatasetBean&gt; datasetBeans;
+  private String type;
+  private String id;
+
+<span class="nc" id="L101">  public WorkflowComponent(WorkflowViewController controller) {</span>
+<span class="nc" id="L102">    this.controller = controller;</span>
+<span class="nc" id="L103">    this.setCaption(&quot;Workflows&quot;);</span>
+<span class="nc" id="L104">    init();</span>
+<span class="nc" id="L105">  }</span>
+
+  private void init() {
+<span class="nc" id="L108">    VerticalLayout workflowLayout = new VerticalLayout();</span>
+
+<span class="nc" id="L110">    viewContent.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L111">    viewContent.setMargin(true);</span>
+
+    // select available workflows
+<span class="nc" id="L114">    workflows = new VerticalLayout();</span>
+<span class="nc" id="L115">    VerticalLayout workflowsContent = new VerticalLayout();</span>
+<span class="nc" id="L116">    workflows.setMargin(new MarginInfo(false, true, true, false));</span>
+
+<span class="nc" id="L118">    workflowsContent.addComponent(availableWorkflows);</span>
+<span class="nc" id="L119">    availableWorkflows.setSizeFull();</span>
+<span class="nc" id="L120">    availableWorkflows.setDescription(WORKFKLOW_GRID_DESCRIPTION);</span>
+    // availableWorkflows.setWidth(&quot;100%&quot;);
+<span class="nc" id="L122">    workflows.setVisible(false);</span>
+
+<span class="nc" id="L124">    workflows.setCaption(&quot;Available Workflows&quot;);</span>
+<span class="nc" id="L125">    workflows.setIcon(FontAwesome.EXCHANGE);</span>
+<span class="nc" id="L126">    workflows.addComponent(workflowsContent);</span>
+<span class="nc" id="L127">    workflows.setWidth(100.0f, Unit.PERCENTAGE);</span>
+
+    // submission
+<span class="nc" id="L130">    submission = new VerticalLayout();</span>
+<span class="nc" id="L131">    submission.setMargin(new MarginInfo(false, true, true, false));</span>
+
+
+<span class="nc" id="L134">    submission.setCaption(SUBMISSION_CAPTION);</span>
+<span class="nc" id="L135">    submission.setIcon(FontAwesome.PLAY);</span>
+<span class="nc" id="L136">    submission.setWidth(100.0f, Unit.PERCENTAGE);</span>
+<span class="nc" id="L137">    submission.setVisible(false);</span>
+
+    // add sections to layout
+<span class="nc" id="L140">    viewContent.addComponent(workflows);</span>
+<span class="nc" id="L141">    viewContent.addComponent(submission);</span>
+
+<span class="nc" id="L143">    workflowLayout.addComponent(viewContent);</span>
+<span class="nc" id="L144">    setCompositionRoot(workflowLayout);</span>
+<span class="nc" id="L145">    addComponentListeners();</span>
+<span class="nc" id="L146">  }</span>
+
+  /**
+   * updates view, if height, width or the browser changes.
+   * 
+   * @param browserHeight
+   * @param browserWidth
+   * @param browser
+   */
+  public void updateView(int browserHeight, int browserWidth, WebBrowser browser) {
+<span class="nc" id="L156">    setWidth((browserWidth * 0.6f), Unit.PIXELS);</span>
+<span class="nc" id="L157">  }</span>
+
+  public void update(Map&lt;String, String&gt; map) {
+
+<span class="nc bnc" id="L161" title="All 2 branches missed.">    if (map == null)</span>
+<span class="nc" id="L162">      return;</span>
+    // TODO In background thread?
+<span class="nc" id="L164">    type = map.get(&quot;type&quot;);</span>
+<span class="nc" id="L165">    id = map.get(&quot;id&quot;);</span>
+
+<span class="nc bnc" id="L167" title="All 5 branches missed.">    switch (type) {</span>
+      case &quot;project&quot;:
+<span class="nc" id="L169">        datasetBeans = controller.getcontainer(type, id);</span>
+<span class="nc" id="L170">        List&lt;String&gt; datasetTypesInProject = new ArrayList&lt;String&gt;();</span>
+
+<span class="nc bnc" id="L172" title="All 2 branches missed.">        for (Iterator&lt;DatasetBean&gt; i = datasetBeans.getItemIds().iterator(); i.hasNext();) {</span>
+<span class="nc" id="L173">          DatasetBean dsBean = (DatasetBean) i.next();</span>
+<span class="nc" id="L174">          datasetTypesInProject.add(dsBean.getFileType());</span>
+<span class="nc" id="L175">        }</span>
+<span class="nc" id="L176">        updateWorkflowSelection(datasetTypesInProject);</span>
+<span class="nc" id="L177">        break;</span>
+
+      case &quot;experiment&quot;:
+<span class="nc" id="L180">        break;</span>
+
+      case &quot;sample&quot;:
+<span class="nc" id="L183">        break;</span>
+
+      case &quot;workflowExperimentType&quot;:
+<span class="nc" id="L186">        String experiment = map.get(&quot;experiment&quot;);</span>
+
+<span class="nc" id="L188">        BeanItemContainer&lt;Workflow&gt; suitableWorkflows =</span>
+<span class="nc" id="L189">            controller.suitableWorkflowsByExperimentType(experiment);</span>
+
+<span class="nc" id="L191">        BeanItemContainer&lt;DatasetBean&gt; suitableDatasets =</span>
+            new BeanItemContainer&lt;DatasetBean&gt;(DatasetBean.class);
+
+<span class="nc" id="L194">        List&lt;String&gt; workflowDatasetTypes = new ArrayList&lt;String&gt;();</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">        for (Iterator i = suitableWorkflows.getItemIds().iterator(); i.hasNext();) {</span>
+<span class="nc" id="L196">          Workflow workflowBean = (Workflow) i.next();</span>
+
+<span class="nc" id="L198">          Map&lt;String, List&lt;String&gt;&gt; requiredFiles = workflowBean.getFileTypes().get(&quot;required&quot;);</span>
+
+<span class="nc bnc" id="L200" title="All 2 branches missed.">          for (Entry&lt;String, List&lt;String&gt;&gt; entry : requiredFiles.entrySet()) {</span>
+<span class="nc" id="L201">            workflowDatasetTypes.addAll(entry.getValue());</span>
+<span class="nc" id="L202">          }</span>
+
+<span class="nc" id="L204">        }</span>
+
+<span class="nc" id="L206">        for (Iterator i = controller.getcontainer(&quot;project&quot;, id).getItemIds().iterator(); i</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">            .hasNext();) {</span>
+<span class="nc" id="L208">          DatasetBean datasetBean = (DatasetBean) i.next();</span>
+
+<span class="nc bnc" id="L210" title="All 2 branches missed.">          if (workflowDatasetTypes.contains(datasetBean.getFileType())) {</span>
+<span class="nc" id="L211">            suitableDatasets.addBean(datasetBean);</span>
+          }
+<span class="nc" id="L213">        }</span>
+
+<span class="nc" id="L215">        datasetBeans = suitableDatasets;</span>
+<span class="nc" id="L216">        updateSelection(suitableWorkflows);</span>
+<span class="nc" id="L217">        break;</span>
+
+      default:
+<span class="nc" id="L220">        updateSelection(new BeanItemContainer&lt;Workflow&gt;(Workflow.class));</span>
+        break;
+    }
+<span class="nc" id="L223">  }</span>
+
+  protected void updateWorkflowSelection(DatasetBean dataset) {
+<span class="nc" id="L226">    updateSelection(controller.suitableWorkflows(dataset.getFileType()));</span>
+<span class="nc" id="L227">  }</span>
+
+  protected void updateWorkflowSelection(List&lt;String&gt; datasetTypes) {
+<span class="nc" id="L230">    updateSelection(controller.suitableWorkflows(datasetTypes));</span>
+<span class="nc" id="L231">  }</span>
+
+  protected void updateWorkflowSelection(String experimentType) {
+<span class="nc" id="L234">    updateSelection(controller.suitableWorkflowsByExperimentType(experimentType));</span>
+<span class="nc" id="L235">  }</span>
+
+  /**
+   * updates availableWorkflows to contain only workflows according to dataset selection.
+   * 
+   * @param suitableWorkflows
+   */
+  void updateSelection(BeanItemContainer&lt;Workflow&gt; suitableWorkflows) {
+<span class="nc" id="L243">    this.submission.setCaption(&quot;&quot;);</span>
+<span class="nc" id="L244">    this.submission.removeAllComponents();</span>
+
+<span class="nc bnc" id="L246" title="All 2 branches missed.">    if (!(suitableWorkflows.size() &gt; 0)) {</span>
+<span class="nc" id="L247">      Utils</span>
+<span class="nc" id="L248">          .Notification(</span>
+              &quot;No suitable workflows available.&quot;,
+              &quot;No workflows are shown because no suitable data is available in this project. If this is unexpected please contact your project manager.&quot;,
+              &quot;info&quot;);
+    }
+
+<span class="nc" id="L254">    availableWorkflows.setContainerDataSource(filtergpcontainer(suitableWorkflows));</span>
+    // availableWorkflows.setColumnOrder(&quot;name&quot;, &quot;version&quot;, &quot;fileTypes&quot;);
+<span class="nc" id="L256">    availableWorkflows.setColumnOrder(&quot;name&quot;, &quot;version&quot;);</span>
+
+<span class="nc" id="L258">    workflows.setVisible(true);</span>
+<span class="nc" id="L259">  }</span>
+
+  void showNotification(String message) {
+<span class="nc" id="L262">    Notification notif = new Notification(message, Type.TRAY_NOTIFICATION);</span>
+    // Customize it
+<span class="nc" id="L264">    notif.setDelayMsec(60000);</span>
+<span class="nc" id="L265">    notif.setPosition(Position.MIDDLE_CENTER);</span>
+    // Show it in the page
+<span class="nc" id="L267">    notif.show(Page.getCurrent());</span>
+
+<span class="nc" id="L269">  }</span>
+
+  /**
+   * filter grid columns
+   * 
+   * @param suitableWorkflows
+   * @return
+   */
+  GeneratedPropertyContainer filtergpcontainer(BeanItemContainer&lt;Workflow&gt; suitableWorkflows) {
+    // ONLY SHOW SPECIFIC COLUMNS IN GRID
+<span class="nc" id="L279">    GeneratedPropertyContainer gpcontainer = new GeneratedPropertyContainer(suitableWorkflows);</span>
+
+<span class="nc" id="L281">    gpcontainer.removeContainerProperty(&quot;ID&quot;);</span>
+<span class="nc" id="L282">    gpcontainer.removeContainerProperty(&quot;fileTypes&quot;);</span>
+<span class="nc" id="L283">    gpcontainer.removeContainerProperty(&quot;data&quot;);</span>
+<span class="nc" id="L284">    gpcontainer.removeContainerProperty(&quot;datasetType&quot;);</span>
+<span class="nc" id="L285">    gpcontainer.removeContainerProperty(&quot;nodes&quot;);</span>
+<span class="nc" id="L286">    gpcontainer.removeContainerProperty(&quot;experimentType&quot;);</span>
+<span class="nc" id="L287">    gpcontainer.removeContainerProperty(&quot;parameterToNodesMapping&quot;);</span>
+<span class="nc" id="L288">    gpcontainer.removeContainerProperty(&quot;parameters&quot;);</span>
+<span class="nc" id="L289">    gpcontainer.removeContainerProperty(&quot;sampleType&quot;);</span>
+<span class="nc" id="L290">    gpcontainer.removeContainerProperty(&quot;description&quot;);</span>
+<span class="nc" id="L291">    return gpcontainer;</span>
+  }
+
+  private void updateParameterView(Workflow workFlow, BeanItemContainer&lt;DatasetBean&gt; projectDatasets) {
+<span class="nc" id="L295">    this.submission.setCaption(SUBMISSION_CAPTION + &quot;: &quot; + workFlow.getName());</span>
+<span class="nc" id="L296">    this.submission.removeAllComponents();</span>
+
+<span class="nc bnc" id="L298" title="All 2 branches missed.">    if (workFlow.getName().equals(&quot;MaxQuant&quot;)) {</span>
+<span class="nc" id="L299">      BeanItemContainer&lt;RawFilesBean&gt; rawFilesBeans =</span>
+          new BeanItemContainer&lt;RawFilesBean&gt;(RawFilesBean.class);
+<span class="nc" id="L301">      BeanItemContainer&lt;FastaBean&gt; selectedfastas =</span>
+          new BeanItemContainer&lt;FastaBean&gt;(FastaBean.class);
+<span class="nc" id="L303">      BeanItemContainer&lt;FastaBean&gt; fastas = new BeanItemContainer&lt;FastaBean&gt;(FastaBean.class);</span>
+<span class="nc" id="L304">      FastaDB db = new FastaDB();</span>
+<span class="nc" id="L305">      fastas.addAll(db.getAll());</span>
+
+<span class="nc" id="L307">      Map&lt;String, Parameter&gt; params = workFlow.getData().getData();</span>
+<span class="nc" id="L308">      BeanItemContainer&lt;DatasetBean&gt; subContainer =</span>
+          new BeanItemContainer&lt;DatasetBean&gt;(DatasetBean.class);
+
+
+<span class="nc bnc" id="L312" title="All 2 branches missed.">      for (Entry&lt;String, Parameter&gt; entry : params.entrySet()) {</span>
+
+<span class="nc bnc" id="L314" title="All 2 branches missed.">        if (entry.getValue() instanceof FileParameter</span>
+<span class="nc bnc" id="L315" title="All 2 branches missed.">            || entry.getValue() instanceof FileListParameter) {</span>
+
+<span class="nc" id="L317">          List&lt;String&gt; associatedDataTypes = new ArrayList&lt;String&gt;();</span>
+
+<span class="nc bnc" id="L319" title="All 2 branches missed.">          if (entry.getValue() instanceof FileParameter) {</span>
+<span class="nc" id="L320">            associatedDataTypes = ((FileParameter) entry.getValue()).getRange();</span>
+<span class="nc bnc" id="L321" title="All 2 branches missed.">          } else if (entry.getValue() instanceof FileListParameter) {</span>
+<span class="nc" id="L322">            associatedDataTypes = ((FileListParameter) entry.getValue()).getRange();</span>
+          }
+
+<span class="nc bnc" id="L325" title="All 4 branches missed.">          if (associatedDataTypes.contains(&quot;fasta&quot;) || associatedDataTypes.contains(&quot;gtf&quot;)) {</span>
+<span class="nc" id="L326">            continue;</span>
+          } else {
+<span class="nc" id="L328">            for (Iterator&lt;DatasetBean&gt; i = projectDatasets.getItemIds().iterator(); i</span>
+<span class="nc bnc" id="L329" title="All 2 branches missed.">                .hasNext();) {</span>
+<span class="nc" id="L330">              DatasetBean dataset = i.next();</span>
+
+<span class="nc bnc" id="L332" title="All 2 branches missed.">              if (associatedDataTypes.contains(dataset.getFileType())) {</span>
+<span class="nc" id="L333">                subContainer.addBean(dataset);</span>
+
+              }
+<span class="nc" id="L336">            }</span>
+          }
+        }
+<span class="nc" id="L339">      }</span>
+
+<span class="nc" id="L341">      MaxQuantModel model = new MaxQuantModel(rawFilesBeans, subContainer, selectedfastas, fastas);</span>
+<span class="nc" id="L342">      VaadinSession.getCurrent().setConverterFactory(new MaxquantConverterFactory());</span>
+<span class="nc" id="L343">      MaxQuantComponent maxquantComponent = new MaxQuantComponent(model, controller);</span>
+<span class="nc" id="L344">      maxquantComponent.setWorkflow(workFlow);</span>
+<span class="nc" id="L345">      maxquantComponent.addSubmissionListener(new MaxQuantSubmissionListener(maxquantComponent));</span>
+
+<span class="nc" id="L347">      this.submission.addComponent(maxquantComponent);</span>
+<span class="nc bnc" id="L348" title="All 2 branches missed.">    } else if (workFlow.getName().contains(&quot;Microarray QC&quot;)) {</span>
+<span class="nc" id="L349">      MicroarrayQCComponent qcComp = new MicroarrayQCComponent(controller);</span>
+<span class="nc" id="L350">      qcComp.update(workFlow, projectDatasets);</span>
+<span class="nc" id="L351">      qcComp.addResetListener(new MicroarrayQCResetListener(qcComp));</span>
+<span class="nc" id="L352">      qcComp.addSubmissionListener(new MicroarrayQCSubmissionListener(qcComp));</span>
+<span class="nc" id="L353">      this.submission.addComponent(qcComp);</span>
+<span class="nc bnc" id="L354" title="All 2 branches missed.">    } else if ((workFlow.getName().contains(&quot;NGS Read Alignment&quot;))</span>
+<span class="nc bnc" id="L355" title="All 2 branches missed.">        || (workFlow.getName().contains(&quot;RNA-seq&quot;))) {</span>
+<span class="nc" id="L356">      NGSMappingComponent mappComp = new NGSMappingComponent(controller);</span>
+<span class="nc" id="L357">      mappComp.update(workFlow, projectDatasets);</span>
+<span class="nc" id="L358">      mappComp.addResetListener(new NGSMappingResetListener(mappComp));</span>
+<span class="nc" id="L359">      mappComp.addSubmissionListener(new NGSMappingSubmissionListener(mappComp));</span>
+<span class="nc" id="L360">      this.submission.addComponent(mappComp);</span>
+<span class="nc bnc" id="L361" title="All 2 branches missed.">    } else if (workFlow.getName().contains(&quot;Differential&quot;)) {</span>
+<span class="nc" id="L362">      DifferentialExpressionComponent diffComp = new DifferentialExpressionComponent(controller);</span>
+<span class="nc" id="L363">      diffComp.update(workFlow, projectDatasets);</span>
+<span class="nc" id="L364">      diffComp.addResetListener(new DifferentialExpressionResetListener(diffComp));</span>
+<span class="nc" id="L365">      diffComp.addSubmissionListener(new DifferentialExpressionSubmissionListener(diffComp));</span>
+<span class="nc" id="L366">      this.submission.addComponent(diffComp);</span>
+<span class="nc" id="L367">    } else {</span>
+<span class="nc" id="L368">      StandardWorkflowComponent standardComponent = new StandardWorkflowComponent(controller);</span>
+<span class="nc" id="L369">      standardComponent.update(workFlow, projectDatasets);</span>
+<span class="nc" id="L370">      standardComponent.addResetListener(new ResetListener(standardComponent));</span>
+<span class="nc" id="L371">      standardComponent.addSubmissionListener(new StandardSubmissionListener(standardComponent));</span>
+<span class="nc" id="L372">      this.submission.addComponent(standardComponent);</span>
+    }
+<span class="nc" id="L374">  }</span>
+
+  private void addComponentListeners() {
+
+<span class="nc" id="L378">    availableWorkflows.setDetailsGenerator(new DetailsGenerator() {</span>
+      private static final long serialVersionUID = 6123522348935657638L;
+
+      @Override
+      public Component getDetails(RowReference rowReference) {
+<span class="nc" id="L383">        Workflow w = (Workflow) rowReference.getItemId();</span>
+
+<span class="nc" id="L385">        Label description = new Label(w.getDescription(), ContentMode.HTML);</span>
+<span class="nc" id="L386">        description.setCaption(&quot;Description&quot;);</span>
+
+<span class="nc" id="L388">        VerticalLayout main = new VerticalLayout(description);</span>
+<span class="nc" id="L389">        main.setMargin(true);</span>
+<span class="nc" id="L390">        return main;</span>
+      }
+    });
+
+<span class="nc" id="L394">    availableWorkflows.addItemClickListener(new ItemClickListener() {</span>
+      private static final long serialVersionUID = 3786125825391677177L;
+
+      @Override
+      public void itemClick(ItemClickEvent event) {
+        // TODO get path of datasetBean and set it as input ?!
+<span class="nc" id="L400">        Workflow selectedWorkflow = (Workflow) event.getItemId();</span>
+<span class="nc bnc" id="L401" title="All 2 branches missed.">        if (selectedWorkflow != null) {</span>
+<span class="nc" id="L402">          updateParameterView(selectedWorkflow, datasetBeans);</span>
+<span class="nc" id="L403">          submission.setVisible(true);</span>
+
+          // detailed Description should be visible
+<span class="nc" id="L406">          availableWorkflows.setDetailsVisible(selectedWorkflow,</span>
+<span class="nc bnc" id="L407" title="All 2 branches missed.">              !availableWorkflows.isDetailsVisible(selectedWorkflow));</span>
+
+        } else {
+<span class="nc" id="L410">          LOG.warn(&quot;selected Workflow is null?&quot;);</span>
+<span class="nc" id="L411">          submission.setVisible(false);</span>
+        }
+
+<span class="nc" id="L414">      }</span>
+    });
+<span class="nc" id="L416">    availableWorkflows.setEditorEnabled(false);</span>
+<span class="nc" id="L417">  }</span>
+
+  private class ResetListener implements ClickListener {
+    private static final long serialVersionUID = 6800369140265363672L;
+    private StandardWorkflowComponent swc;
+
+<span class="nc" id="L423">    public ResetListener(StandardWorkflowComponent standardWorkflowComponent) {</span>
+<span class="nc" id="L424">      swc = standardWorkflowComponent;</span>
+<span class="nc" id="L425">    }</span>
+
+    @Override
+    public void buttonClick(ClickEvent event) {
+<span class="nc" id="L429">      swc.resetParameters();</span>
+<span class="nc" id="L430">    }</span>
+  }
+
+  /**
+   * 
+   * @author mohr
+   * 
+   */
+  public class DifferentialExpressionResetListener implements ClickListener {
+    private static final long serialVersionUID = -127474228749885664L;
+    private DifferentialExpressionComponent qcc;
+
+<span class="nc" id="L442">    public DifferentialExpressionResetListener(DifferentialExpressionComponent wfComp) {</span>
+<span class="nc" id="L443">      qcc = wfComp;</span>
+<span class="nc" id="L444">    }</span>
+
+    @Override
+    public void buttonClick(ClickEvent event) {
+<span class="nc" id="L448">      qcc.resetParameters();</span>
+<span class="nc" id="L449">    }</span>
+  }
+
+  /**
+   * 
+   * @author mohr
+   * 
+   */
+  private class DifferentialExpressionSubmissionListener implements ClickListener {
+    private static final long serialVersionUID = 24386950203184318L;
+    private DifferentialExpressionComponent comp;
+
+<span class="nc" id="L461">    public DifferentialExpressionSubmissionListener(DifferentialExpressionComponent comp) {</span>
+<span class="nc" id="L462">      this.comp = comp;</span>
+<span class="nc" id="L463">    }</span>
+
+    @Override
+    public void buttonClick(ClickEvent event) {
+      try {
+<span class="nc" id="L468">        List&lt;DatasetBean&gt; selectedDatasets = comp.getSelectedDatasets();</span>
+<span class="nc" id="L469">        comp.writeParametersToWorkflow();</span>
+<span class="nc" id="L470">        Workflow submittedWf = comp.getWorkflow();</span>
+<span class="nc" id="L471">        submit(submittedWf, new ArrayList&lt;DatasetBean&gt;(selectedDatasets));</span>
+<span class="nc" id="L472">      } catch (Exception e) {</span>
+<span class="nc" id="L473">        handleException(e);</span>
+<span class="nc" id="L474">      }</span>
+<span class="nc" id="L475">    }</span>
+  }
+  /**
+   * 
+   * @author mohr
+   * 
+   */
+  public class NGSMappingResetListener implements ClickListener {
+    private static final long serialVersionUID = -127474228749885664L;
+    private NGSMappingComponent qcc;
+
+<span class="nc" id="L486">    public NGSMappingResetListener(NGSMappingComponent wfComp) {</span>
+<span class="nc" id="L487">      qcc = wfComp;</span>
+<span class="nc" id="L488">    }</span>
+
+    @Override
+    public void buttonClick(ClickEvent event) {
+<span class="nc" id="L492">      qcc.resetParameters();</span>
+<span class="nc" id="L493">    }</span>
+  }
+
+  /**
+   * 
+   * @author mohr
+   * 
+   */
+  private class NGSMappingSubmissionListener implements ClickListener {
+    private static final long serialVersionUID = 24386950203184318L;
+    private NGSMappingComponent comp;
+
+<span class="nc" id="L505">    public NGSMappingSubmissionListener(NGSMappingComponent comp) {</span>
+<span class="nc" id="L506">      this.comp = comp;</span>
+<span class="nc" id="L507">    }</span>
+
+    @Override
+    public void buttonClick(ClickEvent event) {
+      try {
+<span class="nc" id="L512">        List&lt;DatasetBean&gt; selectedDatasets = comp.getSelectedDatasets();</span>
+<span class="nc" id="L513">        comp.writeParametersToWorkflow();</span>
+<span class="nc" id="L514">        Workflow submittedWf = comp.getWorkflow();</span>
+<span class="nc" id="L515">        submit(submittedWf, new ArrayList&lt;DatasetBean&gt;(selectedDatasets));</span>
+<span class="nc" id="L516">      } catch (Exception e) {</span>
+<span class="nc" id="L517">        handleException(e);</span>
+<span class="nc" id="L518">      }</span>
+<span class="nc" id="L519">    }</span>
+  }
+
+  public class MicroarrayQCResetListener implements ClickListener {
+    private static final long serialVersionUID = -127474228749885664L;
+    private MicroarrayQCComponent qcc;
+
+<span class="nc" id="L526">    public MicroarrayQCResetListener(MicroarrayQCComponent wfComp) {</span>
+<span class="nc" id="L527">      qcc = wfComp;</span>
+<span class="nc" id="L528">    }</span>
+
+    @Override
+    public void buttonClick(ClickEvent event) {
+<span class="nc" id="L532">      qcc.resetParameters();</span>
+<span class="nc" id="L533">    }</span>
+  }
+
+  /**
+   * listens to clicks on submit button. Executes microarray qc workflow.
+   * 
+   * @author friedrich
+   * 
+   */
+  private class MicroarrayQCSubmissionListener implements ClickListener {
+    private static final long serialVersionUID = 24386950203184318L;
+    private MicroarrayQCComponent comp;
+
+<span class="nc" id="L546">    public MicroarrayQCSubmissionListener(MicroarrayQCComponent comp) {</span>
+<span class="nc" id="L547">      this.comp = comp;</span>
+<span class="nc" id="L548">    }</span>
+
+    @Override
+    public void buttonClick(ClickEvent event) {
+      try {
+<span class="nc" id="L553">        List&lt;DatasetBean&gt; selectedDatasets = comp.getSelectedDatasets();</span>
+<span class="nc" id="L554">        comp.writeParametersToWorkflow();</span>
+<span class="nc" id="L555">        Workflow submittedWf = comp.getWorkflow();</span>
+<span class="nc" id="L556">        submit(submittedWf, new ArrayList&lt;DatasetBean&gt;(selectedDatasets));</span>
+<span class="nc" id="L557">      } catch (Exception e) {</span>
+<span class="nc" id="L558">        handleException(e);</span>
+<span class="nc" id="L559">      }</span>
+<span class="nc" id="L560">    }</span>
+  }
+
+  /**
+   * listenes to clicks on submit button. Executes standard workflow.
+   * 
+   * @author wojnar
+   * 
+   */
+  private class StandardSubmissionListener implements ClickListener {
+    private static final long serialVersionUID = 243869502031843198L;
+    private StandardWorkflowComponent swc;
+
+<span class="nc" id="L573">    public StandardSubmissionListener(StandardWorkflowComponent standardWorkflowComponent) {</span>
+<span class="nc" id="L574">      swc = standardWorkflowComponent;</span>
+<span class="nc" id="L575">    }</span>
+
+    @Override
+    public void buttonClick(ClickEvent event) {
+      try {
+<span class="nc" id="L580">        List&lt;DatasetBean&gt; selectedDatasets = swc.getSelectedDatasets();</span>
+<span class="nc" id="L581">        Workflow submittedWf = swc.getWorkflow();</span>
+<span class="nc" id="L582">        submit(submittedWf, new ArrayList&lt;DatasetBean&gt;(selectedDatasets));</span>
+<span class="nc" id="L583">      } catch (Exception e) {</span>
+<span class="nc" id="L584">        handleException(e);</span>
+<span class="nc" id="L585">      }</span>
+<span class="nc" id="L586">    }</span>
+  }
+  /**
+   * listenes to clicks on submit button. Executes maxquant workflow.
+   * 
+   * @author wojnar
+   * 
+   */
+  private class MaxQuantSubmissionListener implements ClickListener {
+    private static final long serialVersionUID = 1888557742642278371L;
+    private MaxQuantComponent maxQuantComponent;
+
+<span class="nc" id="L598">    public MaxQuantSubmissionListener(MaxQuantComponent mqc) {</span>
+<span class="nc" id="L599">      maxQuantComponent = mqc;</span>
+<span class="nc" id="L600">    }</span>
+
+    @Override
+    public void buttonClick(ClickEvent event) {
+
+      try {
+<span class="nc" id="L606">        maxQuantComponent.updateGroups();</span>
+<span class="nc" id="L607">        maxQuantComponent.writeParametersToWorkflow();</span>
+<span class="nc" id="L608">        Workflow submittedWf = maxQuantComponent.getWorkflow();</span>
+<span class="nc" id="L609">        Collection&lt;DatasetBean&gt; selectedDatasets = maxQuantComponent.getSelectedDatasets();</span>
+<span class="nc" id="L610">        submit(submittedWf, new ArrayList&lt;DatasetBean&gt;(selectedDatasets));</span>
+<span class="nc" id="L611">      } catch (Exception e) {</span>
+        // handleException(e);
+<span class="nc" id="L613">        e.printStackTrace();</span>
+<span class="nc" id="L614">      }</span>
+<span class="nc" id="L615">    }</span>
+
+  }
+
+  /**
+   * submits workflow with given datasets
+   * 
+   * @throws SubmitFailedException
+   * @throws IllegalArgumentException
+   * @throws ConnectException
+   */
+  void submit(Workflow submittedWf, List&lt;DatasetBean&gt; selectedDatasets) throws ConnectException,
+      IllegalArgumentException, SubmitFailedException {
+<span class="nc bnc" id="L628" title="All 4 branches missed.">    if (submittedWf == null || selectedDatasets.isEmpty()) {</span>
+<span class="nc" id="L629">      return;</span>
+    }
+    // THIS IS THE IMPORTANT LINE IN THAT MESS
+<span class="nc" id="L632">    String openbisId = controller.submitAndRegisterWf(type, id, submittedWf, selectedDatasets);</span>
+<span class="nc" id="L633">    Utils.Notification(&quot;Workflow submitted&quot;,</span>
+        &quot;Workflow submitted successfully and saved under &quot; + openbisId, &quot;success&quot;);
+    // showNotification(&quot;Workflow submitted and saved under &quot; + openbisId);
+<span class="nc" id="L636">  }</span>
+
+  /**
+   * logs error and shows user that submission failed. Different exceptions yield different error
+   * messages
+   * 
+   * @param e
+   */
+  public void handleException(Exception e) {
+<span class="nc bnc" id="L645" title="All 6 branches missed.">    if (e instanceof ConnectException || e instanceof IllegalArgumentException</span>
+        || e instanceof SubmitFailedException) {
+<span class="nc" id="L647">      LOG.error(&quot;Submission failed, probably gUSE. &quot; + e.getMessage(), e.getStackTrace());</span>
+<span class="nc" id="L648">      Utils</span>
+<span class="nc" id="L649">          .Notification(</span>
+              &quot;Workflow submission failed&quot;,
+              &quot;Requested workflow could not be submitted due to internal errors. Please try again later and contact your project manager if the problem persists.&quot;,
+              &quot;error&quot;);
+      try {
+        VaadinService
+<span class="nc" id="L655">            .getCurrentResponse()</span>
+<span class="nc" id="L656">            .sendError(</span>
+                HttpServletResponse.SC_GATEWAY_TIMEOUT,
+                &quot;An error occured, while trying to connect to the database. Please try again later, or contact your project manager.&quot;);
+<span class="nc" id="L659">      } catch (IOException | IllegalArgumentException e1) {</span>
+        // TODO Auto-generated catch block
+<span class="nc" id="L661">        LOG.error(&quot;Something went wrong: &quot; + e.getMessage(), e.getStackTrace());</span>
+<span class="nc" id="L662">        VaadinService.getCurrentResponse().setStatus(HttpServletResponse.SC_GATEWAY_TIMEOUT);</span>
+<span class="nc" id="L663">      }</span>
+<span class="nc bnc" id="L664" title="All 2 branches missed.">    } else if (e instanceof RemoteAccessException) {</span>
+<span class="nc" id="L665">      LOG.error(&quot;Submission failed, probably openbis. error message: &quot; + e.getMessage(),</span>
+<span class="nc" id="L666">          e.getStackTrace());</span>
+<span class="nc" id="L667">      Utils</span>
+<span class="nc" id="L668">          .Notification(</span>
+              &quot;Workflow submission failed&quot;,
+              &quot;Requested workflow could not be submitted due to internal errors. Please try again later and contact your project manager if the problem persists.&quot;,
+              &quot;error&quot;);
+    } else {
+<span class="nc" id="L673">      LOG.error(&quot;Internal error: &quot; + e.getMessage(), e.getStackTrace());</span>
+<span class="nc" id="L674">      Utils</span>
+<span class="nc" id="L675">          .Notification(</span>
+              &quot;Workflow submission failed&quot;,
+              &quot;Requested workflow could not be submitted due to internal errors. Please try again later and contact your project manager if the problem persists.&quot;,
+              &quot;error&quot;);
+    }
+<span class="nc" id="L680">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

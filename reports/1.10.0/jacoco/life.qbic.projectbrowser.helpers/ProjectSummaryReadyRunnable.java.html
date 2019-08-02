@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProjectSummaryReadyRunnable.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.helpers</a> &gt; <span class="el_source">ProjectSummaryReadyRunnable.java</span></div><h1>ProjectSummaryReadyRunnable.java</h1><pre class="source lang-java linenums">package life.qbic.projectbrowser.helpers;
+
+import com.vaadin.server.FontAwesome;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.Window;
+import life.qbic.portal.portlet.ProjectBrowserPortlet;
+
+public class ProjectSummaryReadyRunnable implements Runnable {
+  private SummaryFetcher fetcher;
+  private Window loadingWindow;
+  private String project;
+
+<span class="nc" id="L13">  public ProjectSummaryReadyRunnable(SummaryFetcher fetcher, Window window, String projectCode) {</span>
+<span class="nc" id="L14">    this.fetcher = fetcher;</span>
+<span class="nc" id="L15">    this.loadingWindow = window;</span>
+<span class="nc" id="L16">    this.project = projectCode;</span>
+<span class="nc" id="L17">  }</span>
+
+  @Override
+  public void run() {
+<span class="nc bnc" id="L21" title="All 2 branches missed.">    if (loadingWindow.getParent() != null)</span>
+<span class="nc" id="L22">      loadingWindow.close();</span>
+<span class="nc bnc" id="L23" title="All 2 branches missed.">    if (!fetcher.wasSuccessful()) {</span>
+<span class="nc" id="L24">      Utils.Notification(&quot;Summary failed.&quot;,&quot;Summary can't be shown for this project.&quot;,&quot;error&quot;);</span>
+    } else {
+      // loading finished, remove loading window if user didn't close it already
+
+      // show results in new window
+<span class="nc" id="L29">      Window subWindow = new Window(&quot; Summary for project &quot; + project);</span>
+<span class="nc" id="L30">      subWindow.setContent(fetcher.getWindowContent());</span>
+      // Center it in the browser window
+<span class="nc" id="L32">      subWindow.center();</span>
+<span class="nc" id="L33">      subWindow.setModal(true);</span>
+<span class="nc" id="L34">      subWindow.setIcon(FontAwesome.LIST);</span>
+<span class="nc" id="L35">      subWindow.setHeight(&quot;75%&quot;);</span>
+<span class="nc" id="L36">      subWindow.setResizable(false);</span>
+
+<span class="nc" id="L38">      ProjectBrowserPortlet ui = (ProjectBrowserPortlet) UI.getCurrent();</span>
+<span class="nc" id="L39">      ui.addWindow(subWindow);</span>
+    }
+<span class="nc" id="L41">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

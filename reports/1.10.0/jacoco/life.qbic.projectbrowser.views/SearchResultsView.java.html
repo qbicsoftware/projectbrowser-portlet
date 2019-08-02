@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchResultsView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.views</a> &gt; <span class="el_source">SearchResultsView.java</span></div><h1>SearchResultsView.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.views;
+
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import com.vaadin.shared.ui.label.ContentMode;
+import org.tepi.filtertable.FilterTable;
+
+import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.event.ItemClickEvent;
+import com.vaadin.event.ItemClickEvent.ItemClickListener;
+import com.vaadin.navigator.View;
+import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
+import com.vaadin.server.WebBrowser;
+import com.vaadin.shared.ui.MarginInfo;
+import com.vaadin.shared.ui.grid.HeightMode;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.CustomTable.RowHeaderMode;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.Grid.SelectionMode;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.VerticalLayout;
+
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Experiment;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Project;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import life.qbic.projectbrowser.model.SearchResultsExperimentBean;
+import life.qbic.projectbrowser.model.SearchResultsProjectBean;
+import life.qbic.projectbrowser.model.SearchResultsSampleBean;
+import life.qbic.projectbrowser.controllers.*;
+import life.qbic.projectbrowser.helpers.DatasetViewFilterDecorator;
+import life.qbic.projectbrowser.helpers.DatasetViewFilterGenerator;
+import life.qbic.projectbrowser.helpers.ViewTablesClickListener;
+
+
+public class SearchResultsView extends VerticalLayout implements View {
+
+  /**
+   * 
+   */
+  private static final long serialVersionUID = -9100320125534037596L;
+
+  /**
+   * 
+   */
+
+  public final static String navigateToLabel = &quot;searchresults&quot;;
+
+<span class="nc" id="L71">  private static final Logger LOG = LogManager.getLogger(SearchResultsView.class);</span>
+
+  String caption;
+  FilterTable table;
+
+  DataHandler datahandler;
+
+  VerticalLayout searchResultsLayout;
+
+  BeanItemContainer&lt;SearchResultsSampleBean&gt; sampleBeanContainer;
+  BeanItemContainer&lt;SearchResultsExperimentBean&gt; expBeanContainer;
+  BeanItemContainer&lt;SearchResultsProjectBean&gt; projBeanContainer;
+
+<span class="nc" id="L84">  String queryString = new String();</span>
+<span class="nc" id="L85">  Grid projectGrid = new Grid();</span>
+<span class="nc" id="L86">  Grid sampleGrid = new Grid();</span>
+<span class="nc" id="L87">  Grid expGrid = new Grid();</span>
+  // Boolean includePatientCreation = false;
+  State state;
+  String resourceUrl;
+  String header;
+  private final Label headerLabel;
+
+  public String getHeader() {
+<span class="nc" id="L95">    return header;</span>
+  }
+
+  public void setHeader(String header) {
+<span class="nc" id="L99">    this.header = header;</span>
+<span class="nc" id="L100">  }</span>
+
+
+<span class="nc" id="L103">  private Button export = new Button(&quot;Export as TSV&quot;);</span>
+
+<span class="nc" id="L105">  private int numberOfProjects = 0;</span>
+
+  private String user;
+
+  public SearchResultsView(DataHandler datahandler, String caption, String user, State state,
+<span class="nc" id="L110">      String resUrl) {</span>
+<span class="nc" id="L111">    searchResultsLayout = new VerticalLayout();</span>
+<span class="nc" id="L112">    this.table = buildFilterTable();</span>
+<span class="nc" id="L113">    this.datahandler = datahandler;</span>
+
+<span class="nc" id="L115">      headerLabel = new Label(&quot;&quot;, ContentMode.HTML);</span>
+
+<span class="nc" id="L117">      this.state = state;</span>
+<span class="nc" id="L118">    this.resourceUrl = resUrl;</span>
+
+<span class="nc" id="L120">    this.user = user;</span>
+<span class="nc" id="L121">  }</span>
+
+
+  public void setSizeFull() {
+<span class="nc" id="L125">    searchResultsLayout.setSizeFull();</span>
+<span class="nc" id="L126">    super.setSizeFull();</span>
+<span class="nc" id="L127">    this.table.setSizeFull();</span>
+<span class="nc" id="L128">    searchResultsLayout.setSpacing(true);</span>
+    // homeview_content.setMargin(true);
+<span class="nc" id="L130">  }</span>
+
+  /**
+   * sets the ContainerDataSource of this view. Should usually contains project information. Caption
+   * is caption.
+   * 
+   * @param caption
+   */
+  public void setContainerDataSource(String caption) {
+
+<span class="nc" id="L140">    this.caption = caption;</span>
+    // this.currentBean = spaceBean;
+    // this.numberOfProjects = currentBean.getProjects().size();
+    //
+    // setExportButton();
+    //
+    // this.table.setContainerDataSource(spaceBean.getProjects());
+    // this.table.setVisibleColumns(new Object[] {&quot;code&quot;, &quot;space&quot;, &quot;description&quot;});
+    // this.table.setColumnHeader(&quot;code&quot;, &quot;Name&quot;);
+    // this.table.setColumnHeader(&quot;space&quot;, &quot;Project&quot;);
+    // this.table.setColumnHeader(&quot;description&quot;, &quot;Description&quot;);
+    // this.table.setColumnExpandRatio(&quot;Name&quot;, 1);
+    // this.table.setColumnExpandRatio(&quot;Description&quot;, 3);
+
+
+<span class="nc" id="L155">    List&lt;Sample&gt; sampleResults = datahandler.getSampleResults();</span>
+<span class="nc" id="L156">    List&lt;Experiment&gt; expResults = datahandler.getExpResults();</span>
+<span class="nc" id="L157">    List&lt;Project&gt; projResults = datahandler.getProjResults();</span>
+
+
+<span class="nc" id="L160">    queryString = datahandler.getLastQueryString();</span>
+
+    // get the project search result data
+<span class="nc" id="L163">    Collection&lt;SearchResultsProjectBean&gt; projCollection = new ArrayList&lt;SearchResultsProjectBean&gt;();</span>
+    SearchResultsProjectBean tmpProjectBean;
+
+<span class="nc bnc" id="L166" title="All 2 branches missed.">    for (Project p : projResults) {</span>
+<span class="nc" id="L167">      tmpProjectBean = new SearchResultsProjectBean(p, queryString);</span>
+<span class="nc" id="L168">      projCollection.add(tmpProjectBean);</span>
+<span class="nc" id="L169">    }</span>
+
+<span class="nc" id="L171">    projBeanContainer = new BeanItemContainer&lt;SearchResultsProjectBean&gt;(</span>
+        SearchResultsProjectBean.class, projCollection);
+
+
+    // get the experiment search result data
+<span class="nc" id="L176">    Collection&lt;SearchResultsExperimentBean&gt; expCollection =</span>
+        new ArrayList&lt;SearchResultsExperimentBean&gt;();
+
+    SearchResultsExperimentBean tmpExperimentBean;
+
+<span class="nc bnc" id="L181" title="All 2 branches missed.">    for (Experiment i : expResults) {</span>
+      // System.out.println(i);
+      // Label sampleLabel = new Label(i.toString());
+      // SearchResultsSampleItem sampleItem = new SearchResultsSampleItem(i, rowNumber);
+
+      // LOG.info(i.getIdentifier());
+<span class="nc" id="L187">      tmpExperimentBean = new SearchResultsExperimentBean(i, queryString);</span>
+<span class="nc" id="L188">      expCollection.add(tmpExperimentBean);</span>
+
+<span class="nc" id="L190">    }</span>
+
+<span class="nc" id="L192">    expBeanContainer = new BeanItemContainer&lt;SearchResultsExperimentBean&gt;(</span>
+        SearchResultsExperimentBean.class, expCollection);
+
+    // get the sample search result data
+<span class="nc" id="L196">    Collection&lt;SearchResultsSampleBean&gt; sampleCollection = new ArrayList&lt;SearchResultsSampleBean&gt;();</span>
+    SearchResultsSampleBean tmpSearchBean;
+
+<span class="nc bnc" id="L199" title="All 2 branches missed.">    for (Sample i : sampleResults) {</span>
+      // System.out.println(i);
+      // Label sampleLabel = new Label(i.toString());
+      // SearchResultsSampleItem sampleItem = new SearchResultsSampleItem(i, rowNumber);
+
+<span class="nc" id="L204">      tmpSearchBean = new SearchResultsSampleBean(i, queryString);</span>
+<span class="nc" id="L205">      sampleCollection.add(tmpSearchBean);</span>
+
+<span class="nc" id="L207">    }</span>
+
+<span class="nc" id="L209">    sampleBeanContainer = new BeanItemContainer&lt;SearchResultsSampleBean&gt;(</span>
+        SearchResultsSampleBean.class, sampleCollection);
+
+<span class="nc" id="L212">  }</span>
+
+  private void setExportButton() {
+    // buttonLayoutSection.removeAllComponents();
+    // HorizontalLayout buttonLayout = new HorizontalLayout();
+    // buttonLayout.setHeight(null);
+    // buttonLayout.setWidth(&quot;100%&quot;);
+    // buttonLayoutSection.addComponent(buttonLayout);
+    //
+    // buttonLayout.addComponent(this.export);
+    //
+    // StreamResource sr =
+    // Utils.getTSVStream(Utils.containerToString(currentBean.getProjects()), this.caption);
+    // FileDownloader fileDownloader = new FileDownloader(sr);
+    // fileDownloader.extend(this.export);
+<span class="nc" id="L227">  }</span>
+
+  /**
+   * updates view, if height, width or the browser changes.
+   * 
+   * @param browserHeight
+   * @param browserWidth
+   * @param browser
+   */
+  public void updateView(int browserHeight, int browserWidth, WebBrowser browser) {
+<span class="nc" id="L237">    setWidth((browserWidth * 0.85f), Unit.PIXELS);</span>
+<span class="nc" id="L238">  }</span>
+
+  void buildLayout(int browserHeight, int browserWidth, WebBrowser browser) {
+    // this.setMargin(new MarginInfo(true, true, false, false));
+    // clean up first
+<span class="nc" id="L243">    searchResultsLayout.removeAllComponents();</span>
+<span class="nc" id="L244">    searchResultsLayout.setWidth(&quot;100%&quot;);</span>
+    // searchResultsLayout.setSpacing(true);
+
+<span class="nc" id="L247">    searchResultsLayout.setCaption(&quot;Search results for query '&quot; + queryString + &quot;'&quot;);</span>
+
+<span class="nc" id="L249">    headerLabel.setValue(&quot;If you want to navigate to one of the given search results, please click on the corresponding field in the ID column of the respective table.&quot;);</span>
+
+    // updateView(browserWidth, browserWidth, browser);
+
+<span class="nc" id="L253">    VerticalLayout viewContent = new VerticalLayout();</span>
+<span class="nc" id="L254">    viewContent.setWidth(&quot;100%&quot;);</span>
+<span class="nc" id="L255">    viewContent.setSpacing(true);</span>
+<span class="nc" id="L256">    viewContent.setMargin(new MarginInfo(true, false, false, false));</span>
+<span class="nc" id="L257">    viewContent.addComponent(headerLabel);</span>
+
+<span class="nc" id="L259">    List&lt;String&gt; showOptions = datahandler.getShowOptions();</span>
+
+<span class="nc bnc" id="L261" title="All 2 branches missed.">    if (showOptions.contains(&quot;Projects&quot;)) {</span>
+<span class="nc" id="L262">      projectGrid = new Grid(projBeanContainer);</span>
+<span class="nc" id="L263">      projectGrid.setCaption(&quot;Found Projects&quot;);</span>
+<span class="nc" id="L264">      projectGrid.setColumnOrder(&quot;projectID&quot;, &quot;description&quot;);</span>
+<span class="nc" id="L265">      projectGrid.setSizeFull();</span>
+
+<span class="nc" id="L267">      projectGrid.setHeightMode(HeightMode.ROW);</span>
+<span class="nc" id="L268">      projectGrid.setHeightByRows(5);</span>
+<span class="nc" id="L269">      projectGrid.setSelectionMode(SelectionMode.SINGLE);</span>
+
+<span class="nc" id="L271">      projectGrid.addItemClickListener(new ItemClickListener() {</span>
+
+        @Override
+        public void itemClick(ItemClickEvent event) {
+          // TODO Auto-generated method stub
+<span class="nc" id="L276">          String cellType = new String(event.getPropertyId().toString());</span>
+
+<span class="nc bnc" id="L278" title="All 2 branches missed.">          if (cellType.equals(&quot;projectID&quot;)) {</span>
+<span class="nc" id="L279">            String cellContent = new String(</span>
+<span class="nc" id="L280">                projBeanContainer.getContainerProperty(event.getItemId(), event.getPropertyId())</span>
+<span class="nc" id="L281">                    .getValue().toString());</span>
+
+<span class="nc" id="L283">            State state = (State) UI.getCurrent().getSession().getAttribute(&quot;state&quot;);</span>
+<span class="nc" id="L284">            ArrayList&lt;String&gt; message = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L285">            message.add(&quot;clicked&quot;);</span>
+<span class="nc" id="L286">            message.add(cellContent);</span>
+<span class="nc" id="L287">            message.add(&quot;project&quot;);</span>
+<span class="nc" id="L288">            state.notifyObservers(message);</span>
+          }
+<span class="nc" id="L290">        }</span>
+      });
+
+<span class="nc bnc" id="L293" title="All 2 branches missed.">      if (projBeanContainer.size() == 0) {</span>
+<span class="nc" id="L294">        Label noSamples = new Label(&quot;no projects were found&quot;);</span>
+<span class="nc" id="L295">        noSamples.setCaption(&quot;Found Projects&quot;);</span>
+<span class="nc" id="L296">        viewContent.addComponent(noSamples);</span>
+<span class="nc" id="L297">      } else {</span>
+<span class="nc" id="L298">        viewContent.addComponent(projectGrid);</span>
+      }
+    }
+
+<span class="nc bnc" id="L302" title="All 2 branches missed.">    if (showOptions.contains(&quot;Experiments&quot;)) {</span>
+      // expGrid = new Grid(expBeanContainer);
+<span class="nc" id="L304">      expGrid = new Grid(expBeanContainer);</span>
+<span class="nc" id="L305">      expGrid.setCaption(&quot;Found Experiments&quot;);</span>
+<span class="nc" id="L306">      expGrid.setColumnOrder(&quot;experimentID&quot;, &quot;experimentName&quot;, &quot;matchedField&quot;);</span>
+<span class="nc" id="L307">      expGrid.setSizeFull();</span>
+
+<span class="nc" id="L309">      expGrid.getColumn(&quot;experimentID&quot;).setExpandRatio(0);</span>
+<span class="nc" id="L310">      expGrid.getColumn(&quot;experimentName&quot;).setExpandRatio(1);</span>
+<span class="nc" id="L311">      expGrid.getColumn(&quot;matchedField&quot;).setExpandRatio(1);</span>
+
+<span class="nc" id="L313">      expGrid.setHeightMode(HeightMode.ROW);</span>
+<span class="nc" id="L314">      expGrid.setHeightByRows(5);</span>
+<span class="nc" id="L315">      expGrid.setSelectionMode(SelectionMode.SINGLE);</span>
+
+
+
+<span class="nc" id="L319">      expGrid.addItemClickListener(new ItemClickListener() {</span>
+        @Override
+        public void itemClick(ItemClickEvent event) {
+<span class="nc" id="L322">          String cellType = new String(event.getPropertyId().toString());</span>
+
+<span class="nc bnc" id="L324" title="All 2 branches missed.">          if (cellType.equals(&quot;experimentID&quot;)) {</span>
+<span class="nc" id="L325">            String cellContent = new String(</span>
+<span class="nc" id="L326">                expBeanContainer.getContainerProperty(event.getItemId(), event.getPropertyId())</span>
+<span class="nc" id="L327">                    .getValue().toString());</span>
+
+
+<span class="nc" id="L330">            State state = (State) UI.getCurrent().getSession().getAttribute(&quot;state&quot;);</span>
+<span class="nc" id="L331">            ArrayList&lt;String&gt; message = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L332">            message.add(&quot;clicked&quot;);</span>
+<span class="nc" id="L333">            message.add(cellContent);</span>
+<span class="nc" id="L334">            message.add(&quot;experiment&quot;);</span>
+<span class="nc" id="L335">            state.notifyObservers(message);</span>
+          }
+<span class="nc" id="L337">        }</span>
+      });
+
+<span class="nc bnc" id="L340" title="All 2 branches missed.">      if (expBeanContainer.size() == 0) {</span>
+<span class="nc" id="L341">        Label noExps = new Label(&quot;no experiments were found&quot;);</span>
+<span class="nc" id="L342">        noExps.setCaption(&quot;Found Experiments&quot;);</span>
+<span class="nc" id="L343">        viewContent.addComponent(noExps);</span>
+<span class="nc" id="L344">      } else {</span>
+<span class="nc" id="L345">        viewContent.addComponent(expGrid);</span>
+      }
+
+    }
+
+<span class="nc bnc" id="L350" title="All 2 branches missed.">    if (showOptions.contains(&quot;Samples&quot;)) {</span>
+<span class="nc" id="L351">      sampleGrid = new Grid(sampleBeanContainer);</span>
+<span class="nc" id="L352">      sampleGrid.setCaption(&quot;Found Samples&quot;);</span>
+<span class="nc" id="L353">      sampleGrid.setColumnOrder(&quot;sampleID&quot;, &quot;sampleName&quot;, &quot;matchedField&quot;);</span>
+<span class="nc" id="L354">      sampleGrid.setSizeFull();</span>
+
+<span class="nc" id="L356">      sampleGrid.getColumn(&quot;sampleID&quot;).setExpandRatio(0);</span>
+<span class="nc" id="L357">      sampleGrid.getColumn(&quot;sampleName&quot;).setExpandRatio(1);</span>
+<span class="nc" id="L358">      sampleGrid.getColumn(&quot;matchedField&quot;).setExpandRatio(1);</span>
+
+<span class="nc" id="L360">      sampleGrid.setHeightMode(HeightMode.ROW);</span>
+<span class="nc" id="L361">      sampleGrid.setHeightByRows(5);</span>
+<span class="nc" id="L362">      sampleGrid.setSelectionMode(SelectionMode.SINGLE);</span>
+
+<span class="nc" id="L364">      sampleGrid.addItemClickListener(new ItemClickListener() {</span>
+        @Override
+        public void itemClick(ItemClickEvent event) {
+<span class="nc" id="L367">          String cellType = new String(event.getPropertyId().toString());</span>
+
+<span class="nc bnc" id="L369" title="All 2 branches missed.">          if (cellType.equals(&quot;sampleID&quot;)) {</span>
+<span class="nc" id="L370">            String cellContent = new String(</span>
+<span class="nc" id="L371">                sampleBeanContainer.getContainerProperty(event.getItemId(), event.getPropertyId())</span>
+<span class="nc" id="L372">                    .getValue().toString());</span>
+
+<span class="nc" id="L374">            State state = (State) UI.getCurrent().getSession().getAttribute(&quot;state&quot;);</span>
+<span class="nc" id="L375">            ArrayList&lt;String&gt; message = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L376">            message.add(&quot;clicked&quot;);</span>
+<span class="nc" id="L377">            message.add(cellContent);</span>
+<span class="nc" id="L378">            message.add(&quot;sample&quot;);</span>
+<span class="nc" id="L379">            state.notifyObservers(message);</span>
+          }
+<span class="nc" id="L381">        }</span>
+      });
+
+<span class="nc bnc" id="L384" title="All 2 branches missed.">      if (sampleBeanContainer.size() == 0) {</span>
+<span class="nc" id="L385">        Label noSamples = new Label(&quot;no samples were found&quot;);</span>
+<span class="nc" id="L386">        noSamples.setCaption(&quot;Found Samples&quot;);</span>
+<span class="nc" id="L387">        viewContent.addComponent(noSamples);</span>
+<span class="nc" id="L388">      } else {</span>
+<span class="nc" id="L389">        viewContent.addComponent(sampleGrid);</span>
+      }
+    }
+
+
+<span class="nc" id="L394">    searchResultsLayout.addComponent(viewContent);</span>
+
+<span class="nc" id="L396">    this.addComponent(searchResultsLayout);</span>
+<span class="nc" id="L397">  }</span>
+
+
+  private void updateUI() {
+<span class="nc" id="L401">    expGrid.setContainerDataSource(expBeanContainer);</span>
+<span class="nc" id="L402">    sampleGrid.setContainerDataSource(sampleBeanContainer);</span>
+
+<span class="nc" id="L404">  }</span>
+
+  private void tableClickChangeTreeView() {
+<span class="nc" id="L407">    table.setSelectable(true);</span>
+<span class="nc" id="L408">    table.setImmediate(true);</span>
+<span class="nc" id="L409">    this.table</span>
+<span class="nc" id="L410">        .addValueChangeListener(new ViewTablesClickListener(table, ProjectView.navigateToLabel));</span>
+<span class="nc" id="L411">  }</span>
+
+
+  private FilterTable buildFilterTable() {
+<span class="nc" id="L415">    FilterTable filterTable = new FilterTable();</span>
+
+<span class="nc" id="L417">    filterTable.setFilterDecorator(new DatasetViewFilterDecorator());</span>
+<span class="nc" id="L418">    filterTable.setFilterGenerator(new DatasetViewFilterGenerator());</span>
+
+<span class="nc" id="L420">    filterTable.setFilterBarVisible(true);</span>
+
+<span class="nc" id="L422">    filterTable.setSelectable(true);</span>
+<span class="nc" id="L423">    filterTable.setImmediate(true);</span>
+
+<span class="nc" id="L425">    filterTable.setRowHeaderMode(RowHeaderMode.INDEX);</span>
+
+<span class="nc" id="L427">    filterTable.setColumnCollapsingAllowed(false);</span>
+
+<span class="nc" id="L429">    filterTable.setColumnReorderingAllowed(true);</span>
+<span class="nc" id="L430">    return filterTable;</span>
+  }
+
+  @Override
+  public void enter(ViewChangeEvent event) {
+<span class="nc" id="L435">    setContainerDataSource(&quot;test&quot;);</span>
+<span class="nc" id="L436">    int height = event.getNavigator().getUI().getPage().getBrowserWindowHeight();</span>
+<span class="nc" id="L437">    int width = event.getNavigator().getUI().getPage().getBrowserWindowWidth();</span>
+<span class="nc" id="L438">    buildLayout(height, width, event.getNavigator().getUI().getPage().getWebBrowser());</span>
+<span class="nc" id="L439">    updateUI();</span>
+<span class="nc" id="L440">  }</span>
+
+  /**
+   * Enables or disables the component. The user can not interact disabled components, which are
+   * shown with a style that indicates the status, usually shaded in light gray color. Components
+   * are enabled by default.
+   */
+  public void setEnabled(boolean enabled) {
+<span class="nc" id="L448">    this.export.setEnabled(enabled);</span>
+<span class="nc" id="L449">    this.table.setEnabled(enabled);</span>
+<span class="nc" id="L450">  }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

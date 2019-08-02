@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TSVDownloadComponent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.components</a> &gt; <span class="el_source">TSVDownloadComponent.java</span></div><h1>TSVDownloadComponent.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.components;
+
+import com.vaadin.ui.UI;
+import life.qbic.openbis.openbisclient.OpenBisClient;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import life.qbic.projectbrowser.helpers.TSVReadyRunnable;
+
+import com.vaadin.server.FileDownloader;
+import com.vaadin.server.FontAwesome;
+import com.vaadin.server.StreamResource;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.themes.ValoTheme;
+import life.qbic.xml.properties.Property;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+public class TSVDownloadComponent extends VerticalLayout {
+
+  private static final long serialVersionUID = 6140141377721355605L;
+
+  private HorizontalLayout downloads;
+
+  private Button dlEntities;
+  private Button dlExtracts;
+  private Button dlPreps;
+
+<span class="nc" id="L53">  private static final Logger LOG = LogManager.getLogger(TSVDownloadComponent.class);</span>
+
+<span class="nc" id="L55">  private List&lt;FileDownloader&gt; downloaders = new ArrayList&lt;FileDownloader&gt;();</span>
+
+<span class="nc" id="L57">  public TSVDownloadComponent() {</span>
+    // TODO: progress bar not used atm because the labels in available UpdateProgressBar classes are
+    // too specific
+    // probably not needed anyway since ProjInformationComponent seems to show when everything is
+    // complete
+
+<span class="nc" id="L63">    downloads = new HorizontalLayout();</span>
+<span class="nc" id="L64">    downloads.setCaption(&quot;Spreadsheets&quot;);</span>
+<span class="nc" id="L65">    downloads.setSpacing(true);</span>
+<span class="nc" id="L66">    dlEntities = new Button(&quot;Sample Sources&quot;);</span>
+<span class="nc" id="L67">    dlExtracts = new Button(&quot;Sample Extracts&quot;);</span>
+<span class="nc" id="L68">    dlPreps = new Button(&quot;Sample Preparations&quot;);</span>
+
+<span class="nc" id="L70">    dlEntities.setStyleName(ValoTheme.BUTTON_LINK);</span>
+<span class="nc" id="L71">    dlEntities.setIcon(FontAwesome.DOWNLOAD);</span>
+
+<span class="nc" id="L73">    dlExtracts.setStyleName(ValoTheme.BUTTON_LINK);</span>
+<span class="nc" id="L74">    dlExtracts.setIcon(FontAwesome.DOWNLOAD);</span>
+
+<span class="nc" id="L76">    dlPreps.setStyleName(ValoTheme.BUTTON_LINK);</span>
+<span class="nc" id="L77">    dlPreps.setIcon(FontAwesome.DOWNLOAD);</span>
+
+<span class="nc" id="L79">    dlEntities.setEnabled(false);</span>
+<span class="nc" id="L80">    dlExtracts.setEnabled(false);</span>
+<span class="nc" id="L81">    dlPreps.setEnabled(false);</span>
+<span class="nc" id="L82">    dlEntities.setImmediate(true);</span>
+<span class="nc" id="L83">    dlExtracts.setImmediate(true);</span>
+<span class="nc" id="L84">    dlPreps.setImmediate(true);</span>
+<span class="nc" id="L85">    downloads.addComponent(dlEntities);</span>
+<span class="nc" id="L86">    downloads.addComponent(dlExtracts);</span>
+<span class="nc" id="L87">    downloads.addComponent(dlPreps);</span>
+<span class="nc" id="L88">    addComponent(downloads);</span>
+<span class="nc" id="L89">  }</span>
+
+  public void disableSpreadSheets() {
+<span class="nc" id="L92">    dlEntities.setEnabled(false);</span>
+<span class="nc" id="L93">    dlExtracts.setEnabled(false);</span>
+<span class="nc" id="L94">    dlPreps.setEnabled(false);</span>
+<span class="nc" id="L95">  }</span>
+
+  public void prepareSpreadsheets(final List&lt;String&gt; sampleTypes, String space,
+      final String project, final OpenBisClient openbis, final Set&lt;String&gt; factors,
+      final Map&lt;Pair&lt;String, String&gt;, Property&gt; factorsForLabelsAndSamples) {
+<span class="nc" id="L100">    final TSVDownloadComponent layout = this;</span>
+
+<span class="nc" id="L102">    final Thread t = new Thread(() -&gt; {</span>
+<span class="nc" id="L103">      Map&lt;String, String&gt; tables = new HashMap&lt;String, String&gt;();</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">      for (String type : sampleTypes) {</span>
+<span class="nc" id="L105">        tables.put(type, getTSVString(openbis.getProjectTSV(project, type), factors,</span>
+            factorsForLabelsAndSamples));
+<span class="nc" id="L107">      }</span>
+<span class="nc" id="L108">      UI.getCurrent().access(new TSVReadyRunnable(layout, tables, project));</span>
+<span class="nc" id="L109">      UI.getCurrent().setPollInterval(-1);</span>
+<span class="nc" id="L110">    });</span>
+<span class="nc" id="L111">    t.start();</span>
+<span class="nc" id="L112">    UI.getCurrent().setPollInterval(100);</span>
+<span class="nc" id="L113">  }</span>
+
+  private static String getTSVString(List&lt;String&gt; table, Set&lt;String&gt; factors,
+      Map&lt;Pair&lt;String, String&gt;, Property&gt; factorsForLabelsAndSamples) {
+
+<span class="nc" id="L118">    final StringBuilder header = new StringBuilder(table.get(0).replace(&quot;\tAttributes&quot;, &quot;&quot;));</span>
+<span class="nc" id="L119">    final StringBuilder tsv = new StringBuilder();</span>
+<span class="nc" id="L120">    table.remove(0);</span>
+
+<span class="nc" id="L122">    final String xmlStart = &quot;&lt;?xml&quot;;</span>
+<span class="nc" id="L123">    List&lt;String&gt; labels = new ArrayList&lt;&gt;();</span>
+    // header
+
+<span class="nc bnc" id="L126" title="All 2 branches missed.">    for (String label : factors) {</span>
+<span class="nc" id="L127">      boolean used = false;</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">      for (String row : table) {</span>
+<span class="nc" id="L129">        String[] lineSplit = row.split(&quot;\t&quot;, -1);// doesn't remove trailing whitespaces</span>
+<span class="nc" id="L130">        String code = lineSplit[0];</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">        if (factorsForLabelsAndSamples.get(new ImmutablePair&lt;&gt;(label, code)) != null) {</span>
+<span class="nc" id="L132">          used = true;</span>
+<span class="nc" id="L133">          break;</span>
+        }
+<span class="nc" id="L135">      }</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">      if (used) {</span>
+<span class="nc" id="L137">        labels.add(label);</span>
+<span class="nc" id="L138">        header.append(&quot;\tCondition: &quot; + label);</span>
+      }
+<span class="nc" id="L140">    }</span>
+    // final List&lt;String&gt; factorLabels = new ArrayList&lt;String&gt;();
+    // for (String row : table) {
+    // String[] lineSplit = row.split(&quot;\t&quot;, -1);// doesn't remove trailing whitespaces
+    // String xml = &quot;&quot;;
+    // for (String cell : lineSplit) {
+    // if (cell.startsWith(xmlStart))
+    // xml = cell;
+    // }
+    // List&lt;Property&gt; factors = new ArrayList&lt;Property&gt;();
+    // if (!xml.equals(xmlStart)) {
+    // try {
+    // factors = p.getAllPropertiesFromXML(xml);
+    // } catch (JAXBException e) {
+    // LOG.warn(&quot;Could not retrieve properties from xml&quot;, e);
+    // }
+    // for (Property f : factors) {
+    // String label = f.getLabel();
+    // if (!factorLabels.contains(label)) {
+    // factorLabels.add(label);
+    // header.append(&quot;\tCondition: &quot;).append(label);
+    // }
+    // }
+    // }
+    // }
+
+    // data
+
+<span class="nc bnc" id="L168" title="All 2 branches missed.">    for (String row : table) {</span>
+<span class="nc" id="L169">      String[] lineSplit = row.split(&quot;\t&quot;, -1);// doesn't remove trailing whitespaces</span>
+<span class="nc" id="L170">      String xml = &quot;&quot;;</span>
+<span class="nc" id="L171">      String code = lineSplit[0];</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">      for (String cell : lineSplit) {</span>
+<span class="nc bnc" id="L173" title="All 2 branches missed.">        if (cell.startsWith(xmlStart))</span>
+<span class="nc" id="L174">          xml = cell;</span>
+      }
+<span class="nc" id="L176">      row = row.replace(&quot;\t&quot; + xml, &quot;&quot;);</span>
+<span class="nc" id="L177">      StringBuilder line = new StringBuilder(&quot;\n&quot; + row);</span>
+
+<span class="nc bnc" id="L179" title="All 2 branches missed.">      for (String label : labels) {</span>
+<span class="nc" id="L180">        Property f = factorsForLabelsAndSamples.get(new ImmutablePair&lt;&gt;(label, code));</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">        if (f != null) {</span>
+<span class="nc" id="L182">          line.append(&quot;\t&quot; + f.getValue());</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">          if (f.hasUnit())</span>
+<span class="nc" id="L184">            line.append(f.getUnit());</span>
+        } else {
+<span class="nc" id="L186">          line.append(&quot;\t&quot;);</span>
+        }
+<span class="nc" id="L188">      }</span>
+
+      // for (String row : table) {
+      // String[] lineSplit = row.split(&quot;\t&quot;, -1);// doesn't remove trailing whitespaces
+      // String xml = &quot;&quot;;
+      // for (String cell : lineSplit) {
+      // if (cell.startsWith(xmlStart))
+      // xml = cell;
+      // }
+      // row = row.replace(&quot;\t&quot; + xml, &quot;&quot;);
+      // StringBuilder line = new StringBuilder(&quot;\n&quot; + row);
+      // List&lt;Property&gt; factors = new ArrayList&lt;Property&gt;();
+      // if (!xml.equals(xmlStart)) {
+      // try {
+      // factors = p.getAllPropertiesFromXML(xml);
+      // } catch (JAXBException e) {
+      // LOG.warn(&quot;Could not retrieve properties from xml&quot;, e);
+      // }
+      // Map&lt;Integer, Property&gt; order = new HashMap&lt;Integer, Property&gt;();
+      // for (Property f : factors) {
+      // String label = f.getLabel();
+      // order.put(factorLabels.indexOf(label), f);
+      // }
+      // for (int i = 0; i &lt; factorLabels.size(); i++) {
+      // if (order.containsKey(i)) {
+      // Property f = order.get(i);
+      // line.append(&quot;\t&quot; + f.getValue());
+      // if (f.hasUnit())
+      // line.append(f.getUnit());
+      // } else {
+      // line.append(&quot;\t&quot;);
+      // }
+      // }
+      // } else {
+      // for (int i = 0; i &lt; factorLabels.size() - 1; i++) {
+      // line.append(&quot;\t&quot;);
+      // }
+      // }
+<span class="nc" id="L226">      tsv.append(line);</span>
+<span class="nc" id="L227">    }</span>
+<span class="nc" id="L228">    return header.append(tsv).toString();</span>
+  }
+
+  public void armButtons(List&lt;StreamResource&gt; streams) {
+<span class="nc" id="L232">    armDownloadButton(dlEntities, streams.get(0), 1);</span>
+<span class="nc" id="L233">    armDownloadButton(dlExtracts, streams.get(1), 2);</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">    if (streams.size() &gt; 2)</span>
+<span class="nc" id="L235">      armDownloadButton(dlPreps, streams.get(2), 3);</span>
+<span class="nc" id="L236">  }</span>
+
+  protected void armDownloadButton(Button b, StreamResource stream, int dlnum) {
+<span class="nc bnc" id="L239" title="All 2 branches missed.">    if (downloaders.size() &lt; dlnum) {</span>
+<span class="nc" id="L240">      FileDownloader dl = new FileDownloader(stream);</span>
+<span class="nc" id="L241">      dl.extend(b);</span>
+<span class="nc" id="L242">      downloaders.add(dl);</span>
+<span class="nc" id="L243">    } else</span>
+<span class="nc" id="L244">      downloaders.get(dlnum - 1).setFileDownloadResource(stream);</span>
+<span class="nc" id="L245">    b.setEnabled(true);</span>
+<span class="nc" id="L246">  }</span>
+
+  public void enableDownloads(boolean b) {
+<span class="nc" id="L249">    downloads.setEnabled(b);</span>
+<span class="nc" id="L250">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

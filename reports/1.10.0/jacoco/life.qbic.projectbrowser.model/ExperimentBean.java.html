@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExperimentBean.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.model</a> &gt; <span class="el_source">ExperimentBean.java</span></div><h1>ExperimentBean.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) &quot;2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *******************************************************************************/
+package life.qbic.projectbrowser.model;
+
+import life.qbic.projectbrowser.helpers.AlternativeSecondaryNameCreator;
+import life.qbic.projectbrowser.helpers.UglyToPrettyNameMapper;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+
+import life.qbic.xml.manager.XMLParser;
+import life.qbic.xml.properties.Qproperties;
+
+import com.vaadin.data.util.BeanItemContainer;
+
+public class ExperimentBean implements Serializable {
+
+  /**
+   * 
+   */
+  private static final long serialVersionUID = -1927159369993633824L;
+<span class="nc" id="L45">  private static final Logger LOG = LogManager.getLogger(ExperimentBean.class);</span>
+  private String id;
+  private String code;
+  private String secondaryName;
+  private String type;
+  private String prettyType;
+  private String status;
+  private String registrator;
+  private Date registrationDate;
+  private BeanItemContainer&lt;SampleBean&gt; samples;
+  private String lastChangedSample;
+  private Date lastChangedDataset;
+  private Map&lt;String, String&gt; properties;
+  private Map&lt;String, List&lt;String&gt;&gt; controlledVocabularies;
+  private Map&lt;String, String&gt; typeLabels;
+  private Boolean containsData;
+
+<span class="nc" id="L62">  private UglyToPrettyNameMapper prettyNameMapper = new UglyToPrettyNameMapper();</span>
+  private AlternativeSecondaryNameCreator nameCreator;
+
+  public Map&lt;String, String&gt; getTypeLabels() {
+<span class="nc" id="L66">    return typeLabels;</span>
+  }
+
+
+
+  public void setTypeLabels(Map&lt;String, String&gt; typeLabels) {
+<span class="nc" id="L72">    this.typeLabels = typeLabels;</span>
+<span class="nc" id="L73">  }</span>
+
+
+
+  public ExperimentBean(String id, String code, String type, String status, String registrator,
+      Date registrationDate, BeanItemContainer&lt;SampleBean&gt; samples, String lastChangedSample,
+      Date lastChangedDataset, Map&lt;String, String&gt; properties,
+      Map&lt;String, List&lt;String&gt;&gt; controlledVocabularies, Map&lt;String, String&gt; typeLabels) {
+<span class="nc" id="L81">    super();</span>
+<span class="nc" id="L82">    this.id = id;</span>
+<span class="nc" id="L83">    this.code = code;</span>
+<span class="nc" id="L84">    this.secondaryName = nameCreator.createName(properties, type, samples);</span>
+<span class="nc" id="L85">    this.type = type;</span>
+<span class="nc" id="L86">    this.prettyType = prettyNameMapper.getPrettyName(type);</span>
+<span class="nc" id="L87">    this.type = type;</span>
+<span class="nc" id="L88">    this.status = status;</span>
+<span class="nc" id="L89">    this.registrator = registrator;</span>
+<span class="nc" id="L90">    this.registrationDate = registrationDate;</span>
+<span class="nc" id="L91">    this.samples = samples;</span>
+<span class="nc" id="L92">    this.lastChangedSample = lastChangedSample;</span>
+<span class="nc" id="L93">    this.lastChangedDataset = lastChangedDataset;</span>
+<span class="nc" id="L94">    this.properties = properties;</span>
+<span class="nc" id="L95">    this.controlledVocabularies = controlledVocabularies;</span>
+<span class="nc" id="L96">    this.typeLabels = typeLabels;</span>
+<span class="nc" id="L97">  }</span>
+
+<span class="nc" id="L99">  public ExperimentBean() {</span>
+    // TODO Auto-generated constructor stub
+<span class="nc" id="L101">  }</span>
+
+  public String getSecondaryName() {
+<span class="nc bnc" id="L104" title="All 4 branches missed.">    if (secondaryName == null || secondaryName.isEmpty()) {</span>
+<span class="nc" id="L105">      secondaryName = nameCreator.createName(properties, type, samples);</span>
+    }
+<span class="nc" id="L107">    return secondaryName;</span>
+  }
+
+  public String getId() {
+<span class="nc" id="L111">    return id;</span>
+  }
+
+
+
+  public void setId(String id) {
+<span class="nc" id="L117">    this.id = id;</span>
+<span class="nc" id="L118">  }</span>
+
+
+
+  public String getCode() {
+<span class="nc" id="L123">    return code;</span>
+  }
+
+
+
+  public void setCode(String code) {
+<span class="nc" id="L129">    this.code = code;</span>
+<span class="nc" id="L130">  }</span>
+
+
+
+  public String getType() {
+<span class="nc" id="L135">    return type;</span>
+  }
+
+
+
+  public void setType(String type) {
+<span class="nc" id="L141">    this.type = type;</span>
+<span class="nc" id="L142">    this.prettyType = prettyNameMapper.getPrettyName(type);</span>
+<span class="nc" id="L143">  }</span>
+
+
+
+  public String getStatus() {
+<span class="nc" id="L148">    return status;</span>
+  }
+
+
+
+  public void setStatus(String status) {
+<span class="nc" id="L154">    this.status = status;</span>
+<span class="nc" id="L155">  }</span>
+
+
+
+  public String getRegistrator() {
+<span class="nc" id="L160">    return registrator;</span>
+  }
+
+
+  public void setRegistrator(String registrator) {
+<span class="nc" id="L165">    this.registrator = registrator;</span>
+<span class="nc" id="L166">  }</span>
+
+
+
+  public Date getRegistrationDate() {
+<span class="nc" id="L171">    return registrationDate;</span>
+  }
+
+
+
+  public void setRegistrationDate(Date registrationDate) {
+<span class="nc" id="L177">    this.registrationDate = registrationDate;</span>
+<span class="nc" id="L178">  }</span>
+
+
+
+  public BeanItemContainer&lt;SampleBean&gt; getSamples() {
+<span class="nc" id="L183">    return samples;</span>
+  }
+
+
+
+  public void setSamples(BeanItemContainer&lt;SampleBean&gt; samples) {
+<span class="nc" id="L189">    this.samples = samples;</span>
+<span class="nc" id="L190">  }</span>
+
+
+
+  public String getLastChangedSample() {
+<span class="nc" id="L195">    return lastChangedSample;</span>
+  }
+
+
+
+  public void setLastChangedSample(String lastChangedSample) {
+<span class="nc" id="L201">    this.lastChangedSample = lastChangedSample;</span>
+<span class="nc" id="L202">  }</span>
+
+
+
+  public Date getLastChangedDataset() {
+<span class="nc" id="L207">    return lastChangedDataset;</span>
+  }
+
+
+
+  public void setLastChangedDataset(Date lastChangedDataset) {
+<span class="nc" id="L213">    this.lastChangedDataset = lastChangedDataset;</span>
+<span class="nc" id="L214">  }</span>
+
+
+
+  public Map&lt;String, String&gt; getProperties() {
+<span class="nc" id="L219">    return properties;</span>
+  }
+
+
+
+  public void setProperties(Map&lt;String, String&gt; properties) {
+<span class="nc" id="L225">    this.properties = properties;</span>
+<span class="nc" id="L226">  }</span>
+
+
+
+  public Map&lt;String, List&lt;String&gt;&gt; getControlledVocabularies() {
+<span class="nc" id="L231">    return controlledVocabularies;</span>
+  }
+
+
+
+  public void setControlledVocabularies(Map&lt;String, List&lt;String&gt;&gt; controlledVocabularies) {
+<span class="nc" id="L237">    this.controlledVocabularies = controlledVocabularies;</span>
+<span class="nc" id="L238">  }</span>
+
+
+
+  @Override
+  public String toString() {
+<span class="nc" id="L244">    return &quot;ExperimentBean [id=&quot; + id + &quot;]&quot;;</span>
+  }
+
+  @Override
+  public int hashCode() {
+<span class="nc" id="L249">    final int prime = 31;</span>
+<span class="nc" id="L250">    int result = 1;</span>
+<span class="nc bnc" id="L251" title="All 2 branches missed.">    result = prime * result + ((id == null) ? 0 : id.hashCode());</span>
+<span class="nc" id="L252">    return result;</span>
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+<span class="nc bnc" id="L257" title="All 2 branches missed.">    if (this == obj)</span>
+<span class="nc" id="L258">      return true;</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">    if (obj == null)</span>
+<span class="nc" id="L260">      return false;</span>
+<span class="nc bnc" id="L261" title="All 2 branches missed.">    if (getClass() != obj.getClass())</span>
+<span class="nc" id="L262">      return false;</span>
+<span class="nc" id="L263">    ExperimentBean other = (ExperimentBean) obj;</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">    if (id == null) {</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">      if (other.id != null)</span>
+<span class="nc" id="L266">        return false;</span>
+<span class="nc bnc" id="L267" title="All 2 branches missed.">    } else if (!id.equals(other.id))</span>
+<span class="nc" id="L268">      return false;</span>
+<span class="nc" id="L269">    return true;</span>
+  }
+
+  public String generatePropertiesFormattedString() throws JAXBException {
+<span class="nc" id="L273">    String propertiesBottom = &quot;&lt;ul&gt; &quot;;</span>
+
+<span class="nc" id="L275">    Iterator&lt;Entry&lt;String, String&gt;&gt; it = this.getProperties().entrySet().iterator();</span>
+<span class="nc bnc" id="L276" title="All 2 branches missed.">    while (it.hasNext()) {</span>
+<span class="nc" id="L277">      Entry pairs = (Entry) it.next();</span>
+<span class="nc bnc" id="L278" title="All 4 branches missed.">      if (pairs.getKey().equals(&quot;Q_PROPERTIES&quot;) || pairs.getKey().equals(&quot;Q_NOTES&quot;)) {</span>
+<span class="nc" id="L279">        continue;</span>
+      } else {
+<span class="nc" id="L281">        propertiesBottom +=</span>
+<span class="nc" id="L282">            &quot;&lt;li&gt;&lt;b&gt;&quot; + (typeLabels.get(pairs.getKey()) + &quot;:&lt;/b&gt; &quot; + pairs.getValue() + &quot;&lt;/li&gt;&quot;);</span>
+      }
+<span class="nc" id="L284">    }</span>
+<span class="nc" id="L285">    propertiesBottom += &quot;&lt;/ul&gt;&quot;;</span>
+
+<span class="nc" id="L287">    return propertiesBottom;</span>
+  }
+
+  public String generateXMLPropertiesFormattedString() throws JAXBException {
+
+<span class="nc" id="L292">    String xmlPropertiesBottom = &quot;&lt;ul&gt; &quot;;</span>
+
+<span class="nc" id="L294">    Iterator&lt;Entry&lt;String, String&gt;&gt; it = this.getProperties().entrySet().iterator();</span>
+<span class="nc bnc" id="L295" title="All 2 branches missed.">    while (it.hasNext()) {</span>
+<span class="nc" id="L296">      Entry pairs = (Entry) it.next();</span>
+<span class="nc bnc" id="L297" title="All 2 branches missed.">      if (pairs.getKey().equals(&quot;Q_PROPERTIES&quot;)) {</span>
+<span class="nc" id="L298">        XMLParser xmlParser = new XMLParser();</span>
+<span class="nc" id="L299">        JAXBElement&lt;Qproperties&gt; xmlProperties =</span>
+<span class="nc" id="L300">            xmlParser.parseXMLString(pairs.getValue().toString());</span>
+<span class="nc" id="L301">        Map&lt;String, String&gt; xmlPropertiesMap = xmlParser.getMapOfProperties(xmlProperties);</span>
+
+<span class="nc" id="L303">        Iterator itProperties = xmlPropertiesMap.entrySet().iterator();</span>
+<span class="nc bnc" id="L304" title="All 2 branches missed.">        while (itProperties.hasNext()) {</span>
+<span class="nc" id="L305">          Entry pairsProperties = (Entry) itProperties.next();</span>
+
+<span class="nc" id="L307">          xmlPropertiesBottom += &quot;&lt;li&gt;&lt;b&gt;&quot;</span>
+              // + (typeLabels.get(pairsProperties.getKey()) + &quot;:&lt;/b&gt; &quot;
+<span class="nc" id="L309">              + (pairsProperties.getKey() + &quot;:&lt;/b&gt; &quot; + pairsProperties.getValue() + &quot;&lt;/li&gt;&quot;);</span>
+<span class="nc" id="L310">        }</span>
+        break;
+      }
+<span class="nc" id="L313">    }</span>
+<span class="nc" id="L314">    return xmlPropertiesBottom;</span>
+  }
+
+
+
+  public Boolean getContainsData() {
+<span class="nc" id="L320">    return containsData;</span>
+  }
+
+  public void setContainsData(Boolean containsData) {
+<span class="nc" id="L324">    this.containsData = containsData;</span>
+<span class="nc" id="L325">  }</span>
+
+  public String getPrettyType() {
+<span class="nc" id="L328">    return prettyType;</span>
+  }
+
+  public void setPrettyType(String prettyType) {
+<span class="nc" id="L332">    this.prettyType = prettyType;</span>
+<span class="nc" id="L333">  }</span>
+
+  public void setSecondaryName(String name) {
+<span class="nc" id="L336">    this.secondaryName = name;</span>
+<span class="nc" id="L337">  }</span>
+
+  public void setAltNameCreator(AlternativeSecondaryNameCreator altNameCreator) {
+<span class="nc" id="L340">    nameCreator = altNameCreator;</span>
+<span class="nc" id="L341">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

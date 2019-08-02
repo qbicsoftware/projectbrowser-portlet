@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AlternativeSecondaryNameCreator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.helpers</a> &gt; <span class="el_source">AlternativeSecondaryNameCreator.java</span></div><h1>AlternativeSecondaryNameCreator.java</h1><pre class="source lang-java linenums">package life.qbic.projectbrowser.helpers;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.text.WordUtils;
+
+import com.vaadin.data.util.BeanItemContainer;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import life.qbic.projectbrowser.model.SampleBean;
+
+public class AlternativeSecondaryNameCreator {
+
+<span class="nc" id="L17">  private static final Logger LOG = LogManager.getLogger(AlternativeSecondaryNameCreator.class);</span>
+  Map&lt;String, String&gt; taxIdToName;
+
+<span class="nc" id="L20">  public AlternativeSecondaryNameCreator(Map&lt;String, String&gt; taxMap) {</span>
+<span class="nc" id="L21">    this.taxIdToName = new HashMap&lt;String, String&gt;();</span>
+<span class="nc bnc" id="L22" title="All 2 branches missed.">    for (Map.Entry&lt;String, String&gt; entry : taxMap.entrySet())</span>
+<span class="nc" id="L23">      taxIdToName.put(entry.getValue(), entry.getKey());</span>
+<span class="nc" id="L24">  }</span>
+
+  public String createName(Map&lt;String, String&gt; properties, String type,
+      BeanItemContainer&lt;SampleBean&gt; samples) {
+<span class="nc" id="L28">    String result = &quot;&quot;;</span>
+<span class="nc" id="L29">    int MAX_PARSE_SIZE = 200; // save time in large projects</span>
+<span class="nc" id="L30">    String name = properties.get(&quot;Q_SECONDARY_NAME&quot;);</span>
+<span class="nc bnc" id="L31" title="All 4 branches missed.">    if (name != null &amp;&amp; !name.isEmpty())</span>
+<span class="nc" id="L32">      return name;</span>
+<span class="nc" id="L33">    List&lt;SampleBean&gt; beans = samples.getItemIds();</span>
+<span class="nc bnc" id="L34" title="All 10 branches missed.">    switch (type) {</span>
+      case &quot;Q_NGS_MEASUREMENT&quot;:
+<span class="nc" id="L36">        String device = properties.get(&quot;Q_SEQUENCER_DEVICE&quot;);</span>
+<span class="nc bnc" id="L37" title="All 4 branches missed.">        if (device != null &amp;&amp; !device.isEmpty())</span>
+<span class="nc" id="L38">          result = device + &quot; measurement&quot;;</span>
+        else
+<span class="nc" id="L40">          return &quot;&quot;;</span>
+        break;
+      case &quot;Q_EXPERIMENTAL_DESIGN&quot;:
+<span class="nc" id="L43">        String res = &quot;&quot;;</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">        if (beans.size() &lt; MAX_PARSE_SIZE) {</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">          for (SampleBean s : beans) {</span>
+<span class="nc" id="L46">            String species = taxIdToName.get(s.getProperties().get(&quot;Q_NCBI_ORGANISM&quot;));</span>
+<span class="nc bnc" id="L47" title="All 2 branches missed.">            if (!res.isEmpty()) {</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">              if (!res.equals(species))</span>
+<span class="nc" id="L49">                return &quot;Organism information&quot;;</span>
+            } else
+<span class="nc" id="L51">              res = species;</span>
+<span class="nc" id="L52">          }</span>
+        }
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        if (res.isEmpty())</span>
+<span class="nc" id="L55">          return res;</span>
+        else
+<span class="nc" id="L57">          result = res + &quot; information&quot;;</span>
+<span class="nc" id="L58">        break;</span>
+      case &quot;Q_SAMPLE_EXTRACTION&quot;:
+<span class="nc" id="L60">        res = &quot;&quot;;</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">        if (beans.size() &lt; MAX_PARSE_SIZE) {</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">          for (SampleBean s : beans) {</span>
+<span class="nc" id="L63">            String tissue = s.getProperties().get(&quot;Q_PRIMARY_TISSUE&quot;);</span>
+<span class="nc" id="L64">            String other = s.getProperties().get(&quot;Q_TISSUE_DETAILED&quot;);</span>
+<span class="nc bnc" id="L65" title="All 4 branches missed.">            if (tissue.equals(&quot;CELL_CULTURE&quot;) || tissue.equals(&quot;OTHER&quot;)) {</span>
+<span class="nc" id="L66">              tissue = other;</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">              if (other == null)</span>
+<span class="nc" id="L68">                tissue = &quot;&quot;;</span>
+            }
+<span class="nc bnc" id="L70" title="All 2 branches missed.">            if (!res.isEmpty()) {</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">              if (!res.equals(tissue))</span>
+<span class="nc" id="L72">                return &quot;Extract information&quot;;</span>
+            } else
+<span class="nc" id="L74">              res = tissue;</span>
+<span class="nc" id="L75">          }</span>
+        }
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (res.isEmpty())</span>
+<span class="nc" id="L78">          return &quot;Extract information&quot;;</span>
+        else
+<span class="nc" id="L80">          result = res + &quot; information&quot;;</span>
+<span class="nc" id="L81">        break;</span>
+      case &quot;Q_SAMPLE_PREPARATION&quot;:
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        if (beans.isEmpty())</span>
+<span class="nc" id="L84">          return &quot;No Preparations&quot;;</span>
+        else
+<span class="nc" id="L86">          result = beans.get(0).getProperties().get(&quot;Q_SAMPLE_TYPE&quot;) + &quot; preparation&quot;;</span>
+<span class="nc" id="L87">        break;</span>
+      case &quot;Q_PROJECT_DETAILS&quot;:
+<span class="nc" id="L89">        return &quot;Attachments and Details&quot;;</span>
+      case &quot;Q_EXT_MS_QUALITYCONTROL&quot;:
+<span class="nc" id="L91">        return &quot;&quot;;</span>
+      case &quot;Q_EXT_NGS_QUALITYCONTROL&quot;:
+<span class="nc" id="L93">        return &quot;&quot;;</span>
+      case &quot;Q_MICROARRAY_MEASUREMENT&quot;:
+<span class="nc" id="L95">        return &quot;&quot;;</span>
+      case &quot;Q_MS_MEASUREMENT&quot;:
+<span class="nc" id="L97">        device = properties.get(&quot;Q_MS_DEVICE&quot;);</span>
+<span class="nc bnc" id="L98" title="All 4 branches missed.">        if (device != null &amp;&amp; !device.isEmpty())</span>
+<span class="nc" id="L99">          result = device + &quot; measurement&quot;;</span>
+        else
+<span class="nc" id="L101">          return &quot;&quot;;</span>
+        break;
+      case &quot;Q_NGS_EPITOPE_PREDICTION&quot;:
+      case &quot;Q_NGS_FLOWCELL_RUN&quot;:
+      case &quot;Q_NGS_HLATYPING&quot;:
+      case &quot;Q_NGS_IMMUNE_MONITORING&quot;:
+      case &quot;Q_NGS_MAPPING&quot;:
+      case &quot;Q_NGS_SINGLE_SAMPLE_RUN&quot;:
+      case &quot;Q_NGS_VARIANT_CALLING&quot;:
+      case &quot;Q_WF_MA_QUALITYCONTROL&quot;:
+      case &quot;Q_WF_MS_MAXQUANT&quot;:
+      case &quot;Q_WF_MS_PEPTIDEID&quot;:
+      case &quot;Q_WF_MS_QUALITYCONTROL&quot;:
+      case &quot;Q_WF_NGS_EPITOPE_PREDICTION&quot;:
+      case &quot;Q_WF_NGS_HLATYPING&quot;:
+      case &quot;Q_WF_NGS_MERGE&quot;:
+      case &quot;Q_WF_NGS_QUALITYCONTROL&quot;:
+      case &quot;Q_WF_NGS_RNA_EXPRESSION_ANALYSIS&quot;:
+      case &quot;Q_WF_NGS_VARIANT_ANNOTATION&quot;:
+      case &quot;Q_WF_NGS_VARIANT_CALLING&quot;:
+      case &quot;Q_WF_NGS_MAPPING&quot;:
+      case &quot;Q_WF_MS_INDIVIDUALIZED_PROTEOME&quot;:
+      case &quot;Q_WF_MS_LIGANDOMICS_ID&quot;:
+      case &quot;Q_WF_MS_LIGANDOMICS_QC&quot;:
+      case &quot;Q_MHC_LIGAND_EXTRACTION&quot;:
+      default:
+<span class="nc" id="L127">        return &quot;&quot;;</span>
+    }
+<span class="nc bnc" id="L129" title="All 4 branches missed.">    if (result.contains(&quot;RNA&quot;) || result.contains(&quot;DNA&quot;))</span>
+<span class="nc" id="L130">      return result;</span>
+    else
+<span class="nc" id="L132">      return WordUtils.capitalizeFully(result.replace(&quot;_&quot;, &quot; &quot;));</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AttachmentMover.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ProjectBrowser Portlet</a> &gt; <a href="index.source.html" class="el_package">life.qbic.projectbrowser.helpers</a> &gt; <span class="el_source">AttachmentMover.java</span></div><h1>AttachmentMover.java</h1><pre class="source lang-java linenums">package life.qbic.projectbrowser.helpers;
+
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+import org.apache.commons.io.FileUtils;
+
+import com.github.sardine.Sardine;
+import com.github.sardine.SardineFactory;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.ProgressBar;
+import com.vaadin.ui.UI;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+/**
+ * Provides methods to move uploaded attachments to the datamover folder on the portal and create
+ * marker files to start movement to the DSS.
+ * 
+ * @author Andreas Friedrich
+ * 
+ */
+public class AttachmentMover {
+
+  private AttachmentConfig config;
+  private String tmpFolder;
+<span class="nc" id="L30">  private static final Logger LOG = LogManager.getLogger(AttachmentMover.class);</span>
+
+  /**
+   * Create a new AttachmentMover
+   * 
+   * @param tmpFolder temp folder for file uploads
+   */
+<span class="nc" id="L37">  public AttachmentMover(String tmpFolder, AttachmentConfig attachmentConfig) {</span>
+<span class="nc" id="L38">    this.tmpFolder = tmpFolder;</span>
+<span class="nc" id="L39">    this.config = attachmentConfig;</span>
+<span class="nc" id="L40">  }</span>
+
+  /**
+   * Moves attachments to the datamover folder.
+   * 
+   * @param attachments List of names and other infos for each attachment
+   * @param moveUploadsReadyRunnable
+   * @param object2
+   * @param object
+   * @return
+   * @throws IOException
+   */
+  public void moveAttachments(final List&lt;AttachmentInformation&gt; attachments, final ProgressBar bar,
+      final Label info, final MoveUploadsReadyRunnable ready) throws IOException {
+<span class="nc" id="L54">    final Sardine sardine = SardineFactory.begin(config.getUser(), config.getPass());</span>
+<span class="nc" id="L55">    ready.setSardine(sardine);</span>
+<span class="nc" id="L56">    final int todo = attachments.size();</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">    if (todo &gt; 0) {</span>
+<span class="nc" id="L58">      Thread t = new Thread(new Runnable() {</span>
+<span class="nc" id="L59">        volatile int current = 0;</span>
+
+        @Override
+        public void run() {
+<span class="nc bnc" id="L63" title="All 2 branches missed.">          for (AttachmentInformation a : attachments) {</span>
+<span class="nc" id="L64">            current++;</span>
+<span class="nc" id="L65">            double frac = current * 1.0 / todo;</span>
+<span class="nc" id="L66">            UI.getCurrent().access(new UpdateProgressBar(bar, info, frac));</span>
+            byte[] data;
+            try {
+<span class="nc" id="L69">              sardine.createDirectory(config.getUri() + a.getFolder());</span>
+
+<span class="nc" id="L71">              data = FileUtils.readFileToByteArray(new File(tmpFolder + a.getName()));</span>
+<span class="nc" id="L72">              sardine.put(config.getUri() + a.getFolder() + &quot;/&quot; + a.getFileName(), data);</span>
+
+<span class="nc" id="L74">              byte[] metadata = createMetadataString(a).getBytes();</span>
+<span class="nc" id="L75">              sardine.put(config.getUri() + a.getFolder() + &quot;/&quot; + &quot;metadata.txt&quot;, metadata);</span>
+
+<span class="nc" id="L77">            } catch (Exception e1) {</span>
+<span class="nc" id="L78">              e1.printStackTrace();</span>
+              try {
+<span class="nc" id="L80">                sardine.shutdown();</span>
+<span class="nc" id="L81">              } catch (IOException e) {</span>
+<span class="nc" id="L82">                e.printStackTrace();</span>
+<span class="nc" id="L83">              }</span>
+<span class="nc" id="L84">            }</span>
+<span class="nc" id="L85">          }</span>
+<span class="nc" id="L86">          UI.getCurrent().access(ready);</span>
+<span class="nc" id="L87">          UI.getCurrent().setPollInterval(-1);</span>
+          try {
+<span class="nc" id="L89">            createMarkers(attachments);</span>
+<span class="nc" id="L90">          } catch (InterruptedException e) {</span>
+<span class="nc" id="L91">            e.printStackTrace();</span>
+<span class="nc" id="L92">          } catch (IOException e) {</span>
+<span class="nc" id="L93">            e.printStackTrace();</span>
+<span class="nc" id="L94">          }</span>
+<span class="nc" id="L95">        }</span>
+      });
+<span class="nc" id="L97">      t.start();</span>
+<span class="nc" id="L98">      UI.getCurrent().setPollInterval(100);</span>
+<span class="nc" id="L99">    } else {</span>
+<span class="nc" id="L100">      UI.getCurrent().access(ready);</span>
+    }
+<span class="nc" id="L102">  }</span>
+
+  // public void folderTest(AttachmentInformation a) throws IOException {
+  // final Sardine sardine = SardineFactory.begin(config.getUser(), config.getPass());
+  // sardine.createDirectory(config.getUri() + a.getFolder());
+  // sardine.shutdown();
+  // }
+
+  protected String createMetadataString(AttachmentInformation a) {
+<span class="nc" id="L111">    String user = a.getUser();</span>
+<span class="nc" id="L112">    String info = a.getInfo().replace(&quot;\n&quot;, &quot; &quot;);</span>
+<span class="nc" id="L113">    String barcode = a.getBarcode();</span>
+<span class="nc" id="L114">    String type = a.getType();</span>
+<span class="nc" id="L115">    return &quot;user=&quot; + user + &quot;\n&quot; + &quot;info=&quot; + info + &quot;\n&quot; + &quot;barcode=&quot; + barcode + &quot;\n&quot; + &quot;type=&quot;</span>
+        + type;
+  }
+
+  private void createMarkers(List&lt;AttachmentInformation&gt; attachments) throws InterruptedException,
+      IOException {
+<span class="nc" id="L121">    Sardine sardine = SardineFactory.begin(config.getUser(), config.getPass());</span>
+    // File marker = new File(tmpFolder + &quot;marker&quot;);
+    // if (!marker.exists())
+    // marker.createNewFile();
+<span class="nc" id="L125">    String prefix = &quot;.MARKER_is_finished_&quot;;</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">    for (AttachmentInformation a : attachments) {</span>
+<span class="nc" id="L127">      String datafile = a.getFolder() + &quot;/&quot; + a.getFileName();</span>
+<span class="nc" id="L128">      byte[] data = new byte[0];</span>
+<span class="nc" id="L129">      int maxTries = 2;</span>
+<span class="nc bnc" id="L130" title="All 4 branches missed.">      while (maxTries &gt; 0 &amp;&amp; !sardine.exists(config.getUri() + datafile)) {</span>
+<span class="nc" id="L131">        maxTries--;</span>
+<span class="nc" id="L132">        Thread.sleep(100);</span>
+      }
+<span class="nc bnc" id="L134" title="All 2 branches missed.">      if (!sardine.exists(config.getUri() + datafile)) {</span>
+<span class="nc" id="L135">        LOG.error(&quot;Did not create marker file because folder &quot; + datafile</span>
+            + &quot; was not found on the server.&quot;);
+<span class="nc" id="L137">        LOG.error(&quot;Killing Sardine process.&quot;);</span>
+<span class="nc" id="L138">        sardine.shutdown();</span>
+      } else {
+        // data = FileUtils.readFileToByteArray(marker);
+<span class="nc" id="L141">        sardine.put(config.getUri() + prefix + a.getFolder(), data);</span>
+      }
+<span class="nc" id="L143">    }</span>
+<span class="nc" id="L144">    sardine.shutdown();</span>
+<span class="nc" id="L145">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>
