@@ -2231,9 +2231,11 @@ public class DataHandler implements Serializable {
       this.getOpenBisClient().triggerIngestionService("register-proj", projectMap);
       // helpers.Utils.printMapContent(projectMap);
 
-      String newProjectDetailsCode =
-          projectPrefix + Utils.createCountString(numberOfProject, 3) + "E_INFO";
-      String newProjectDetailsID = "/" + space + "/" + newProjectCode + "/" + newProjectDetailsCode;
+//      String newProjectDetailsCode =
+//          projectPrefix + Utils.createCountString(numberOfProject, 3) + "E_INFO";
+//      String newProjectDetailsID = "/" + space + "/" + newProjectCode + "/" + newProjectDetailsCode;
+      
+      String newProjectDetailsID = ExperimentCodeFunctions.getInfoExperimentID(space, newProjectCode);
 
       String newExperimentalDesignCode = projectPrefix + Utils.createCountString(numberOfProject, 3)
           + "E" + numberOfRegisteredExperiments;
