@@ -284,6 +284,7 @@ public class LevelComponent extends CustomComponent {
             final GeneratedPropertyContainer gpc = new GeneratedPropertyContainer(samples);
             gpc.removeContainerProperty("id");
             gpc.removeContainerProperty("type");
+            sampleGrid.removeAllColumns();
             sampleGrid.setContainerDataSource(gpc);
             sampleGrid.setColumnReorderingAllowed(true);
 

@@ -213,7 +213,7 @@ public class Utils {
                 if (prop.getValue() == null) {
                     stringValue.append("-\t");
                 } else {
-                    stringValue.append(prop.toString()).append('\t');
+                    stringValue.append(prop.getValue().toString()).append('\t');
                 }
             }
             stringValue.append('\n');

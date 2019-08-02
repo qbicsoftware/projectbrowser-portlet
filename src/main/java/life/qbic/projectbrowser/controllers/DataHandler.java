@@ -75,6 +75,7 @@ import life.qbic.projectbrowser.model.ExperimentBean;
 import life.qbic.projectbrowser.model.ExperimentStatusBean;
 import life.qbic.projectbrowser.model.NewIvacSampleBean;
 import life.qbic.projectbrowser.model.SampleBean;
+import life.qbic.projectbrowser.model.spaceToProjectPrefixMap;
 import life.qbic.projectbrowser.model.ProjectBean;
 import life.qbic.projectbrowser.model.DBManager;
 import life.qbic.projectbrowser.helpers.AlternativeSecondaryNameCreator;
@@ -106,7 +107,7 @@ public class DataHandler implements Serializable {
   Map<String, SampleBean> sampleMap = new HashMap<String, SampleBean>();
   Map<String, DatasetBean> datasetMap = new HashMap<String, DatasetBean>();
 
-  Map<String, String> spaceToProjectPrefixMap = new HashMap<String, String>();
+//  Map<String, String> spaceToProjectPrefixMap = new HashMap<String, String>();
 
 
   // store search result containers here
@@ -2181,7 +2182,7 @@ public class DataHandler implements Serializable {
       Map<String, List<String>> hlaTyping) {
 
     // get prefix code for projects for corresponding space
-    String projectPrefix = spaceToProjectPrefixMap.get(space);
+    String projectPrefix = spaceToProjectPrefixMap.myMap.get(space);
 
     // extract to function for that
     List<Integer> projectCodes = new ArrayList<Integer>();
