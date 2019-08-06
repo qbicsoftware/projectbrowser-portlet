@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
 
-<coverage line-rate="0.0" branch-rate="0.0" lines-covered="0" lines-valid="13155" branches-covered="0" branches-valid="3290" complexity="2.1389280677009874" version="2.1.1" timestamp="1564750171965">
+<coverage line-rate="0.0" branch-rate="0.0" lines-covered="0" lines-valid="13155" branches-covered="0" branches-valid="3290" complexity="2.1389280677009874" version="2.1.1" timestamp="1565104215236">
 	<sources>
 		<source>/home/travis/build/qbicsoftware/projectbrowser-portlet/target/generated-sources/annotations</source>
 		<source>--source</source>
