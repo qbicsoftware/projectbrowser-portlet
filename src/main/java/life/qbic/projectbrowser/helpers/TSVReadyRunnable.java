@@ -25,6 +25,7 @@ import com.vaadin.server.StreamResource;
 
 
 import life.qbic.projectbrowser.components.TSVDownloadComponent;
+import life.qbic.utils.TimeUtils;
 
 public class TSVReadyRunnable implements Runnable {
 
@@ -42,13 +43,14 @@ public class TSVReadyRunnable implements Runnable {
   @Override
   public void run() {
     List<StreamResource> streams = new ArrayList<StreamResource>();
+    String ts = TimeUtils.getCurrentTimestampString();
     streams.add(
-        getTSVStream(tableContentStrings.get("Q_BIOLOGICAL_ENTITY"), project + "_sample_sources"));
+        getTSVStream(tableContentStrings.get("Q_BIOLOGICAL_ENTITY"), project + "_sample_sources_"+ts));
     streams.add(
-        getTSVStream(tableContentStrings.get("Q_BIOLOGICAL_SAMPLE"), project + "_sample_extracts"));
+        getTSVStream(tableContentStrings.get("Q_BIOLOGICAL_SAMPLE"), project + "_sample_extracts_"+ts));
     if (tableContentStrings.containsKey("Q_TEST_SAMPLE"))
       streams.add(
-          getTSVStream(tableContentStrings.get("Q_TEST_SAMPLE"), project + "_sample_preparations"));
+          getTSVStream(tableContentStrings.get("Q_TEST_SAMPLE"), project + "_sample_preparations_"+ts));
     layout.armButtons(streams);
   }
 
