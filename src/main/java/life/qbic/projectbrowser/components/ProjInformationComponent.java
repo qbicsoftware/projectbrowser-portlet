@@ -276,7 +276,7 @@ public class ProjInformationComponent extends CustomComponent {
       // need to be disabled first so old project tsvs are not downloadable
       tsvDownloadContent.disableSpreadSheets();
       tsvDownloadContent.prepareSpreadsheets(types, space, project, datahandler.getOpenBisClient(),
-          datahandler.getFactorLabels(), datahandler.getFactorsForLabelsAndSamples());
+          datahandler.getFactorLabels(), datahandler.getFactorsForLabelsAndSamples(), datahandler.getPropertiesForSamples());
       tsvDownloadContent.setVisible(true);
     } else {
       // nothing to create a tsv from
