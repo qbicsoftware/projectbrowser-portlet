@@ -2670,17 +2670,19 @@ public class DataHandler implements Serializable {
   }
 
   /**
-   * generates informative description from dataset secondary name and the dataset's experiment,
+   * generates informative description from dataset secondary name or the dataset's experiment,
    * given its ID. should only be used if a dataset does not have an associated sample
    * 
    * @param datasetSecondaryName
    * @param experimentID
    * @return
    */
-  public String generateOrphanDatasetInformation(String datasetSecondaryName, String experimentID) {
-    if (datasetSecondaryName != null && datasetSecondaryName.isEmpty()) {
+  public String retrieveDatasetInfoWithoutSample(String datasetSecondaryName, String experimentID) {
+    // dataset name has priority
+    if (datasetSecondaryName != null && !datasetSecondaryName.isEmpty()) {
       return datasetSecondaryName;
     }
+    // otherwise generate experiment-type-specific information
     List<Experiment> experiments = getOpenBisClient().getExperimentById2(experimentID);
     if (experiments.isEmpty()) {
       LOG.warn("Experiment with ID " + experimentID
