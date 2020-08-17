@@ -299,7 +299,7 @@ public class DatasetComponent extends CustomComponent {
                 } else {
                   // if there is no sample, use experiment information to generate secondary name
                   String expID = dsWithoutSamplesToExperimentIDs.get(dsCode);
-                  secName = datahandler.generateOrphanDatasetInformation(secNameDS, expID);
+                  secName = datahandler.retrieveDatasetInfoWithoutSample(secNameDS, expID);
                 }
 
                 forExport.addBean(d);
