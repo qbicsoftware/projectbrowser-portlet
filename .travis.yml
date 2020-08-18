@@ -66,7 +66,7 @@ deploy:
 # activate our conda environment, generate maven site and upload reports to gh-pages branch
 after_deploy:   
   - echo ". $HOME/miniconda3/etc/profile.d/conda.sh" >> ~/.bashrc && source ~/.bashrc && conda activate qbic-docs-build
-  - mvn --quiet --activate-profiles !development-build,!release-build --settings .travis.settings.xml site 
+  - mvn --activate-profiles !development-build,!release-build --settings .travis.settings.xml site 
   - ./.generate-reports.py $TRAVIS_BRANCH $TRAVIS_REPO_SLUG "[skip travis] Updated gh-pages" "This commit was performed from travis-ci.com using a personal access key" "Build ID $TRAVIS_BUILD_ID" "Job ID TRAVIS_JOB_ID" "Branch $TRAVIS_BRANCH" "Log of this build found at $TRAVIS_JOB_WEB_URL"
 
 # credentials

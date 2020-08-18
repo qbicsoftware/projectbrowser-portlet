@@ -247,45 +247,66 @@ public class DatasetComponent extends CustomComponent {
                 }
             } else {
 
-                Map<String, String> samples = new HashMap<String, String>();
+            Map<String, String> dsCodesToSampleCodes = new HashMap<>();
+            Map<String, String> dsWithoutSamplesToExperimentIDs = new HashMap<>();
 
-                // project same for all datasets
-                String projectCode = retrievedDatasets.get(0).getExperimentIdentifier().split("/")[2];
-                for (ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet dataset : retrievedDatasets) {
-                    samples.put(dataset.getCode(), dataset.getSampleIdentifierOrNull().split("/")[2]);
-                }
-
-                List<DatasetBean> dsBeans = datahandler.queryDatasetsForFolderStructure(retrievedDatasets);
-
-                numberOfDatasets = dsBeans.size();
-
-                if (type.equals("project")) {
-                    headerLabel.setValue(String.format(
-                        "This view shows all datasets associated with this project. There are %s registered datasets.",
-                        numberOfDatasets));
-                } else if (type.equals("sample")) {
-                    headerLabel.setValue(String.format(
-                        "This view shows all datasets associated with this sample (including samples which have been derived from this sample). There are %s registered datasets.",
-                        numberOfDatasets));
-                }
-
-                for (DatasetBean d : dsBeans) {
-                    Date date = d.getRegistrationDate();
-                    SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd hh:mm a");
-                    String dateString = sd.format(date);
-                    String sampleID = samples.get(d.getCode());
-
-                    Sample dsSample = checkedTestSamples.get(sampleID);
-
-                    String secNameDS = d.getProperties().get("Q_SECONDARY_NAME");
-
-                    String secName = datahandler.getSecondaryName(dsSample, secNameDS);
-
-                    forExport.addBean(d);
-
-                    registerDatasetInTable(d, datasetContainer, projectCode, sampleID, dateString, null, secName);
-                }
+            // project same for all datasets
+            String projectCode = retrievedDatasets.get(0).getExperimentIdentifier().split("/")[2];
+            
+            for (ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet dataset : retrievedDatasets) {
+              
+              // datasets can also be attached to an experiment directly (no sample)
+              String sampleID = dataset.getSampleIdentifierOrNull();
+              if(sampleID!=null) {
+                dsCodesToSampleCodes.put(dataset.getCode(), sampleID.split("/")[2]);
+              } else {
+                String expID = dataset.getExperimentIdentifier();
+                dsWithoutSamplesToExperimentIDs.put(dataset.getCode(), expID);
+              }
             }
+
+            List<DatasetBean> dsBeans = datahandler.queryDatasetsForFolderStructure(retrievedDatasets);
+
+            numberOfDatasets = dsBeans.size();
+
+            if (type.equals("project")) {
+                headerLabel.setValue(String.format(
+                    "This view shows all datasets associated with this project. There are %s registered datasets.",
+                    numberOfDatasets));
+            } else if (type.equals("sample")) {
+                headerLabel.setValue(String.format(
+                    "This view shows all datasets associated with this sample (including samples which have been derived from this sample). There are %s registered datasets.",
+                    numberOfDatasets));
+            }
+
+            for (DatasetBean d : dsBeans) {
+                String dsCode = d.getCode();
+                Date date = d.getRegistrationDate();
+                SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd hh:mm a");
+                String dateString = sd.format(date);
+                String sampleID = "";
+                if(dsCodesToSampleCodes.containsKey(dsCode)) {
+                  sampleID = dsCodesToSampleCodes.get(dsCode);
+                }
+
+                String secNameDS = d.getProperties().get("Q_SECONDARY_NAME");
+                String secName = "";
+                
+                // we can build our information using dataset secondary name and sample information
+                if(!sampleID.isEmpty()) {
+                  Sample dsSample = checkedTestSamples.get(sampleID);
+                  secName = datahandler.getSecondaryName(dsSample, secNameDS);
+                } else {
+                  // if there is no sample, use experiment information to generate secondary name
+                  String expID = dsWithoutSamplesToExperimentIDs.get(dsCode);
+                  secName = datahandler.retrieveDatasetInfoWithoutSample(secNameDS, expID);
+                }
+
+                forExport.addBean(d);
+
+                registerDatasetInTable(d, datasetContainer, projectCode, sampleID, dateString, null, secName);
+            }
+        }
 
             this.setContainerDataSource(datasetContainer);
             prepareTSVExportFile(forExport, id);

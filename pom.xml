@@ -9,7 +9,7 @@
 	</parent>
 	<groupId>life.qbic</groupId>
 	<artifactId>projectbrowser-portlet</artifactId>
-	<version>1.10.0</version>
+	<version>1.11.0</version>
 	<name>ProjectBrowser Portlet</name>
 	<url>http://github.com/qbicsoftware/projectbrowser-portlet</url>
 	<description>Browse and manage biomedical projects</description>
@@ -49,12 +49,12 @@
 		<dependency>
 			<groupId>life.qbic</groupId>
 			<artifactId>portal-utils-lib</artifactId>
-			<version>1.6.0</version>
+			<version>1.7.0</version>
 		</dependency>
 		<dependency>
 			<groupId>life.qbic</groupId>
 			<artifactId>core-utils-lib</artifactId>
-			<version>1.0.0</version>
+			<version>1.2.1</version>
 		</dependency>
 
 		<!-- openBIS client (version defined in parent POM) -->
