@@ -187,8 +187,9 @@ public class TSVDownloadComponent extends VerticalLayout {
         for (Property p : samplesToProperties.get(sampleCode)) {
           if (p.getLabel().equals(propLabel)) {
             line.append("\t" + p.getValue());
-            if (p.hasUnit())
+            if (p.hasUnit()) {
               line.append(p.getUnit());
+            }
             found = true;
             break;
           }
