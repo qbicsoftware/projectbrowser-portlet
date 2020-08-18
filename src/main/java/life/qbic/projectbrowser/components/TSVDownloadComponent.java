@@ -146,9 +146,11 @@ public class TSVDownloadComponent extends VerticalLayout {
 
     // first collect all properties used on this level of the experiment
     for (String code : sampleCodes) {
-      for (Property p : samplesToProperties.get(code)) {
-        String label = p.getLabel();
-        propertyLabels.add(label);
+      if (samplesToProperties.containsKey(code)) {
+        for (Property p : samplesToProperties.get(code)) {
+          String label = p.getLabel();
+          propertyLabels.add(label);
+        }
       }
     }
     // then determine an ordering for header and data
