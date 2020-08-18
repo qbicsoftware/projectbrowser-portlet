@@ -31,16 +31,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-
 import life.qbic.portal.utils.PortalUtils;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.server.FontAwesome;
@@ -50,7 +46,6 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.ProgressBar;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
-
 import ch.systemsx.cisd.openbis.dss.client.api.v1.DataSet;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.FileInfoDssDTO;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.ControlledVocabularyPropertyType;
@@ -66,7 +61,6 @@ import ch.systemsx.cisd.openbis.plugin.query.shared.api.v1.dto.QueryTableModel;
 import life.qbic.datamodel.experiments.ExperimentType;
 import life.qbic.datamodel.identifiers.ExperimentCodeFunctions;
 import life.qbic.openbis.openbisclient.OpenBisClient;
-
 import life.qbic.projectbrowser.helpers.Utils;
 import life.qbic.projectbrowser.helpers.OpenBisFunctions;
 import life.qbic.projectbrowser.helpers.BarcodeFunctions;
@@ -79,7 +73,6 @@ import life.qbic.projectbrowser.model.spaceToProjectPrefixMap;
 import life.qbic.projectbrowser.model.ProjectBean;
 import life.qbic.projectbrowser.model.DBManager;
 import life.qbic.projectbrowser.helpers.AlternativeSecondaryNameCreator;
-
 import life.qbic.xml.persons.Qperson;
 import life.qbic.xml.properties.Property;
 import life.qbic.xml.study.Qexperiment;
@@ -107,7 +100,7 @@ public class DataHandler implements Serializable {
   Map<String, SampleBean> sampleMap = new HashMap<String, SampleBean>();
   Map<String, DatasetBean> datasetMap = new HashMap<String, DatasetBean>();
 
-//  Map<String, String> spaceToProjectPrefixMap = new HashMap<String, String>();
+  // Map<String, String> spaceToProjectPrefixMap = new HashMap<String, String>();
 
 
   // store search result containers here
@@ -150,18 +143,19 @@ public class DataHandler implements Serializable {
   public void setSampleResults(List<Sample> sampleResults) {
     Set<String> projects = new HashSet<String>();
 
-    // we have to initialize the projects in order to get the experimental design for the navigation from the searchbar view
-    for (Sample s: sampleResults) {
+    // we have to initialize the projects in order to get the experimental design for the navigation
+    // from the searchbar view
+    for (Sample s : sampleResults) {
       String expID = s.getExperimentIdentifierOrNull();
       String spaceCode = s.getSpaceCode();
       String projectId = String.format("/%s/%s", spaceCode, expID.split("/")[2]);
 
-      if(!projects.contains(projectId)) {
+      if (!projects.contains(projectId)) {
         projects.add(projectId);
       }
     }
 
-    for (String p: projects) {
+    for (String p : projects) {
       this.getProject2(p);
     }
 
@@ -1745,84 +1739,84 @@ public class DataHandler implements Serializable {
    * 
    * return dataset_container; }
    */
-//
-//  public void registerDatasetInTable(DataSet d, FileInfoDssDTO[] filelist,
-//      HierarchicalContainer dataset_container, String project, String sample, Timestamp ts,
-//      String sampleType, Object parent) {
-//    if (filelist[0].isDirectory()) {
-//
-//      Object new_ds = dataset_container.addItem();
-//
-//      String folderPath = filelist[0].getPathInDataSet();
-//      FileInfoDssDTO[] subList = d.listFiles(folderPath, false);
-//
-//      dataset_container.setChildrenAllowed(new_ds, true);
-//      String download_link = filelist[0].getPathInDataSet();
-//      String[] splitted_link = download_link.split("/");
-//      String file_name = download_link.split("/")[splitted_link.length - 1];
-//
-//      dataset_container.getContainerProperty(new_ds, "Select").setValue(new CheckBox());
-//
-//      dataset_container.getContainerProperty(new_ds, "Project").setValue(project);
-//      dataset_container.getContainerProperty(new_ds, "Sample").setValue(sample);
-//      dataset_container.getContainerProperty(new_ds, "Sample Type")
-//          .setValue(this.getOpenBisClient().getSampleByIdentifier(sample).getSampleTypeCode());
-//      dataset_container.getContainerProperty(new_ds, "File Name").setValue(file_name);
-//      dataset_container.getContainerProperty(new_ds, "File Type").setValue("Folder");
-//      dataset_container.getContainerProperty(new_ds, "Dataset Type").setValue("-");
-//      dataset_container.getContainerProperty(new_ds, "Registration Date").setValue(ts);
-//      dataset_container.getContainerProperty(new_ds, "Validated").setValue(true);
-//      dataset_container.getContainerProperty(new_ds, "dl_link").setValue(
-//          d.getDataSetDss().tryGetInternalPathInDataStore() + "/" + filelist[0].getPathInDataSet());
-//      dataset_container.getContainerProperty(new_ds, "CODE").setValue(d.getCode());
-//      dataset_container.getContainerProperty(new_ds, "file_size_bytes")
-//          .setValue(filelist[0].getFileSize());
-//
-//      // System.out.println("Now it should be a folder: " + filelist[0].getPathInDataSet());
-//
-//      if (parent != null) {
-//        dataset_container.setParent(new_ds, parent);
-//      }
-//
-//      for (FileInfoDssDTO file : subList) {
-//        FileInfoDssDTO[] childList = {file};
-//        registerDatasetInTable(d, childList, dataset_container, project, sample, ts, sampleType,
-//            new_ds);
-//      }
-//
-//    } else {
-//      // System.out.println("Now it should be a file: " + filelist[0].getPathInDataSet());
-//
-//      Object new_file = dataset_container.addItem();
-//      dataset_container.setChildrenAllowed(new_file, false);
-//      String download_link = filelist[0].getPathInDataSet();
-//      String[] splitted_link = download_link.split("/");
-//      String file_name = download_link.split("/")[splitted_link.length - 1];
-//      // String file_name = download_link.split("/")[1];
-//      String fileSize = PortalUtils.humanReadableByteCount(filelist[0].getFileSize(), true);
-//
-//      dataset_container.getContainerProperty(new_file, "Select").setValue(new CheckBox());
-//      dataset_container.getContainerProperty(new_file, "Project").setValue(project);
-//      dataset_container.getContainerProperty(new_file, "Sample").setValue(sample);
-//      dataset_container.getContainerProperty(new_file, "Sample Type").setValue(sampleType);
-//      dataset_container.getContainerProperty(new_file, "File Name").setValue(file_name);
-//      dataset_container.getContainerProperty(new_file, "File Type")
-//          .setValue(d.getDataSetTypeCode());
-//      dataset_container.getContainerProperty(new_file, "Dataset Type")
-//          .setValue(d.getDataSetTypeCode());
-//      dataset_container.getContainerProperty(new_file, "Registration Date").setValue(ts);
-//      dataset_container.getContainerProperty(new_file, "Validated").setValue(true);
-//      dataset_container.getContainerProperty(new_file, "File Size").setValue(fileSize);
-//      dataset_container.getContainerProperty(new_file, "dl_link").setValue(
-//          d.getDataSetDss().tryGetInternalPathInDataStore() + "/" + filelist[0].getPathInDataSet());
-//      dataset_container.getContainerProperty(new_file, "CODE").setValue(d.getCode());
-//      dataset_container.getContainerProperty(new_file, "file_size_bytes")
-//          .setValue(filelist[0].getFileSize());
-//      if (parent != null) {
-//        dataset_container.setParent(new_file, parent);
-//      }
-//    }
-//  }
+  //
+  // public void registerDatasetInTable(DataSet d, FileInfoDssDTO[] filelist,
+  // HierarchicalContainer dataset_container, String project, String sample, Timestamp ts,
+  // String sampleType, Object parent) {
+  // if (filelist[0].isDirectory()) {
+  //
+  // Object new_ds = dataset_container.addItem();
+  //
+  // String folderPath = filelist[0].getPathInDataSet();
+  // FileInfoDssDTO[] subList = d.listFiles(folderPath, false);
+  //
+  // dataset_container.setChildrenAllowed(new_ds, true);
+  // String download_link = filelist[0].getPathInDataSet();
+  // String[] splitted_link = download_link.split("/");
+  // String file_name = download_link.split("/")[splitted_link.length - 1];
+  //
+  // dataset_container.getContainerProperty(new_ds, "Select").setValue(new CheckBox());
+  //
+  // dataset_container.getContainerProperty(new_ds, "Project").setValue(project);
+  // dataset_container.getContainerProperty(new_ds, "Sample").setValue(sample);
+  // dataset_container.getContainerProperty(new_ds, "Sample Type")
+  // .setValue(this.getOpenBisClient().getSampleByIdentifier(sample).getSampleTypeCode());
+  // dataset_container.getContainerProperty(new_ds, "File Name").setValue(file_name);
+  // dataset_container.getContainerProperty(new_ds, "File Type").setValue("Folder");
+  // dataset_container.getContainerProperty(new_ds, "Dataset Type").setValue("-");
+  // dataset_container.getContainerProperty(new_ds, "Registration Date").setValue(ts);
+  // dataset_container.getContainerProperty(new_ds, "Validated").setValue(true);
+  // dataset_container.getContainerProperty(new_ds, "dl_link").setValue(
+  // d.getDataSetDss().tryGetInternalPathInDataStore() + "/" + filelist[0].getPathInDataSet());
+  // dataset_container.getContainerProperty(new_ds, "CODE").setValue(d.getCode());
+  // dataset_container.getContainerProperty(new_ds, "file_size_bytes")
+  // .setValue(filelist[0].getFileSize());
+  //
+  // // System.out.println("Now it should be a folder: " + filelist[0].getPathInDataSet());
+  //
+  // if (parent != null) {
+  // dataset_container.setParent(new_ds, parent);
+  // }
+  //
+  // for (FileInfoDssDTO file : subList) {
+  // FileInfoDssDTO[] childList = {file};
+  // registerDatasetInTable(d, childList, dataset_container, project, sample, ts, sampleType,
+  // new_ds);
+  // }
+  //
+  // } else {
+  // // System.out.println("Now it should be a file: " + filelist[0].getPathInDataSet());
+  //
+  // Object new_file = dataset_container.addItem();
+  // dataset_container.setChildrenAllowed(new_file, false);
+  // String download_link = filelist[0].getPathInDataSet();
+  // String[] splitted_link = download_link.split("/");
+  // String file_name = download_link.split("/")[splitted_link.length - 1];
+  // // String file_name = download_link.split("/")[1];
+  // String fileSize = PortalUtils.humanReadableByteCount(filelist[0].getFileSize(), true);
+  //
+  // dataset_container.getContainerProperty(new_file, "Select").setValue(new CheckBox());
+  // dataset_container.getContainerProperty(new_file, "Project").setValue(project);
+  // dataset_container.getContainerProperty(new_file, "Sample").setValue(sample);
+  // dataset_container.getContainerProperty(new_file, "Sample Type").setValue(sampleType);
+  // dataset_container.getContainerProperty(new_file, "File Name").setValue(file_name);
+  // dataset_container.getContainerProperty(new_file, "File Type")
+  // .setValue(d.getDataSetTypeCode());
+  // dataset_container.getContainerProperty(new_file, "Dataset Type")
+  // .setValue(d.getDataSetTypeCode());
+  // dataset_container.getContainerProperty(new_file, "Registration Date").setValue(ts);
+  // dataset_container.getContainerProperty(new_file, "Validated").setValue(true);
+  // dataset_container.getContainerProperty(new_file, "File Size").setValue(fileSize);
+  // dataset_container.getContainerProperty(new_file, "dl_link").setValue(
+  // d.getDataSetDss().tryGetInternalPathInDataStore() + "/" + filelist[0].getPathInDataSet());
+  // dataset_container.getContainerProperty(new_file, "CODE").setValue(d.getCode());
+  // dataset_container.getContainerProperty(new_file, "file_size_bytes")
+  // .setValue(filelist[0].getFileSize());
+  // if (parent != null) {
+  // dataset_container.setParent(new_file, parent);
+  // }
+  // }
+  // }
 
   /**
    * Function to fill tree container and collect statistical information of spaces. Should replace
@@ -2229,11 +2223,13 @@ public class DataHandler implements Serializable {
       this.getOpenBisClient().triggerIngestionService("register-proj", projectMap);
       // helpers.Utils.printMapContent(projectMap);
 
-//      String newProjectDetailsCode =
-//          projectPrefix + Utils.createCountString(numberOfProject, 3) + "E_INFO";
-//      String newProjectDetailsID = "/" + space + "/" + newProjectCode + "/" + newProjectDetailsCode;
-      
-      String newProjectDetailsID = ExperimentCodeFunctions.getInfoExperimentID(space, newProjectCode);
+      // String newProjectDetailsCode =
+      // projectPrefix + Utils.createCountString(numberOfProject, 3) + "E_INFO";
+      // String newProjectDetailsID = "/" + space + "/" + newProjectCode + "/" +
+      // newProjectDetailsCode;
+
+      String newProjectDetailsID =
+          ExperimentCodeFunctions.getInfoExperimentID(space, newProjectCode);
 
       String newExperimentalDesignCode = projectPrefix + Utils.createCountString(numberOfProject, 3)
           + "E" + numberOfRegisteredExperiments;
@@ -2673,12 +2669,12 @@ public class DataHandler implements Serializable {
    * generates informative description from dataset secondary name or the dataset's experiment,
    * given its ID. should only be used if a dataset does not have an associated sample
    * 
-   * @param datasetSecondaryName
-   * @param experimentID
-   * @return
+   * @param datasetSecondaryName the secondary name property of the dataset
+   * @param experimentID the full openBIS identifier of the experiment of the dataset
+   * @return informative String describing the dataset
    */
   public String retrieveDatasetInfoWithoutSample(String datasetSecondaryName, String experimentID) {
-    // dataset name has priority
+    // if dataset name was explicitly set, give it priority
     if (datasetSecondaryName != null && !datasetSecondaryName.isEmpty()) {
       return datasetSecondaryName;
     }
@@ -2689,28 +2685,28 @@ public class DataHandler implements Serializable {
           + " not found. Returning empty metadata to display.");
       return "";
     }
-    Experiment e = experiments.get(0);
-    Map<String, String> props = e.getProperties();
-    String type = e.getExperimentTypeCode();
-    switch (type) {
-      case "Q_NGS_NANOPORE_RUN":
-        String res = props.get("Q_FLOWCELL_BARCODE");
-        if (res == null) {
-          LOG.warn("No flow cell barcode was found for Nanopore Run " + experimentID
-              + ". Returning less informative metadata to display.");
-          res = "unclassified reads";
-        } else {
-          res += " unclassified reads";
-        }
-        return res;
-      default:
-        if (props.get("Q_SECONDARY_NAME") == null) {
-          LOG.warn("No secondary name found for experiment " + experimentID
-              + ". Returning empty metadata to display. You might want to implement a specific case for experiments of type "
-              + type);
-          return "";
-        }
-        return props.get("Q_SECONDARY_NAME");
+    Experiment experiment = experiments.get(0);
+    Map<String, String> props = experiment.getProperties();
+    String type = experiment.getExperimentTypeCode();
+
+    if (type.equals("Q_NGS_NANOPORE_RUN")) {
+      String res = props.get("Q_FLOWCELL_BARCODE");
+      if (res == null) {
+        LOG.warn("No flow cell barcode was found for Nanopore Run " + experimentID
+            + ". Returning less informative metadata to display.");
+        res = "unclassified reads";
+      } else {
+        res += " unclassified reads";
+      }
+      return res;
+    } else {
+      if (props.get("Q_SECONDARY_NAME") == null) {
+        LOG.warn("No secondary name found for experiment " + experimentID
+            + ". Returning empty metadata to display. You might want to implement a specific case for experiments of type "
+            + type);
+        return "";
+      }
+      return props.get("Q_SECONDARY_NAME");
     }
   }
 
