@@ -2673,12 +2673,12 @@ public class DataHandler implements Serializable {
    * generates informative description from dataset secondary name or the dataset's experiment,
    * given its ID. should only be used if a dataset does not have an associated sample
    * 
-   * @param datasetSecondaryName
-   * @param experimentID
-   * @return
+   * @param datasetSecondaryName the secondary name property of the dataset
+   * @param experimentID the full openBIS identifier of the experiment of the dataset
+   * @return informative String describing the dataset
    */
   public String retrieveDatasetInfoWithoutSample(String datasetSecondaryName, String experimentID) {
-    // dataset name has priority
+    // if dataset name was explicitly set, give it priority
     if (datasetSecondaryName != null && !datasetSecondaryName.isEmpty()) {
       return datasetSecondaryName;
     }
@@ -2689,9 +2689,9 @@ public class DataHandler implements Serializable {
           + " not found. Returning empty metadata to display.");
       return "";
     }
-    Experiment e = experiments.get(0);
-    Map<String, String> props = e.getProperties();
-    String type = e.getExperimentTypeCode();
+    Experiment experiment = experiments.get(0);
+    Map<String, String> props = experiment.getProperties();
+    String type = experiment.getExperimentTypeCode();
     switch (type) {
       case "Q_NGS_NANOPORE_RUN":
         String res = props.get("Q_FLOWCELL_BARCODE");
