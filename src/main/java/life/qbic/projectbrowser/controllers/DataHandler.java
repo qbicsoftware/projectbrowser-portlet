@@ -2692,18 +2692,17 @@ public class DataHandler implements Serializable {
     Experiment e = experiments.get(0);
     Map<String, String> props = e.getProperties();
     String type = e.getExperimentTypeCode();
-    switch (type) {
-      case "Q_NGS_NANOPORE_RUN":
+    if(type.equals("Q_NGS_NANOPORE_RUN") {
         String res = props.get("Q_FLOWCELL_BARCODE");
         if (res == null) {
-          LOG.warn("No flow cell barcode was found for Nanopore Run " + experimentID
+            LOG.warn("No flow cell barcode was found for Nanopore Run " + experimentID
               + ". Returning less informative metadata to display.");
-          res = "unclassified reads";
+            res = "unclassified reads";
         } else {
-          res += " unclassified reads";
+            res += " unclassified reads";
         }
         return res;
-      default:
+    } else {
         if (props.get("Q_SECONDARY_NAME") == null) {
           LOG.warn("No secondary name found for experiment " + experimentID
               + ". Returning empty metadata to display. You might want to implement a specific case for experiments of type "
