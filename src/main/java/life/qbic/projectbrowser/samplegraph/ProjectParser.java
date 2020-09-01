@@ -11,14 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-
 import javax.xml.bind.JAXBException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-
 import ch.systemsx.cisd.openbis.dss.client.api.v1.DataSet;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
 import life.qbic.datamodel.samples.ISampleBean;
@@ -95,17 +92,6 @@ public class ProjectParser {
       throws JAXBException {
     Pair<String, String> key = new ImmutablePair<>(factorLabel, s.getCode());
     return factorsForLabelsAndSamples.get(key);
-    // final Map<String, String> props = s.getProperties();
-    // final String xmlProperties = props.get("Q_PROPERTIES");
-    // final List<Property> factors = (xmlProperties == null ? Collections.EMPTY_LIST
-    // : xmlParser.getAllProperties(xmlParser.parseXMLString(xmlProperties)));
-    //
-    // for (final Property f : factors) {
-    // if (f.getLabel().equals(factorLabel)) {
-    // return f;
-    // }
-    // }
-    // return null;
   }
 
   public StructuredExperiment parseSamplesBreadthFirst(List<Sample> samples, List<DataSet> datasets,
@@ -116,15 +102,18 @@ public class ProjectParser {
     sampCodeToDS = new HashMap<String, List<DataSet>>();
     codesWithDatasets = new HashSet<String>();
     for (DataSet d : datasets) {
-      String code = d.getSampleIdentifierOrNull().split("/")[2];
-      if (sampCodeToDS.containsKey(code)) {
-        sampCodeToDS.get(code).add(d);
-      } else {
-        sampCodeToDS.put(code, new ArrayList<DataSet>(Arrays.asList(d)));
+      String sampleID = d.getSampleIdentifierOrNull();
+      // datasets without samples are ignored, as this is a sample graph
+      if (sampleID != null) {
+        String sampleCode = sampleID.split("/")[2];
+        if (sampCodeToDS.containsKey(sampleCode)) {
+          sampCodeToDS.get(sampleCode).add(d);
+        } else {
+          sampCodeToDS.put(sampleCode, new ArrayList<DataSet>(Arrays.asList(d)));
+        }
       }
     }
 
-    // this.xmlParser = new XMLParser();
     Map<String, List<SampleSummary>> factorsToSamples = new HashMap<String, List<SampleSummary>>();
 
     Set<String> knownFactors = new HashSet<String>();
@@ -139,16 +128,6 @@ public class ProjectParser {
       sampCodeToSamp.put(sample.getCode(), sample);
       String type = sample.getSampleTypeCode();
       if (validSamples.contains(type)) {
-        // Map<String, String> propertiesMap = sample.getProperties();
-        // List<Property> factors = new ArrayList<Property>();
-        // if (propertiesMap.containsKey("Q_PROPERTIES")) {
-        // // TODO: all props?
-        // factors = xmlParser
-        // .getAllProperties(xmlParser.parseXMLString(propertiesMap.get("Q_PROPERTIES")));
-        // }
-        // for (Property f : factors) {
-        // knownFactors.add(f.getLabel());
-        // }
         // collect roots
         if (sample.getParents().isEmpty()) {
           samplesBreadthFirst.add(sample);
