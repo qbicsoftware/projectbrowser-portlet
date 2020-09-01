@@ -184,16 +184,20 @@ public class TSVDownloadComponent extends VerticalLayout {
 
       for (String propLabel : propertyLabels) {
         boolean found = false;
-        for (Property p : samplesToProperties.get(sampleCode)) {
-          if (p.getLabel().equals(propLabel)) {
-            line.append("\t" + p.getValue());
-            if (p.hasUnit()) {
-              line.append(p.getUnit());
+        // catch case that one sample does not have any properties
+        if (samplesToProperties.containsKey(sampleCode)) {
+          for (Property p : samplesToProperties.get(sampleCode)) {
+            if (p.getLabel().equals(propLabel)) {
+              line.append("\t" + p.getValue());
+              if (p.hasUnit()) {
+                line.append(p.getUnit());
+              }
+              found = true;
+              break;
             }
-            found = true;
-            break;
           }
         }
+        // if this sample does not have the currently handled property, skip it for this row
         if (!found) {
           line.append("\t");
         }
