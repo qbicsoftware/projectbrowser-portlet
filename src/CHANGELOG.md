@@ -8,4 +8,4 @@ Changelog
 **Fixed**
 
 * Graphics for DNA, RNA etc. are now consistently displayed in the interactive sample graph.
-
+* Add changelog
