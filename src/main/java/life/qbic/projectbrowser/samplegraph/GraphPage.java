@@ -9,9 +9,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import javax.xml.bind.JAXBException;
-
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.server.FontAwesome;
@@ -24,13 +22,11 @@ import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.ValoTheme;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
-
 import ch.systemsx.cisd.openbis.dss.client.api.v1.DataSet;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
 import life.qbic.portal.portlet.ProjectBrowserPortlet;
 import life.qbic.portal.utils.PortalUtils;
 import life.qbic.xml.properties.Property;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -74,6 +70,8 @@ public class GraphPage extends VerticalLayout {
       String portletName = prop.getProperty("name");
 
       URI location = UI.getCurrent().getPage().getLocation();
+      LOG.info("Debugging page location for graph image path:");
+      LOG.info(location.toString());
       // http
       pathBuilder.append(location.getScheme());
       pathBuilder.append("://");
@@ -81,7 +79,7 @@ public class GraphPage extends VerticalLayout {
       pathBuilder.append(location.getAuthority());
 
       String port = (Integer.toString(location.getPort()));
-      if (location.toString().contains(port)) {
+      if (location.getPort() > -1 && location.toString().contains(port)) {
         pathBuilder.append(":");
         pathBuilder.append(port);
       }
@@ -105,7 +103,8 @@ public class GraphPage extends VerticalLayout {
     } else {
       try {
         // load here
-        structure = parser.parseSamplesBreadthFirst(currentSamples, datasets, factorLabels, factorsForLabelsAndSamples);
+        structure = parser.parseSamplesBreadthFirst(currentSamples, datasets, factorLabels,
+            factorsForLabelsAndSamples);
         if (!structure.getFactorsToSamples().isEmpty()) {
           factorBox.addItems(structure.getFactorsToSamples().keySet());
           factorBox.setVisible(true);
