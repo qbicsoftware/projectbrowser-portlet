@@ -60,6 +60,8 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SpaceWithProjectsAndRo
 import ch.systemsx.cisd.openbis.plugin.query.shared.api.v1.dto.QueryTableModel;
 import life.qbic.datamodel.experiments.ExperimentType;
 import life.qbic.datamodel.identifiers.ExperimentCodeFunctions;
+import life.qbic.datamodel.samples.ISampleBean;
+import life.qbic.datamodel.samples.SampleType;
 import life.qbic.openbis.openbisclient.OpenBisClient;
 import life.qbic.projectbrowser.helpers.Utils;
 import life.qbic.projectbrowser.helpers.OpenBisFunctions;
@@ -1445,11 +1447,6 @@ public class DataHandler implements Serializable {
       this.getOpenBisClient().triggerIngestionService("register-proj", projectMap);
       // helpers.Utils.printMapContent(projectMap);
 
-      // String newProjectDetailsCode =
-      // projectPrefix + Utils.createCountString(numberOfProject, 3) + "E_INFO";
-      // String newProjectDetailsID = "/" + space + "/" + newProjectCode + "/" +
-      // newProjectDetailsCode;
-
       String newProjectDetailsID =
           ExperimentCodeFunctions.getInfoExperimentID(space, newProjectCode);
 
@@ -1469,7 +1466,7 @@ public class DataHandler implements Serializable {
 
       numberOfRegisteredSamples += 1;
 
-      // register first level of new patient
+      // register first level of new patient, including "info experiment"
       firstLevel.put("lvl", "1");
       firstLevel.put("projectDetails", newProjectDetailsID);
       firstLevel.put("experimentalDesign", newExperimentalDesignID);
@@ -1712,6 +1709,26 @@ public class DataHandler implements Serializable {
 
       this.getOpenBisClient().triggerIngestionService("register-ivac-lvl", fithLevel);
 
+      // main ivac metadata registered, add "attachment sample"
+      String sampleCode = newProjectCode + "000";
+      Map<String, Object> params = new HashMap<String, Object>();
+      params.put("user", PortalUtils.getNonNullScreenName());
+
+      if (getOpenBisClient().sampleExists(sampleCode)) {
+        LOG.warn(sampleCode + " already exists in " + newProjectCode
+            + " Removing this sample from registration process.");
+      } else {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("code", sampleCode);
+        map.put("space", space);
+        map.put("project", newProjectCode);
+        map.put("experiment", newProjectDetailsID);
+        map.put("type", SampleType.Q_ATTACHMENT_SAMPLE.toString());
+        map.put("metadata", new HashMap<>());
+        params.put(sampleCode, map);
+        LOG.info("Trying to register attachment sample for new ivac project: " + sampleCode);
+        getOpenBisClient().triggerIngestionService("register-sample-batch", params);
+      }
     }
   }
 
