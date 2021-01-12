@@ -35,7 +35,6 @@ public class ProjectParser {
   private Map<String, List<DataSet>> sampCodeToDS;
   private Set<String> codesWithDatasets;
   private Map<String, Sample> sampCodeToSamp;
-  private Set<String> factorLabels;
   private Map<Pair<String, String>, Property> factorsForLabelsAndSamples;
 
   public ProjectParser(Map<String, String> taxMap, Map<String, String> tissueMap) {
@@ -97,7 +96,6 @@ public class ProjectParser {
   public StructuredExperiment parseSamplesBreadthFirst(List<Sample> samples, List<DataSet> datasets,
       Set<String> factorLabels, Map<Pair<String, String>, Property> factorsForLabelsAndSamples)
       throws JAXBException {
-    this.factorLabels = factorLabels;
     this.factorsForLabelsAndSamples = factorsForLabelsAndSamples;
     sampCodeToDS = new HashMap<String, List<DataSet>>();
     codesWithDatasets = new HashSet<String>();
@@ -282,9 +280,11 @@ public class ProjectParser {
         return key;
       case "Q_TEST_SAMPLE":
         String type = s.getProperties().get("Q_SAMPLE_TYPE");
-        return key.replace(type, "") + " " + shortenInfo(type);
+        // only replace the first occurence of the sample type, as later occurences might
+        // be substrings of the factor level (e.g. "RNA-Seq")
+        return key.replaceFirst(type, "") + " " + shortenInfo(type);
       case "Q_MHC_LIGAND_EXTRACT":
-        return s.getProperties().get("Q_MHC_CLASS").replace("_", " ").replace("CLASS", "Class");
+        return s.getProperties().get("Q_MHC_CLASS").replace("_", " ").replaceFirst("CLASS", "Class");
     }
     return key;
   }
