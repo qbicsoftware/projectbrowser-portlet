@@ -78,6 +78,8 @@ import life.qbic.projectbrowser.helpers.AlternativeSecondaryNameCreator;
 import life.qbic.xml.persons.Qperson;
 import life.qbic.xml.properties.Property;
 import life.qbic.xml.study.Qexperiment;
+import life.qbic.xml.study.Qproperty;
+import life.qbic.xml.study.TechnologyType;
 import life.qbic.xml.manager.PersonParser;
 import life.qbic.xml.manager.StudyXMLParser;
 
@@ -1399,6 +1401,8 @@ public class DataHandler implements Serializable {
       BeanItemContainer<NewIvacSampleBean> samplesToRegister, String space, String description,
       Map<String, List<String>> hlaTyping) {
 
+    String portalUser = PortalUtils.getNonNullScreenName();
+
     // get prefix code for projects for corresponding space
     String projectPrefix = spaceToProjectPrefixMap.myMap.get(space);
 
@@ -1441,7 +1445,7 @@ public class DataHandler implements Serializable {
       projectMap.put("code", newProjectCode);
       projectMap.put("space", space);
       projectMap.put("desc", description + " [" + secondaryNames.get(i) + "]");
-      projectMap.put("user", PortalUtils.getNonNullScreenName());
+      projectMap.put("user", portalUser);
 
       // call of ingestion service to register project
       this.getOpenBisClient().triggerIngestionService("register-proj", projectMap);
@@ -1472,7 +1476,7 @@ public class DataHandler implements Serializable {
       firstLevel.put("experimentalDesign", newExperimentalDesignID);
       firstLevel.put("secondaryName", secondaryNames.get(i));
       firstLevel.put("biologicalEntity", newBiologicalEntitiyID);
-      firstLevel.put("user", PortalUtils.getNonNullScreenName());
+      firstLevel.put("user", portalUser);
 
       this.getOpenBisClient().triggerIngestionService("register-ivac-lvl", firstLevel);
 
@@ -1545,7 +1549,7 @@ public class DataHandler implements Serializable {
           secondLevel.put("parent", newBiologicalEntitiyID);
           secondLevel.put("primaryTissue", primaryTissues);
           secondLevel.put("detailedTissue", detailedTissue);
-          secondLevel.put("user", PortalUtils.getNonNullScreenName());
+          secondLevel.put("user", portalUser);
 
           this.getOpenBisClient().triggerIngestionService("register-ivac-lvl", secondLevel);
           // helpers.Utils.printMapContent(secondLevel);
@@ -1656,7 +1660,7 @@ public class DataHandler implements Serializable {
           thirdLevel.put("experiments", newSamplePreparationIDs);
           thirdLevel.put("samples", newTestSampleIDs);
           thirdLevel.put("types", testTypes);
-          thirdLevel.put("user", PortalUtils.getNonNullScreenName());
+          thirdLevel.put("user", portalUser);
 
           fourthLevel.put("lvl", "4");
           fourthLevel.put("experiments", newNGSMeasurementIDs);
@@ -1665,7 +1669,7 @@ public class DataHandler implements Serializable {
           fourthLevel.put("types", testTypes);
           fourthLevel.put("info", additionalInfo);
           fourthLevel.put("device", sequencerDevice);
-          fourthLevel.put("user", PortalUtils.getNonNullScreenName());
+          fourthLevel.put("user", portalUser);
 
           // TODO additional level for HLA typing
 
@@ -1709,10 +1713,39 @@ public class DataHandler implements Serializable {
 
       this.getOpenBisClient().triggerIngestionService("register-ivac-lvl", fithLevel);
 
-      // main ivac metadata registered, add "attachment sample"
+      // main ivac metadata registered, finish experimental design information:
+      // first, update design xml
+      Map<String, Map<Pair<String, String>, List<String>>> expDesign = new HashMap<>();
+      Map<String, List<Qproperty>> otherProps = new HashMap<>();
+      List<TechnologyType> techTypes = new ArrayList<>();
+      techTypes.add(new TechnologyType("Genomics"));
+      JAXBElement<Qexperiment> res = null;
+      try {
+        res = studyParser.createNewDesign(new HashSet<>(), techTypes, expDesign, otherProps);
+      } catch (JAXBException e) {
+        LOG.error("Failed to create experimental design");
+        e.printStackTrace();
+      }
+      String xml = "";
+      try {
+        xml = studyParser.toString(res);
+      } catch (JAXBException e) {
+        LOG.error("Failed to convert experimental design to xml");
+        e.printStackTrace();
+      }
+      Map<String, Object> props = new HashMap<>();
+      props.put("Q_EXPERIMENTAL_SETUP", xml);
+
+      HashMap<String, Object> expParams = new HashMap<>();
+      expParams.put("properties", props);
+      expParams.put("user", portalUser);
+      expParams.put("identifier", newProjectDetailsID);
+      getOpenBisClient().triggerIngestionService("update-experiment-metadata", expParams);
+
+      // then, add "attachment sample"
       String sampleCode = newProjectCode + "000";
       Map<String, Object> params = new HashMap<String, Object>();
-      params.put("user", PortalUtils.getNonNullScreenName());
+      params.put("user", portalUser);
 
       if (getOpenBisClient().sampleExists(sampleCode)) {
         LOG.warn(sampleCode + " already exists in " + newProjectCode
@@ -1722,7 +1755,7 @@ public class DataHandler implements Serializable {
         map.put("code", sampleCode);
         map.put("space", space);
         map.put("project", newProjectCode);
-        map.put("experiment", newProjectCode+"_INFO");
+        map.put("experiment", newProjectCode + "_INFO");
         map.put("type", SampleType.Q_ATTACHMENT_SAMPLE.toString());
         map.put("metadata", new HashMap<>());
         params.put(sampleCode, map);
