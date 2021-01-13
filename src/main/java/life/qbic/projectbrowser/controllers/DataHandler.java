@@ -1722,7 +1722,7 @@ public class DataHandler implements Serializable {
         map.put("code", sampleCode);
         map.put("space", space);
         map.put("project", newProjectCode);
-        map.put("experiment", newProjectDetailsID);
+        map.put("experiment", newProjectCode+"_INFO");
         map.put("type", SampleType.Q_ATTACHMENT_SAMPLE.toString());
         map.put("metadata", new HashMap<>());
         params.put(sampleCode, map);
