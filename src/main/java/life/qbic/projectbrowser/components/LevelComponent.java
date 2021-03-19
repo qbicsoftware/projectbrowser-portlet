@@ -25,6 +25,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -995,20 +996,19 @@ public class LevelComponent extends CustomComponent {
     }
   }
 
-  public void enableDownloadCheckboxesInTable(boolean enableSelection) {
-    for (Object itemId : datasetTable.getItemIds()) {
-      CheckBox itemCheckBox = (CheckBox) datasetTable.getItem(itemId).getItemProperty("Select").getValue();
-      // if we disable selection, we must only do so for checkboxes that are not selected
-      if (!enableSelection && !itemCheckBox.getValue()) {
-        itemCheckBox.setEnabled(false);
+  // deselects all checkboxes but the one provided and the checkboxes of its child entries in the table
+  public void deselectAllOtherItemsInTable(Object itemId) {
+    Set<Object> blackList = new HashSet<>();
+    blackList.add(itemId);
+    if (datasetTable.hasChildren(itemId)) {
+      for (Object childId : datasetTable.getChildren(itemId)) {
+        blackList.add(childId);
       }
-      // if we enable selection, we enable it for all checkboxes, but deselect active boxes
-      // this is because subfolders might have been automatically selected
-      if (enableSelection) {
-        itemCheckBox.setEnabled(true);
-        if (itemCheckBox.getValue()) {
-          itemCheckBox.setValue(false);
-        }
+    }
+    for (Object rowId : datasetTable.getItemIds()) {
+      if (!blackList.contains(rowId)) {
+        CheckBox itemCheckBox = (CheckBox) datasetTable.getItem(rowId).getItemProperty("Select").getValue();
+        itemCheckBox.setValue(false);
       }
     }
   }
@@ -1044,11 +1044,14 @@ public class LevelComponent extends CustomComponent {
        */
 
       valueChange(itemId, itemSelected, entries, itemFolderName);
-      
-      // only one dataset can be selected for download at once
-      // we disable this after the possible automated selection of subfolders, which is allowed
-      enableDownloadCheckboxesInTable(!itemSelected);
 
+      // only one dataset can be selected for download at once
+      // we deselect after the possible automated selection of subfolders, which is allowed
+      // we also don't deselect these subfolders/files
+      if (itemSelected) {
+        deselectAllOtherItemsInTable(itemId);
+      }
+      
       portletSession.setAttribute("qbic_download", entries, PortletSession.APPLICATION_SCOPE);
 
       if (entries == null || entries.isEmpty()) {
