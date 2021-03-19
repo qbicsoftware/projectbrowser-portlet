@@ -128,15 +128,12 @@ public class ProjInformationComponent extends CustomComponent {
   private ProjectBean projectBean;
   private String projectType;
 
-  private Label experimentLabel;
-
   private Label hlaTypeLabel;
 
   private VerticalLayout statusContent;
 
   private TSVDownloadComponent tsvDownloadContent;
 
-  // private HorizontalLayout horz;
   private HorizontalLayout descHorz;
   private Button descEdit;
 
@@ -164,7 +161,6 @@ public class ProjInformationComponent extends CustomComponent {
   private void initUI() {
     vert = new VerticalLayout();
     descHorz = new HorizontalLayout();
-    // horz = new HorizontalLayout();
     statusPanel = new Panel();
     descriptionPanel = new Panel();
     datasetTable = buildFilterTable();
@@ -242,22 +238,14 @@ public class ProjInformationComponent extends CustomComponent {
       }
     });
 
-    // horz.addComponent(descEdit);
-    // horz.setComponentAlignment(descEdit, Alignment.TOP_RIGHT);
-    // horz.setExpandRatio(investigator, 0.4f);
-    // horz.setExpandRatio(contactPerson, 0.4f);
-    // horz.setExpandRatio(descEdit, 0.2f);
-
     contact = new Label("", ContentMode.HTML);
     patientInformation = new Label("No patient information provided.", ContentMode.HTML);
 
-    experimentLabel = new Label("");
     statusContent = new VerticalLayout();
     hlaTypeLabel = new Label("Not available.", ContentMode.HTML);
     hlaTypeLabel.setStyleName("patientview");
 
     this.setCompositionRoot(vert);
-    // this.setCompositionRoot(mainLayout);
   }
 
   private void initTSVDownloads(String space, String project) {
@@ -934,6 +922,8 @@ public class ProjInformationComponent extends CustomComponent {
       Map<String, SimpleEntry<String, Long>> entries =
           (Map<String, SimpleEntry<String, Long>>) portletSession.getAttribute("qbic_download",
               PortletSession.APPLICATION_SCOPE);
+      
+      System.out.println(entries);
 
       boolean itemSelected = (Boolean) event.getProperty().getValue();
       /*
