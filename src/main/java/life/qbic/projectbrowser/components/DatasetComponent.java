@@ -455,8 +455,11 @@ public class DatasetComponent extends CustomComponent {
         help.setComponentAlignment(helpContent, Alignment.TOP_CENTER);
 
         buttonLayout.addComponent(tsvExportButton);
-        buttonLayout.addComponent(checkAll);
-        buttonLayout.addComponent(uncheckAll);
+        
+        //removed due to scaling issues, replaced by qPostman
+//      buttonLayout.addComponent(checkAll);
+//      buttonLayout.addComponent(uncheckAll);
+        
         // buttonLayout.addComponent(visualize);
         buttonLayout.addComponent(this.download);
 
@@ -716,6 +719,23 @@ public class DatasetComponent extends CustomComponent {
         }
     }
 
+    public void enableDownloadCheckboxesInTable(boolean enableSelection) {
+      for (Object itemId : table.getItemIds()) {
+        CheckBox itemCheckBox = (CheckBox) table.getItem(itemId).getItemProperty("Select").getValue();
+        // if we disable selection, we must only do so for checkboxes that are not selected
+        if (!enableSelection && !itemCheckBox.getValue()) {
+          itemCheckBox.setEnabled(false);
+        }
+        // if we enable selection, we enable it for all checkboxes, but deselect active boxes
+        // this is because subfolders might have been automatically selected
+        if (enableSelection) {
+          itemCheckBox.setEnabled(true);
+          if (itemCheckBox.getValue()) {
+            itemCheckBox.setValue(false);
+          }
+        }
+      }
+    }
 
     private class TableCheckBoxValueChangeListener implements ValueChangeListener {
 
@@ -749,6 +769,11 @@ public class DatasetComponent extends CustomComponent {
              */
 
             valueChange(itemId, itemSelected, entries, itemFolderName);
+            
+            // only one dataset can be selected for download at once
+            // we disable this after the possible automated selection of subfolders, which is allowed
+            enableDownloadCheckboxesInTable(!itemSelected);
+
             portletSession.setAttribute("qbic_download", entries, PortletSession.APPLICATION_SCOPE);
 
             if (entries == null || entries.isEmpty()) {
