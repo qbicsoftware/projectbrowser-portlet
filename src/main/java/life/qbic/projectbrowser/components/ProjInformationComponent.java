@@ -922,7 +922,7 @@ public class ProjInformationComponent extends CustomComponent {
       Map<String, SimpleEntry<String, Long>> entries =
           (Map<String, SimpleEntry<String, Long>>) portletSession.getAttribute("qbic_download",
               PortletSession.APPLICATION_SCOPE);
-
+      
       boolean itemSelected = (Boolean) event.getProperty().getValue();
       /*
        * String fileName = ""; Object parentId = table.getParent(itemId); //In order to prevent
