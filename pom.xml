@@ -9,7 +9,7 @@
 	</parent>
 	<groupId>life.qbic</groupId>
 	<artifactId>projectbrowser-portlet</artifactId>
-	<version>1.11.3</version>
+	<version>1.11.4</version>
 	<name>ProjectBrowser Portlet</name>
 	<url>http://github.com/qbicsoftware/projectbrowser-portlet</url>
 	<description>Browse and manage biomedical projects</description>

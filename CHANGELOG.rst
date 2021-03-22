@@ -1,6 +1,12 @@
 ==========
 Changelog
 ==========
+1.11.4 (2021-03-22)
+
+**Fixed**
+
+* Due to workload reasons, multi-downloads of raw data have been disable. Please use [qPostman](https://github.com/qbicsoftware/postman-cli)
+* Navigating to a different project now correctly clears the download cache
 
 1.11.2 (2020-11-25)
 -------------------
