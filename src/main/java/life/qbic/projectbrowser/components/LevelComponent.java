@@ -671,11 +671,6 @@ public class LevelComponent extends CustomComponent {
     });
 
     buttonLayout.addComponent(exportData);
-
-    // removed due to scaling issues, replaced by qPostman
-    // buttonLayout.addComponent(checkAll);
-    // buttonLayout.addComponent(uncheckAll);
-
     // buttonLayout.addComponent(visualize);
     buttonLayout.addComponent(this.download);
 
