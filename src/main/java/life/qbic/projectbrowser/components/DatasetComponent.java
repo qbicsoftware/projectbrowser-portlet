@@ -717,7 +717,8 @@ public class DatasetComponent extends CustomComponent {
     }
   }
 
-  // deselects all checkboxes but the one provided and the checkboxes of its child entries in the table
+  // deselects all checkboxes but the one provided and the checkboxes of its child and parent
+  // entries in the table. the latter is necessary because of recursive selection
   public void deselectAllOtherItemsInTable(Object itemId) {
     Set<Object> blackList = new HashSet<>();
     blackList.add(itemId);
@@ -727,11 +728,22 @@ public class DatasetComponent extends CustomComponent {
       }
     }
     for (Object rowId : table.getItemIds()) {
-      if (!blackList.contains(rowId)) {
-        CheckBox itemCheckBox = (CheckBox) table.getItem(rowId).getItemProperty("Select").getValue();
+      if (!blackList.contains(rowId) && !isParentOf(rowId, itemId)) {
+        CheckBox itemCheckBox =
+            (CheckBox) table.getItem(rowId).getItemProperty("Select").getValue();
         itemCheckBox.setValue(false);
       }
     }
+  }
+
+  private boolean isParentOf(Object potentialParent, Object potentialChild) {
+    if (table.hasChildren(potentialParent)) {
+      for (Object childId : table.getChildren(potentialParent)) {
+        if (potentialChild.equals(childId))
+          return true;
+      }
+    }
+    return false;
   }
 
   private class TableCheckBoxValueChangeListener implements ValueChangeListener {
@@ -800,9 +812,10 @@ public class DatasetComponent extends CustomComponent {
      */
     private void valueChange(Object itemId, boolean itemSelected,
         Map<String, SimpleEntry<String, Long>> entries, String fileName) {
+      CheckBox itemCheckBox = (CheckBox) table.getItem(itemId).getItemProperty("Select").getValue();
 
-      ((CheckBox) table.getItem(itemId).getItemProperty("Select").getValue())
-          .setValue(itemSelected);
+      itemCheckBox.setValue(itemSelected);
+
       fileName = Paths
           .get(fileName, (String) table.getItem(itemId).getItemProperty("File Name").getValue())
           .toString();

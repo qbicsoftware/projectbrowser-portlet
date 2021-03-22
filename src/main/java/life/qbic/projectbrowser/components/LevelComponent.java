@@ -31,10 +31,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import javax.portlet.PortletSession;
-
 import life.qbic.portal.portlet.ProjectBrowserPortlet;
 import org.tepi.filtertable.FilterTreeTable;
-
 import com.vaadin.data.Item;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
@@ -71,18 +69,14 @@ import com.vaadin.ui.Window.CloseListener;
 import com.vaadin.ui.renderers.ButtonRenderer;
 import com.vaadin.ui.renderers.ClickableRenderer.RendererClickEvent;
 import com.vaadin.ui.renderers.ClickableRenderer.RendererClickListener;
-
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
-
 import life.qbic.projectbrowser.helpers.*;
 import life.qbic.projectbrowser.model.DatasetBean;
 import life.qbic.projectbrowser.model.TestSampleBean;
 import life.qbic.xml.manager.StudyXMLParser;
 import life.qbic.xml.properties.Property;
 import life.qbic.projectbrowser.controllers.*;
-
 import life.qbic.portal.utils.PortalUtils;
-
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
@@ -677,11 +671,11 @@ public class LevelComponent extends CustomComponent {
     });
 
     buttonLayout.addComponent(exportData);
-    
-    //removed due to scaling issues, replaced by qPostman
-//  buttonLayout.addComponent(checkAll);
-//  buttonLayout.addComponent(uncheckAll);
-    
+
+    // removed due to scaling issues, replaced by qPostman
+    // buttonLayout.addComponent(checkAll);
+    // buttonLayout.addComponent(uncheckAll);
+
     // buttonLayout.addComponent(visualize);
     buttonLayout.addComponent(this.download);
 
@@ -996,7 +990,8 @@ public class LevelComponent extends CustomComponent {
     }
   }
 
-  // deselects all checkboxes but the one provided and the checkboxes of its child entries in the table
+  // deselects all checkboxes but the one provided and the checkboxes of its child and parent
+  // entries in the table. the latter is necessary because of recursive selection
   public void deselectAllOtherItemsInTable(Object itemId) {
     Set<Object> blackList = new HashSet<>();
     blackList.add(itemId);
@@ -1006,11 +1001,22 @@ public class LevelComponent extends CustomComponent {
       }
     }
     for (Object rowId : datasetTable.getItemIds()) {
-      if (!blackList.contains(rowId)) {
-        CheckBox itemCheckBox = (CheckBox) datasetTable.getItem(rowId).getItemProperty("Select").getValue();
+      if (!blackList.contains(rowId) && !isParentOf(rowId, itemId)) {
+        CheckBox itemCheckBox =
+            (CheckBox) datasetTable.getItem(rowId).getItemProperty("Select").getValue();
         itemCheckBox.setValue(false);
       }
     }
+  }
+
+  private boolean isParentOf(Object potentialParent, Object potentialChild) {
+    if (datasetTable.hasChildren(potentialParent)) {
+      for (Object childId : datasetTable.getChildren(potentialParent)) {
+        if (potentialChild.equals(childId))
+          return true;
+      }
+    }
+    return false;
   }
 
   private class TableCheckBoxValueChangeListener implements ValueChangeListener {
@@ -1051,7 +1057,7 @@ public class LevelComponent extends CustomComponent {
       if (itemSelected) {
         deselectAllOtherItemsInTable(itemId);
       }
-      
+
       portletSession.setAttribute("qbic_download", entries, PortletSession.APPLICATION_SCOPE);
 
       if (entries == null || entries.isEmpty()) {
@@ -1078,9 +1084,11 @@ public class LevelComponent extends CustomComponent {
      */
     private void valueChange(Object itemId, boolean itemSelected,
         Map<String, SimpleEntry<String, Long>> entries, String fileName) {
+      CheckBox itemCheckBox =
+          (CheckBox) datasetTable.getItem(itemId).getItemProperty("Select").getValue();
 
-      ((CheckBox) datasetTable.getItem(itemId).getItemProperty("Select").getValue())
-          .setValue(itemSelected);
+      itemCheckBox.setValue(itemSelected);
+
       fileName = Paths
           .get(fileName,
               (String) datasetTable.getItem(itemId).getItemProperty("File Name").getValue())
