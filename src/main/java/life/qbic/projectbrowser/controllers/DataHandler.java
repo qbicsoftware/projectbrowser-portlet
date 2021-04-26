@@ -60,7 +60,6 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SpaceWithProjectsAndRo
 import ch.systemsx.cisd.openbis.plugin.query.shared.api.v1.dto.QueryTableModel;
 import life.qbic.datamodel.experiments.ExperimentType;
 import life.qbic.datamodel.identifiers.ExperimentCodeFunctions;
-import life.qbic.datamodel.samples.ISampleBean;
 import life.qbic.datamodel.samples.SampleType;
 import life.qbic.openbis.openbisclient.OpenBisClient;
 import life.qbic.projectbrowser.helpers.Utils;
@@ -92,6 +91,7 @@ public class DataHandler implements Serializable {
    */
   private static final long serialVersionUID = -4814000017404997233L;
   private static final Logger LOG = LogManager.getLogger(DataHandler.class);
+  private final int RECHECK_EXPERIMENTAL_DESIGN_AFTER_HOURS = 24;
 
   Map<String, SampleBean> sampleMap = new HashMap<String, SampleBean>();
   Map<String, DatasetBean> datasetMap = new HashMap<String, DatasetBean>();
@@ -642,9 +642,23 @@ public class DataHandler implements Serializable {
       e.printStackTrace();
     }
     if (expDesign != null) {
-      // experimental design found and parsed. remove samples that have since been deleted:
+      // experimental design found and parsed. remove references to samples that have since been
+      // deleted; give openbis enough time to index samples
+      long creationTime = designExperiment.getRegistrationDetails().getModificationDate().getTime();
+      long currentTime = System.currentTimeMillis();
+      long elapsedTime = currentTime - creationTime;
+
+      long secondsInMilli = 1000;
+      long minutesInMilli = secondsInMilli * 60;
+      long hoursInMilli = minutesInMilli * 60;
+
+      long elapsedHours = elapsedTime / hoursInMilli;
+      boolean isOldProject = elapsedHours > RECHECK_EXPERIMENTAL_DESIGN_AFTER_HOURS;
+
+      LOG.info(elapsedHours + " hours since last modification of this experimental design.");
+
       try {
-        if (!allSampleCodes.isEmpty()) {
+        if (!allSampleCodes.isEmpty() && isOldProject) {
           LOG.info("comparing existing samples with references in experimental design");
           if (studyParser.hasReferencesToMissingIDs(expDesign, allSampleCodes)) {
             LOG.info("deleted samples found. updating xml in openBIS");
