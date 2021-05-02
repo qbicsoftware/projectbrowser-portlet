@@ -28,14 +28,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.portlet.PortletSession;
-
 import life.qbic.datamodel.experiments.ExperimentType;
 import life.qbic.portal.portlet.ProjectBrowserPortlet;
 import life.qbic.portal.utils.PortalUtils;
 import org.tepi.filtertable.FilterTreeTable;
-
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.util.BeanItemContainer;
@@ -68,17 +65,14 @@ import com.vaadin.ui.Window;
 import com.vaadin.ui.Window.CloseEvent;
 import com.vaadin.ui.Window.CloseListener;
 import com.vaadin.ui.themes.ValoTheme;
-
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria.MatchClause;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria.MatchClauseAttribute;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchSubCriteria;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import life.qbic.projectbrowser.controllers.*;
 import life.qbic.projectbrowser.model.DatasetBean;
 import life.qbic.projectbrowser.model.ProjectBean;
@@ -128,15 +122,12 @@ public class ProjInformationComponent extends CustomComponent {
   private ProjectBean projectBean;
   private String projectType;
 
-  private Label experimentLabel;
-
   private Label hlaTypeLabel;
 
   private VerticalLayout statusContent;
 
   private TSVDownloadComponent tsvDownloadContent;
 
-  // private HorizontalLayout horz;
   private HorizontalLayout descHorz;
   private Button descEdit;
 
@@ -164,7 +155,6 @@ public class ProjInformationComponent extends CustomComponent {
   private void initUI() {
     vert = new VerticalLayout();
     descHorz = new HorizontalLayout();
-    // horz = new HorizontalLayout();
     statusPanel = new Panel();
     descriptionPanel = new Panel();
     datasetTable = buildFilterTable();
@@ -242,22 +232,14 @@ public class ProjInformationComponent extends CustomComponent {
       }
     });
 
-    // horz.addComponent(descEdit);
-    // horz.setComponentAlignment(descEdit, Alignment.TOP_RIGHT);
-    // horz.setExpandRatio(investigator, 0.4f);
-    // horz.setExpandRatio(contactPerson, 0.4f);
-    // horz.setExpandRatio(descEdit, 0.2f);
-
     contact = new Label("", ContentMode.HTML);
     patientInformation = new Label("No patient information provided.", ContentMode.HTML);
 
-    experimentLabel = new Label("");
     statusContent = new VerticalLayout();
     hlaTypeLabel = new Label("Not available.", ContentMode.HTML);
     hlaTypeLabel.setStyleName("patientview");
 
     this.setCompositionRoot(vert);
-    // this.setCompositionRoot(mainLayout);
   }
 
   private void initTSVDownloads(String space, String project) {
@@ -276,7 +258,8 @@ public class ProjInformationComponent extends CustomComponent {
       // need to be disabled first so old project tsvs are not downloadable
       tsvDownloadContent.disableSpreadSheets();
       tsvDownloadContent.prepareSpreadsheets(types, space, project, datahandler.getOpenBisClient(),
-          datahandler.getFactorLabels(), datahandler.getFactorsForLabelsAndSamples(), datahandler.getPropertiesForSamples());
+          datahandler.getFactorLabels(), datahandler.getFactorsForLabelsAndSamples(),
+          datahandler.getPropertiesForSamples());
       tsvDownloadContent.setVisible(true);
     } else {
       // nothing to create a tsv from
@@ -285,6 +268,11 @@ public class ProjInformationComponent extends CustomComponent {
   }
 
   public void updateUI(final ProjectBean currentBean, String projectType) {
+
+    //reset selected datasets to download on component update (e.g. new project opened)
+    PortletSession portletSession = ((ProjectBrowserPortlet) UI.getCurrent()).getPortletSession();
+    portletSession.setAttribute("qbic_download", new HashMap<String, SimpleEntry<String, Long>>(),
+        PortletSession.APPLICATION_SCOPE);
 
     if (currentBean.getId() == null)
       return;
@@ -934,7 +922,7 @@ public class ProjInformationComponent extends CustomComponent {
       Map<String, SimpleEntry<String, Long>> entries =
           (Map<String, SimpleEntry<String, Long>>) portletSession.getAttribute("qbic_download",
               PortletSession.APPLICATION_SCOPE);
-
+      
       boolean itemSelected = (Boolean) event.getProperty().getValue();
       /*
        * String fileName = ""; Object parentId = table.getParent(itemId); //In order to prevent
