@@ -49,12 +49,12 @@
 		<dependency>
 			<groupId>life.qbic</groupId>
 			<artifactId>portal-utils-lib</artifactId>
-			<version>2.2.0</version>
+			<version>1.7.0</version>
 		</dependency>
 		<dependency>
 			<groupId>life.qbic</groupId>
 			<artifactId>core-utils-lib</artifactId>
-			<version>1.6.0</version>
+			<version>1.2.1</version>
 		</dependency>
 
 		<!-- openBIS client (version defined in parent POM) -->
@@ -117,7 +117,7 @@
 		<dependency>
 			<groupId>life.qbic</groupId>
 			<artifactId>data-model-lib</artifactId>
-			<version>1.3.0</version>
+			<version>1.1.0</version>
 		</dependency>
 
 		<!-- workflow API based on guse -->
