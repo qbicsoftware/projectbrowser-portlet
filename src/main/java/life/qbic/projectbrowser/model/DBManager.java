@@ -121,6 +121,7 @@ public class DBManager {
       while (rs.next()) {
         id = rs.getInt("person_id");
       }
+
       personWithAffiliations = getPersonWithAffiliations(id);
     } catch (SQLException e) {
       e.printStackTrace();
@@ -135,7 +136,7 @@ public class DBManager {
 
       String title = "";
 
-      if (p.getTitle() != null) {
+      if (p.getTitle() != null && !p.getTitle().equals("None")) {
         title = p.getTitle();
       }
 
