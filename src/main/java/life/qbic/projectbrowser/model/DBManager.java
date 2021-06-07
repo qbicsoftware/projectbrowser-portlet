@@ -1,6 +1,6 @@
 /*******************************************************************************
- * QBiC Project qNavigator enables users to manage their projects. Copyright (C) "2016”
- * Christopher Mohr, David Wojnar, Andreas Friedrich
+ * QBiC Project qNavigator enables users to manage their projects. Copyright (C) "2016” Christopher
+ * Mohr, David Wojnar, Andreas Friedrich
  * 
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
@@ -24,10 +24,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import life.qbic.projectbrowser.model.userdb.Person;
 
 
@@ -51,9 +49,8 @@ public class DBManager {
 
   private Connection login() {
 
-    String DB_URL =
-        "jdbc:mariadb://" + config.getHostname() + ":" + config.getPort() + "/"
-            + config.getSql_database();
+    String DB_URL = "jdbc:mariadb://" + config.getHostname() + ":" + config.getPort() + "/"
+        + config.getSql_database();
 
     Connection conn = null;
 
@@ -67,83 +64,35 @@ public class DBManager {
     return conn;
   }
 
-  //
-  // public void addProjectForPrincipalInvestigator(int pi_id, String projectCode) {
-  // String sql = "INSERT INTO projects (pi_id, project_code) VALUES(?, ?)";
-  // Connection conn = login();
-  // try (PreparedStatement statement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS))
-  // {
-  // statement.setInt(1, pi_id);
-  // statement.setString(2, projectCode);
-  // statement.execute();
-  // // ResultSet rs = statement.getGeneratedKeys();
-  // // if (rs.next()) {
-  // // rs.getInt(1);
-  // // }
-  // // nothing will be in the database, until you commit it!
-  // conn.commit();
-  // } catch (SQLException e) {
-  // e.printStackTrace();
-  // }
-  // logout(conn);
-  // }
-
   public String getInvestigatorForProject(String projectIdentifier) {
     String details = getPersonDetailsForProject(projectIdentifier, "PI");
     return details.split("<br>")[0].trim().replace("<p>", "");
   }
 
-  // TODO
-  // should contain name, role for this project and some information for every person
-  // public List<Person> getPersonsForProject(String projectIdentifier) {
-  //
-  // }
-
   public List<Person> getPersonWithAffiliations(Integer personID) {
     List<Person> res = new ArrayList<Person>();
-    String lnk = "persons_organizations";
-    String sql =
-        "SELECT persons.*, organizations.*, " + lnk + ".occupation FROM persons, organizations, "
-            + lnk + " WHERE persons.id = " + Integer.toString(personID) + " AND persons.id = "
-            + lnk + ".person_id and organizations.id = " + lnk + ".organization_id";
+    String lnk = "person_affiliation";
+    String sql = "SELECT person.*, affiliation.*, " + lnk + ".* FROM person, affiliation, " + lnk
+        + " WHERE person.id = " + Integer.toString(personID) + " AND person.id = " + lnk
+        + ".person_id and affiliation.id = " + lnk + ".affiliation_id";
     Connection conn = login();
     try (PreparedStatement statement = conn.prepareStatement(sql)) {
       ResultSet rs = statement.executeQuery();
       while (rs.next()) {
         int id = rs.getInt("id");
-        String username = rs.getString("username");
+        String user_id = rs.getString("user_id");
         String title = rs.getString("title");
         String first = rs.getString("first_name");
-        String last = rs.getString("family_name");
+        String last = rs.getString("last_name");
         String eMail = rs.getString("email");
-        String phone = rs.getString("phone");
 
+        int affiliationID = rs.getInt("affiliation.id");
 
-        int affiliationID = rs.getInt("organizations.id");
+        String organization = rs.getString("organization");
+        String address_addition = rs.getString("address_addition");
+        String affiliation = organization;
 
-        String group_acronym = rs.getString("group_acronym");
-        String group_name = rs.getString("group_name");
-        String institute = rs.getString("institute");
-        String organization = rs.getString("umbrella_organization");
-        String affiliation = "";
-
-        if (group_name == null || group_name.toUpperCase().equals("NULL") || group_name.equals("")) {
-
-          if (institute == null || institute.toUpperCase().equals("NULL") || institute.equals("")) {
-            affiliation = organization;
-          } else {
-            affiliation = institute;
-          }
-
-        } else {
-          affiliation = group_name;
-          if (group_acronym != null && !group_acronym.isEmpty())
-            affiliation += " (" + group_acronym + ")";
-        }
-
-        String role = rs.getString(lnk + ".occupation");
-        res.add(new Person(id, username, title, first, last, eMail, phone, affiliationID,
-            affiliation, role));
+        res.add(new Person(id, user_id, title, first, last, eMail, affiliationID, affiliation));
       }
       statement.close();
     } catch (SQLException e) {
@@ -172,6 +121,7 @@ public class DBManager {
       while (rs.next()) {
         id = rs.getInt("person_id");
       }
+
       personWithAffiliations = getPersonWithAffiliations(id);
     } catch (SQLException e) {
       e.printStackTrace();
@@ -182,17 +132,16 @@ public class DBManager {
     String details = "";
     if (personWithAffiliations.size() > 0) {
       Person p = personWithAffiliations.get(0);
-      String institute = p.getOneAffiliationWithRole().getAffiliation();
+      String institute = p.getOneAffiliation();
 
       String title = "";
 
-      if (p.getTitle() != null) {
+      if (p.getTitle() != null && !p.getTitle().equals("None")) {
         title = p.getTitle();
       }
 
-      details =
-          String.format("<p>%s %s %s <br> %s <br><br> %s <br> %s</p>", title, p.getFirst(),
-              p.getLast(), institute, p.getPhone(), p.geteMail());
+      details = String.format("<p>%s %s %s <br> %s <br><br> %s</p>", title, p.getFirst(),
+          p.getLast(), institute, p.geteMail());
       // TODO is address important?
     }
 
@@ -203,7 +152,7 @@ public class DBManager {
   public boolean changeLongProjectDescription(String projectIdentifier, String description) {
     LOG.info("Adding/Updating long description of project " + projectIdentifier);
     boolean saved = saveOldDescription(projectIdentifier);
-    if(! saved)
+    if (!saved)
       LOG.warn("Could not save old project description to database!");
     String sql = "UPDATE projects SET long_description = ? WHERE openbis_project_identifier = ?";
     Connection conn = login();
@@ -247,7 +196,8 @@ public class DBManager {
     }
     Date date = new Date();
     Timestamp timestamp = new Timestamp(date.getTime());
-    sql = "INSERT INTO projects_history (project_id, timestamp, long_description, short_title) VALUES(?, ?, ?, ?)";
+    sql =
+        "INSERT INTO projects_history (project_id, timestamp, long_description, short_title) VALUES(?, ?, ?, ?)";
     statement = null;
     int res = -1;
     try {
