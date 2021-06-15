@@ -644,21 +644,11 @@ public class DataHandler implements Serializable {
     if (expDesign != null) {
       // experimental design found and parsed. remove references to samples that have since been
       // deleted; give openbis enough time to index samples
+      
       long creationTime = designExperiment.getRegistrationDetails().getModificationDate().getTime();
-      long currentTime = System.currentTimeMillis();
-      long elapsedTime = currentTime - creationTime;
-
-      long secondsInMilli = 1000;
-      long minutesInMilli = secondsInMilli * 60;
-      long hoursInMilli = minutesInMilli * 60;
-
-      long elapsedHours = elapsedTime / hoursInMilli;
-      boolean isOldProject = elapsedHours > RECHECK_EXPERIMENTAL_DESIGN_AFTER_HOURS;
-
-      LOG.info(elapsedHours + " hours since last modification of this experimental design.");
 
       try {
-        if (!allSampleCodes.isEmpty() && isOldProject) {
+        if (!allSampleCodes.isEmpty() && sampleReferencesNeedRefresh(creationTime)) {
           LOG.info("comparing existing samples with references in experimental design");
           if (studyParser.hasReferencesToMissingIDs(expDesign, allSampleCodes)) {
             LOG.info("deleted samples found. updating xml in openBIS");
@@ -770,6 +760,21 @@ public class DataHandler implements Serializable {
 
     newProjectBean.setSecondaryName(secondaryName);
     return newProjectBean;
+  }
+
+  private boolean sampleReferencesNeedRefresh(long creationTime) {
+    long currentTime = System.currentTimeMillis();
+    long elapsedTime = currentTime - creationTime;
+
+    long secondsInMilli = 1000;
+    long minutesInMilli = secondsInMilli * 60;
+    long hoursInMilli = minutesInMilli * 60;
+
+    long elapsedHours = elapsedTime / hoursInMilli;
+
+    LOG.info(elapsedHours + " hours since last modification of this experimental design.");
+    
+    return elapsedHours > RECHECK_EXPERIMENTAL_DESIGN_AFTER_HOURS;
   }
 
   public Project getOpenbisDtoProject(String projectIdentifier) {
