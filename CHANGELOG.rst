@@ -1,6 +1,21 @@
 ==========
 Changelog
 ==========
+
+1.12.1 (2021-06-16)
+-------------------
+
+**Fixed**
+
+* Don't auto-update experimental design of a selected project if changes are recent, giving openBIS time to index samples
+
+1.12.0 (2021-06-07)
+-------------------
+
+**Added**
+
+* Support for new person database structure
+
 1.11.4 (2021-03-22)
 -------------------
 
