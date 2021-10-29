@@ -9,13 +9,17 @@
 	</parent>
 	<groupId>life.qbic</groupId>
 	<artifactId>projectbrowser-portlet</artifactId>
-	<version>1.12.1</version>
+	<version>1.12.2</version>
 	<name>ProjectBrowser Portlet</name>
 	<url>http://github.com/qbicsoftware/projectbrowser-portlet</url>
 	<description>Browse and manage biomedical projects</description>
 	<packaging>war</packaging>
 	<!-- we only need to tell maven where to find our parent pom and other QBiC 
 		dependencies -->
+	<properties>
+		<vaadin.version>8.14.0</vaadin.version>
+		<vaadin.plugin.version>8.14.0</vaadin.plugin.version>
+	</properties>
 	<repositories>
 		<repository>
 			<releases>
