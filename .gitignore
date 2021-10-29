@@ -26,5 +26,8 @@ logs/
 # compiled Vaadin widgetsets
 src/main/webapp/VAADIN/widgetsets
 
+# compiled Vaadin style
+**/mytheme/styles.css
+
 # properties for local testing
 src/main/resources/developer.properties
