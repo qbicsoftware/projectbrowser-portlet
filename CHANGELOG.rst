@@ -2,12 +2,38 @@
 Changelog
 ==========
 
+1.13.0-SNAPSHOT (2021-10-29)
+-------------------
+
+**Added**
+
+**Fixed**
+
+**Dependencies**
+
+**Deprecated**
+
+
+1.12.2 (2021-10-29)
+-------------------
+
+**Dependencies**
+
+* com.vaadin 7.7.8 -> 7.7.28 (addresses CVE-2021-37714)
+
+1.12.1 (2021-06-16)
+-------------------
+
+**Fixed**
+
+* Don't auto-update experimental design of a selected project if changes are recent, giving openBIS time to index samples
+
 1.12.0 (2021-06-07)
 -------------------
 
 **Added**
 
-- Support for new person database structure
+* Support for new person database structure
 
 1.11.4 (2021-03-22)
 -------------------
