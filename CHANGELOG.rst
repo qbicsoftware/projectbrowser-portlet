@@ -7,7 +7,6 @@ Changelog
 
 **Dependencies**
 
-* ``com.vaadin 7.7.28`` -> ``7.7.29``
 
 * ``org.apache.logging.log4j:log4j-core:2.14.0`` -> ``2.15.0`` (addresses CVE-2021-44228)
 
