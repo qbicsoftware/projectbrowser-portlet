@@ -17,30 +17,16 @@
  *******************************************************************************/
 package life.qbic.projectbrowser.components;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-import life.qbic.projectbrowser.model.ExperimentStatusBean;
-import life.qbic.projectbrowser.model.ProjectBean;
-import life.qbic.projectbrowser.controllers.*;
-import life.qbic.projectbrowser.views.PatientView;
-import life.qbic.projectbrowser.helpers.Utils;
-
 import com.vaadin.data.Item;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.data.util.GeneratedPropertyContainer;
 import com.vaadin.data.util.PropertyValueGenerator;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
-import com.vaadin.shared.Position;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.Grid;
-import com.vaadin.ui.Notification;
-import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.ProgressBar;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.VerticalLayout;
@@ -49,6 +35,15 @@ import com.vaadin.ui.renderers.ClickableRenderer.RendererClickEvent;
 import com.vaadin.ui.renderers.ClickableRenderer.RendererClickListener;
 import com.vaadin.ui.renderers.HtmlRenderer;
 import com.vaadin.ui.renderers.ProgressBarRenderer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import life.qbic.projectbrowser.controllers.DataHandler;
+import life.qbic.projectbrowser.controllers.State;
+import life.qbic.projectbrowser.helpers.Utils;
+import life.qbic.projectbrowser.model.ExperimentStatusBean;
+import life.qbic.projectbrowser.model.ProjectBean;
+import life.qbic.projectbrowser.views.PatientView;
 
 
 public class PatientStatusComponent extends CustomComponent {
@@ -241,11 +236,8 @@ public class PatientStatusComponent extends CustomComponent {
      * done (STATUS Q_WF_NGS_EPITOPE_PREDICTION)
      */
 
-
-    for (Iterator i = experimentstatusBeans.getItemIds().iterator(); i.hasNext();) {
-      ExperimentStatusBean statusBean = (ExperimentStatusBean) i.next();
-
-      finishedExperiments += statusBean.getStatus();
+    for (ExperimentStatusBean statusBean : experimentstatusBeans.getItemIds()) {
+      finishedExperiments += statusBean.getStatus().intValue();
 
       // statusBean.setDownload("Download");
       statusBean.setWorkflow("Run");
