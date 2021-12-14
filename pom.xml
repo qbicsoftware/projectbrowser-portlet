@@ -8,7 +8,7 @@
 		<version>1.7.1</version>
 	</parent>
 	<artifactId>projectbrowser-portlet</artifactId>
-	<version>1.12.3</version>
+	<version>1.12.4</version>
 	<name>ProjectBrowser Portlet</name>
 	<url>http://github.com/qbicsoftware/projectbrowser-portlet</url>
 	<description>Browse and manage biomedical projects</description>
@@ -56,7 +56,7 @@
 				<updatePolicy>always</updatePolicy>
 				<checksumPolicy>fail</checksumPolicy>
 			</snapshots>
-			<id>nexus-snapshots</id>
+			<id>nexus-snapshots-old</id>
 			<name>QBiC Snapshots Old</name>
 			<url>https://qbic-repo.am10.uni-tuebingen.de/repository/maven-snapshots</url>
 		</repository>
@@ -69,7 +69,7 @@
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
-			<id>nexus-releases</id>
+			<id>nexus-releases-old</id>
 			<name>QBiC Releases Old</name>
 			<url>https://qbic-repo.am10.uni-tuebingen.de/repository/maven-releases</url>
 		</repository>
