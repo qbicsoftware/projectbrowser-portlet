@@ -2,6 +2,25 @@
 Changelog
 ==========
 
+1.12.4 (2021-12-14)
+-------------------
+
+**Dependencies**
+
+* Add old repositories for dependency resolvement
+
+* Bump `commons-io:commons-io:2.4 -> 2.11.0`
+
+* Bump `com.github.lookfirst:sardine:5.8 -> 5.10`
+
+* Bump `com.github.vlsi.mxgraph:jgraphx:3.9.8.1 -> 4.2.2`
+
+* Bump `org.docx4j:docx4j:3.3.2 -> 6.1.2`
+
+* Bump `org.apache.ant:ant:1.10.1 -> 1.10.11`
+
+* Bump `org.apache.httpcomponents:httpmime:4.3.1 -> 4.5.13`
+
 1.12.3 (2021-12-13)
 -------------------
 
