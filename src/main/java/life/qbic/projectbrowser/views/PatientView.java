@@ -15,19 +15,14 @@
  *******************************************************************************/
 package life.qbic.projectbrowser.views;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
-
-import life.qbic.portal.utils.PortalUtils;
-import org.tepi.filtertable.FilterTable;
-
+import ch.systemsx.cisd.openbis.dss.client.api.v1.DataSet;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Experiment;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Project;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria.MatchClause;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria.MatchClauseAttribute;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchSubCriteria;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -71,35 +66,42 @@ import com.vaadin.ui.renderers.ClickableRenderer.RendererClickListener;
 import com.vaadin.ui.renderers.HtmlRenderer;
 import com.vaadin.ui.renderers.ProgressBarRenderer;
 import com.vaadin.ui.themes.ValoTheme;
-
-import ch.systemsx.cisd.openbis.dss.client.api.v1.DataSet;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Experiment;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Project;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria.MatchClause;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria.MatchClauseAttribute;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchSubCriteria;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
 import life.qbic.datamodel.experiments.ExperimentType;
 import life.qbic.openbis.openbisclient.OpenBisClient;
-
 import life.qbic.portal.utils.ConfigurationManager;
-
-import life.qbic.projectbrowser.controllers.*;
-import life.qbic.projectbrowser.components.*;
-import life.qbic.projectbrowser.helpers.Utils;
+import life.qbic.portal.utils.PortalUtils;
+import life.qbic.projectbrowser.components.AttachmentUploadComponent;
+import life.qbic.projectbrowser.components.BiologicalSamplesComponent;
+import life.qbic.projectbrowser.components.DatasetComponent;
+import life.qbic.projectbrowser.components.ExperimentComponent;
+import life.qbic.projectbrowser.components.LevelComponent;
+import life.qbic.projectbrowser.components.PatientStatusComponent;
+import life.qbic.projectbrowser.components.ProjInformationComponent;
+import life.qbic.projectbrowser.components.WorkflowComponent;
+import life.qbic.projectbrowser.controllers.DataHandler;
+import life.qbic.projectbrowser.controllers.State;
+import life.qbic.projectbrowser.controllers.WorkflowViewController;
+import life.qbic.projectbrowser.helpers.DatasetViewFilterDecorator;
+import life.qbic.projectbrowser.helpers.DatasetViewFilterGenerator;
 import life.qbic.projectbrowser.helpers.GraphGenerator;
+import life.qbic.projectbrowser.helpers.Utils;
+import life.qbic.projectbrowser.helpers.ViewTablesClickListener;
 import life.qbic.projectbrowser.model.ExperimentStatusBean;
 import life.qbic.projectbrowser.model.ProjectBean;
 import life.qbic.projectbrowser.samplegraph.GraphPage;
 import life.qbic.xml.properties.Property;
-import life.qbic.projectbrowser.helpers.ViewTablesClickListener;
-import life.qbic.projectbrowser.helpers.DatasetViewFilterGenerator;
-import life.qbic.projectbrowser.helpers.DatasetViewFilterDecorator;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.tepi.filtertable.FilterTable;
 
 public class PatientView extends VerticalLayout implements View {
 
@@ -909,15 +911,11 @@ public class PatientView extends VerticalLayout implements View {
      * done (STATUS Q_WF_NGS_EPITOPE_PREDICTION)
      */
 
-
-    for (Iterator i = experimentstatusBeans.getItemIds().iterator(); i.hasNext();) {
-      ExperimentStatusBean statusBean = (ExperimentStatusBean) i.next();
-
-
+    for (ExperimentStatusBean statusBean : experimentstatusBeans.getItemIds()) {
       // HorizontalLayout experimentStatusRow = new HorizontalLayout();
       // experimentStatusRow.setSpacing(true);
 
-      finishedExperiments += statusBean.getStatus();
+      finishedExperiments += statusBean.getStatus().intValue();
 
       // statusBean.setDownload("Download");
       statusBean.setWorkflow("Run");
@@ -927,17 +925,17 @@ public class PatientView extends VerticalLayout implements View {
        * + FontAwesome.TIMES.getHtml(), ContentMode.HTML); statusLabel.addStyleName("redicon");
        * experimentStatusRow.addComponent(statusLabel);
        * statusContent.addComponent(experimentStatusRow); }
-       * 
+       *
        * else {
-       * 
+       *
        * Label statusLabel = new Label(pairs.getKey() + ": " + FontAwesome.CHECK.getHtml(),
        * ContentMode.HTML); statusLabel.addStyleName("greenicon");
        * experimentStatusRow.addComponent(statusLabel);
        * statusContent.addComponent(experimentStatusRow);
-       * 
+       *
        * finishedExperiments += (Integer) pairs.getValue(); }
        * experimentStatusRow.addComponent(runWorkflow);
-       * 
+       *
        * }
        */
     }
