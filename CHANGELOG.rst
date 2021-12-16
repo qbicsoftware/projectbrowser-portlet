@@ -2,6 +2,15 @@
 Changelog
 ==========
 
+1.12.5 (2021-12-16)
+-------------------
+
+**Dependencies**
+
+* ``org.apache.logging.log4j:log4j-core:2.15.0`` -> ``2.16.0`` (addresses CVE-2021-45046)
+
+* ``org.apache.logging.log4j:log4j-api:2.15.0`` -> ``2.16.0`` (addresses CVE-2021-45046)
+
 1.12.4 (2021-12-14)
 -------------------
 
