@@ -10,7 +10,7 @@
 	<artifactId>projectbrowser-portlet</artifactId>
 	<version>1.13.0-SNAPSHOT</version>
 	<name>ProjectBrowser Portlet</name>
-	<url>http://github.com/qbicsoftware/projectbrowser-portlet</url>
+	<url>https://github.com/qbicsoftware/projectbrowser-portlet</url>
 	<description>Browse and manage biomedical projects</description>
 	<packaging>war</packaging>
 	<!-- we only need to tell maven where to find our parent pom and other QBiC 
