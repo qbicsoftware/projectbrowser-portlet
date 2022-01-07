@@ -2,6 +2,17 @@
 Changelog
 ==========
 
+1.13.0-SNAPSHOT (2021-12-16)
+-------------------
+
+**Added**
+
+**Fixed**
+
+**Dependencies**
+
+**Deprecated**
+
 1.12.7 (2022-01-04)
 -------------------
 
@@ -14,6 +25,7 @@ Changelog
 * ``org.apache.logging.log4j:log4j-core:2.17.0`` -> ``2.17.1``
 * ``org.apache.logging.log4j:log4j-api:2.17.0`` -> ``2.17.1``
 
+
 1.12.6 (2021-12-20)
 -------------------
 
@@ -22,6 +34,7 @@ Changelog
 * ``org.apache.logging.log4j:log4j-core:2.16.0`` -> ``2.17.0`` (addresses CVE-2021-45105)
 
 * ``org.apache.logging.log4j:log4j-api:2.16.0`` -> ``2.17.0`` (addresses CVE-2021-45105)
+
 
 1.12.5 (2021-12-16)
 -------------------
