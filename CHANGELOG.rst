@@ -13,6 +13,19 @@ Changelog
 
 **Deprecated**
 
+1.12.7 (2022-01-04)
+-------------------
+
+**Fixed**
+
+* CVE-2021-44832
+
+**Dependencies**
+
+* ``org.apache.logging.log4j:log4j-core:2.17.0`` -> ``2.17.1``
+* ``org.apache.logging.log4j:log4j-api:2.17.0`` -> ``2.17.1``
+
+
 1.12.6 (2021-12-20)
 -------------------
 
