@@ -396,30 +396,6 @@ public class DatasetComponent extends CustomComponent {
     buttonLayout.setSpacing(true);
     buttonLayout.setResponsive(true);
 
-    // final Button visualize = new Button(VISUALIZE_BUTTON_CAPTION);
-
-    Button checkAll = new Button("Select all datasets");
-    checkAll.addClickListener(new ClickListener() {
-
-      @Override
-      public void buttonClick(ClickEvent event) {
-        for (Object itemId : table.getItemIds()) {
-          ((CheckBox) table.getItem(itemId).getItemProperty("Select").getValue()).setValue(true);
-        }
-      }
-    });
-
-    Button uncheckAll = new Button("Unselect all datasets");
-    uncheckAll.addClickListener(new ClickListener() {
-
-      @Override
-      public void buttonClick(ClickEvent event) {
-        for (Object itemId : table.getItemIds()) {
-          ((CheckBox) table.getItem(itemId).getItemProperty("Select").getValue()).setValue(false);
-        }
-      }
-    });
-
     String content =
         "<p> In case of multiple file selections, Project Browser will create a tar archive.</p>"
             + "<hr>"
@@ -454,11 +430,6 @@ public class DatasetComponent extends CustomComponent {
 
     buttonLayout.addComponent(tsvExportButton);
 
-    // removed due to scaling issues, replaced by qPostman
-    // buttonLayout.addComponent(checkAll);
-    // buttonLayout.addComponent(uncheckAll);
-
-    // buttonLayout.addComponent(visualize);
     buttonLayout.addComponent(this.download);
 
     /**
@@ -466,7 +437,6 @@ public class DatasetComponent extends CustomComponent {
      */
     download.setEnabled(false);
     download.setResource(new ExternalResource("javascript:"));
-    // visualize.setEnabled(false);
 
     for (final Object itemId : this.table.getItemIds()) {
       addCheckBoxListener(itemId, (String) this.table.getItem(itemId).getItemProperty("CODE").getValue());
