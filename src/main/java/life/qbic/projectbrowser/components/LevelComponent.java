@@ -711,7 +711,7 @@ public class LevelComponent extends CustomComponent {
     download.setEnabled(false);
 
     for (final Object itemId : this.datasetTable.getItemIds()) {
-      setCheckedBox(itemId,
+      addCheckBoxListener(itemId,
           (String) this.datasetTable.getItem(itemId).getItemProperty("CODE").getValue());
     }
 
@@ -866,7 +866,7 @@ public class LevelComponent extends CustomComponent {
   }
 
 
-  private void setCheckedBox(Object itemId, String parentFolder) {
+  private void addCheckBoxListener(Object itemId, String parentFolder) {
     CheckBox itemCheckBox =
         (CheckBox) this.datasetTable.getItem(itemId).getItemProperty("Select").getValue();
     itemCheckBox.addValueChangeListener(new TableCheckBoxValueChangeListener(itemId, parentFolder));
@@ -877,7 +877,7 @@ public class LevelComponent extends CustomComponent {
             .get(parentFolder,
                 (String) this.datasetTable.getItem(itemId).getItemProperty("File Name").getValue())
             .toString();
-        setCheckedBox(childId, newParentFolder);
+        addCheckBoxListener(childId, newParentFolder);
       }
     }
 

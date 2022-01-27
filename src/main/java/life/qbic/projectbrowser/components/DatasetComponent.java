@@ -469,7 +469,7 @@ public class DatasetComponent extends CustomComponent {
     // visualize.setEnabled(false);
 
     for (final Object itemId : this.table.getItemIds()) {
-      setCheckedBox(itemId, (String) this.table.getItem(itemId).getItemProperty("CODE").getValue());
+      addCheckBoxListener(itemId, (String) this.table.getItem(itemId).getItemProperty("CODE").getValue());
     }
 
     this.table.addItemClickListener(new ItemClickListener() {
@@ -604,7 +604,7 @@ public class DatasetComponent extends CustomComponent {
 
   }
 
-  private void setCheckedBox(Object itemId, String parentFolder) {
+  private void addCheckBoxListener(Object itemId, String parentFolder) {
     CheckBox itemCheckBox =
         (CheckBox) this.table.getItem(itemId).getItemProperty("Select").getValue();
     itemCheckBox.addValueChangeListener(new TableCheckBoxValueChangeListener(itemId, parentFolder));
@@ -615,7 +615,7 @@ public class DatasetComponent extends CustomComponent {
             .get(parentFolder,
                 (String) this.table.getItem(itemId).getItemProperty("File Name").getValue())
             .toString();
-        setCheckedBox(childId, newParentFolder);
+        addCheckBoxListener(childId, newParentFolder);
       }
     }
 
