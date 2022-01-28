@@ -21,6 +21,7 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,8 +48,6 @@ import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.BrowserFrame;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.HorizontalLayout;
@@ -439,7 +438,8 @@ public class DatasetComponent extends CustomComponent {
     download.setResource(new ExternalResource("javascript:"));
 
     for (final Object itemId : this.table.getItemIds()) {
-      addCheckBoxListener(itemId, (String) this.table.getItem(itemId).getItemProperty("CODE").getValue());
+      addCheckBoxListener(itemId,
+          (String) this.table.getItem(itemId).getItemProperty("CODE").getValue());
     }
 
     this.table.addItemClickListener(new ItemClickListener() {
@@ -687,33 +687,31 @@ public class DatasetComponent extends CustomComponent {
     }
   }
 
-  // deselects all checkboxes but the one provided and the checkboxes of its child and parent
-  // entries in the table. the latter is necessary because of recursive selection
-  public void deselectAllOtherItemsInTable(Object itemId) {
-    Set<Object> blackList = new HashSet<>();
-    blackList.add(itemId);
-    if (table.hasChildren(itemId)) {
-      for (Object childId : table.getChildren(itemId)) {
-        blackList.add(childId);
-      }
-    }
+  // deselects all checkboxes but the ones provided
+  public void deselectAllUnrelated(Set<Object> blackList) {
     for (Object rowId : table.getItemIds()) {
-      if (!blackList.contains(rowId) && !isParentOf(rowId, itemId)) {
+      if (!blackList.contains(rowId)) {
         CheckBox itemCheckBox =
             (CheckBox) table.getItem(rowId).getItemProperty("Select").getValue();
-        itemCheckBox.setValue(false);
+        changeCheckBoxValueSilently(itemCheckBox, false);
       }
     }
   }
 
-  private boolean isParentOf(Object potentialParent, Object potentialChild) {
-    if (table.hasChildren(potentialParent)) {
-      for (Object childId : table.getChildren(potentialParent)) {
-        if (potentialChild.equals(childId))
-          return true;
-      }
+  // if users don't click on a checkbox, but it needs to be selected or unselected due to parent items etc. we don't want to call the listeners
+  private void changeCheckBoxValueSilently(CheckBox checkbox, boolean value) {
+    Collection<ValueChangeListener> listeners =
+        (Collection<ValueChangeListener>) checkbox.getListeners(ValueChangeEvent.class);
+
+    for (ValueChangeListener l : listeners) {
+      checkbox.removeValueChangeListener(l);
     }
-    return false;
+
+    checkbox.setValue(value);
+
+    for (ValueChangeListener l : listeners) {
+      checkbox.addValueChangeListener(l);
+    }
   }
 
   private class TableCheckBoxValueChangeListener implements ValueChangeListener {
@@ -732,7 +730,6 @@ public class DatasetComponent extends CustomComponent {
 
     @Override
     public void valueChange(ValueChangeEvent event) {
-
       PortletSession portletSession = ((ProjectBrowserPortlet) UI.getCurrent()).getPortletSession();
 
       Map<String, SimpleEntry<String, Long>> entries =
@@ -740,20 +737,29 @@ public class DatasetComponent extends CustomComponent {
               PortletSession.APPLICATION_SCOPE);
 
       boolean itemSelected = (Boolean) event.getProperty().getValue();
-      /*
-       * String fileName = ""; Object parentId = table.getParent(itemId); //In order to prevent
-       * infinity loop int folderDepth = 0; while(parentId != null && folderDepth < 100){ fileName =
-       * Paths.get((String) table.getItem(parentId).getItemProperty("File Name").getValue(),
-       * fileName).toString(); parentId = table.getParent(parentId); folderDepth++; }
-       */
 
+      // find all rows of the dataset we performed changes on - important because sibling files can stay selected!
+      Set<Object> rowsForDataset = getAllDatasetRows(folderToDatasetCode(itemFolderName));
+
+      // propagates selection or deselection of subfolders and files and adds/removes their paths to/from download
       valueChange(itemId, itemSelected, entries, itemFolderName);
 
-      // only one dataset can be selected for download at once
-      // we deselect after the possible automated selection of subfolders, which is allowed
-      // we also don't deselect these subfolders/files
-      if (itemSelected) {
-        deselectAllOtherItemsInTable(itemId);
+      // now we deselect all unrelated data - that means rows belonging to other datasets
+      deselectAllUnrelated(rowsForDataset);
+
+      // now that selections have been fixed, we remove all files from the download list that
+      // do not start with this listener's folder name (ds code), since we only allow downloads of
+      // single datasets
+
+      Set<String> toRemove = new HashSet<>();
+
+      for (String fileName : entries.keySet()) {
+        if (!fileName.startsWith(itemFolderName)) {
+          toRemove.add(fileName);
+        }
+      }
+      for (String fileName : toRemove) {
+        entries.remove(fileName);
       }
 
       portletSession.setAttribute("qbic_download", entries, PortletSession.APPLICATION_SCOPE);
@@ -767,7 +773,24 @@ public class DatasetComponent extends CustomComponent {
         download.setResource(new ExternalResource(resourceUrl));
         download.setEnabled(true);
       }
+    }
 
+    private String folderToDatasetCode(String folderName) {
+      try {
+        return folderName.split("/")[0];
+      } catch (Exception e) {
+        return folderName;
+      }
+    }
+
+    private Set<Object> getAllDatasetRows(String datasetCode) {
+      Set<Object> res = new HashSet<>();
+      for (Object rowId : table.getContainerDataSource().getItemIds()) {
+        if (datasetCode.equals(table.getItem(rowId).getItemProperty("CODE").getValue())) {
+          res.add(rowId);
+        }
+      }
+      return res;
     }
 
     /**
@@ -784,7 +807,7 @@ public class DatasetComponent extends CustomComponent {
         Map<String, SimpleEntry<String, Long>> entries, String fileName) {
       CheckBox itemCheckBox = (CheckBox) table.getItem(itemId).getItemProperty("Select").getValue();
 
-      itemCheckBox.setValue(itemSelected);
+      changeCheckBoxValueSilently(itemCheckBox, itemSelected);
 
       fileName = Paths
           .get(fileName, (String) table.getItem(itemId).getItemProperty("File Name").getValue())
