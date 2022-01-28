@@ -357,7 +357,7 @@ public class LevelComponent extends CustomComponent {
             this.datasetTable.setCaption("Raw Data");
 
             numberOfDatasets = retrievedDatasets.size();
-            this.datasetTable.setPageLength(Math.max(3, Math.min(numberOfDatasets, 10)));
+            this.datasetTable.setPageLength(12);
           } else if (filterFor.equals("results")) {
             BeanItemContainer<TestSampleBean> samplesContainer =
                 new BeanItemContainer<TestSampleBean>(TestSampleBean.class);
@@ -441,7 +441,7 @@ public class LevelComponent extends CustomComponent {
             });
 
             numberOfDatasets = retrievedDatasets.size();
-            this.datasetTable.setPageLength(Math.max(3, Math.min(numberOfDatasets, 10)));
+            this.datasetTable.setPageLength(12);
 
           }
           break;
