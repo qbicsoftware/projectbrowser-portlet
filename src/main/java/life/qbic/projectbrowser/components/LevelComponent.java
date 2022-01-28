@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -77,8 +78,6 @@ import life.qbic.xml.manager.StudyXMLParser;
 import life.qbic.xml.properties.Property;
 import life.qbic.projectbrowser.controllers.*;
 import life.qbic.portal.utils.PortalUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -358,7 +357,7 @@ public class LevelComponent extends CustomComponent {
             this.datasetTable.setCaption("Raw Data");
 
             numberOfDatasets = retrievedDatasets.size();
-            this.datasetTable.setPageLength(Math.max(3, Math.min(numberOfDatasets, 10)));
+            this.datasetTable.setPageLength(10);
           } else if (filterFor.equals("results")) {
             BeanItemContainer<TestSampleBean> samplesContainer =
                 new BeanItemContainer<TestSampleBean>(TestSampleBean.class);
@@ -442,7 +441,7 @@ public class LevelComponent extends CustomComponent {
             });
 
             numberOfDatasets = retrievedDatasets.size();
-            this.datasetTable.setPageLength(Math.max(3, Math.min(numberOfDatasets, 10)));
+            this.datasetTable.setPageLength(10);
 
           }
           break;
@@ -711,7 +710,7 @@ public class LevelComponent extends CustomComponent {
     download.setEnabled(false);
 
     for (final Object itemId : this.datasetTable.getItemIds()) {
-      setCheckedBox(itemId,
+      addCheckBoxListener(itemId,
           (String) this.datasetTable.getItem(itemId).getItemProperty("CODE").getValue());
     }
 
@@ -866,7 +865,7 @@ public class LevelComponent extends CustomComponent {
   }
 
 
-  private void setCheckedBox(Object itemId, String parentFolder) {
+  private void addCheckBoxListener(Object itemId, String parentFolder) {
     CheckBox itemCheckBox =
         (CheckBox) this.datasetTable.getItem(itemId).getItemProperty("Select").getValue();
     itemCheckBox.addValueChangeListener(new TableCheckBoxValueChangeListener(itemId, parentFolder));
@@ -877,7 +876,7 @@ public class LevelComponent extends CustomComponent {
             .get(parentFolder,
                 (String) this.datasetTable.getItem(itemId).getItemProperty("File Name").getValue())
             .toString();
-        setCheckedBox(childId, newParentFolder);
+        addCheckBoxListener(childId, newParentFolder);
       }
     }
 
@@ -985,33 +984,31 @@ public class LevelComponent extends CustomComponent {
     }
   }
 
-  // deselects all checkboxes but the one provided and the checkboxes of its child and parent
-  // entries in the table. the latter is necessary because of recursive selection
-  public void deselectAllOtherItemsInTable(Object itemId) {
-    Set<Object> blackList = new HashSet<>();
-    blackList.add(itemId);
-    if (datasetTable.hasChildren(itemId)) {
-      for (Object childId : datasetTable.getChildren(itemId)) {
-        blackList.add(childId);
-      }
+  // if users don't click on a checkbox, but it needs to be selected or unselected due to parent items etc. we don't want to call the listeners
+  private void changeCheckBoxValueSilently(CheckBox checkbox, boolean value) {
+    Collection<ValueChangeListener> listeners =
+        (Collection<ValueChangeListener>) checkbox.getListeners(ValueChangeEvent.class);
+
+    for (ValueChangeListener l : listeners) {
+      checkbox.removeValueChangeListener(l);
     }
-    for (Object rowId : datasetTable.getItemIds()) {
-      if (!blackList.contains(rowId) && !isParentOf(rowId, itemId)) {
-        CheckBox itemCheckBox =
-            (CheckBox) datasetTable.getItem(rowId).getItemProperty("Select").getValue();
-        itemCheckBox.setValue(false);
-      }
+
+    checkbox.setValue(value);
+
+    for (ValueChangeListener l : listeners) {
+      checkbox.addValueChangeListener(l);
     }
   }
-
-  private boolean isParentOf(Object potentialParent, Object potentialChild) {
-    if (datasetTable.hasChildren(potentialParent)) {
-      for (Object childId : datasetTable.getChildren(potentialParent)) {
-        if (potentialChild.equals(childId))
-          return true;
+  
+  // deselects all checkboxes but the ones provided
+  public void deselectAllUnrelated(Set<Object> blackList) {
+    for (Object rowId : datasetTable.getItemIds()) {
+      if (!blackList.contains(rowId)) {
+        CheckBox itemCheckBox =
+            (CheckBox) datasetTable.getItem(rowId).getItemProperty("Select").getValue();
+        changeCheckBoxValueSilently(itemCheckBox, false);
       }
     }
-    return false;
   }
 
   private class TableCheckBoxValueChangeListener implements ValueChangeListener {
@@ -1037,20 +1034,29 @@ public class LevelComponent extends CustomComponent {
               PortletSession.APPLICATION_SCOPE);
 
       boolean itemSelected = (Boolean) event.getProperty().getValue();
-      /*
-       * String fileName = ""; Object parentId = table.getParent(itemId); //In order to prevent
-       * infinity loop int folderDepth = 0; while(parentId != null && folderDepth < 100){ fileName =
-       * Paths.get((String) table.getItem(parentId).getItemProperty("File Name").getValue(),
-       * fileName).toString(); parentId = table.getParent(parentId); folderDepth++; }
-       */
 
+      // find all rows of the dataset we performed changes on - important because sibling files can stay selected!
+      Set<Object> rowsForDataset = getAllDatasetRows(folderToDatasetCode(itemFolderName));
+
+      // propagates selection or deselection of subfolders and files and adds/removes their paths to/from download
       valueChange(itemId, itemSelected, entries, itemFolderName);
 
-      // only one dataset can be selected for download at once
-      // we deselect after the possible automated selection of subfolders, which is allowed
-      // we also don't deselect these subfolders/files
-      if (itemSelected) {
-        deselectAllOtherItemsInTable(itemId);
+      // now we deselect all unrelated data - that means rows belonging to other datasets
+      deselectAllUnrelated(rowsForDataset);
+
+      // now that selections have been fixed, we remove all files from the download list that
+      // do not start with this listener's folder name (ds code), since we only allow downloads of
+      // single datasets
+
+      Set<String> toRemove = new HashSet<>();
+
+      for (String fileName : entries.keySet()) {
+        if (!fileName.startsWith(itemFolderName)) {
+          toRemove.add(fileName);
+        }
+      }
+      for (String fileName : toRemove) {
+        entries.remove(fileName);
       }
 
       portletSession.setAttribute("qbic_download", entries, PortletSession.APPLICATION_SCOPE);
@@ -1066,7 +1072,25 @@ public class LevelComponent extends CustomComponent {
       }
 
     }
+    
+    private String folderToDatasetCode(String folderName) {
+      try {
+        return folderName.split("/")[0];
+      } catch (Exception e) {
+        return folderName;
+      }
+    }
 
+    private Set<Object> getAllDatasetRows(String datasetCode) {
+      Set<Object> res = new HashSet<>();
+      for (Object rowId : datasetTable.getContainerDataSource().getItemIds()) {
+        if (datasetCode.equals(datasetTable.getItem(rowId).getItemProperty("CODE").getValue())) {
+          res.add(rowId);
+        }
+      }
+      return res;
+    }
+    
     /**
      * updates entries (puts and removes) for selected table item and all its children. Means
      * Checkbox is updated. And in case download button is clicked all checked items will be

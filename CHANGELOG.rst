@@ -2,6 +2,19 @@
 Changelog
 ==========
 
+1.12.8 (2022-01-28)
+-------------------
+
+**Added**
+
+* Set pagelength of result table to a reasonable size to account for datasets with more complex structure
+
+**Fixed**
+
+* Selection, deselection and download of more complex dataset structures
+
+**Dependencies**
+
 1.12.7 (2022-01-04)
 -------------------
 
