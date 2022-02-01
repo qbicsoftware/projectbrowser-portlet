@@ -2,6 +2,18 @@
 Changelog
 ==========
 
+1.12.9 (2022-02-01)
+-------------------
+
+**Added**
+
+**Fixed**
+
+* Fix dataset table pagelength which was missing from some views
+* Selected entries are now no longer removed from the download list if a different subfolder in the same dataset is deselected
+
+**Dependencies**
+
 1.12.8 (2022-01-28)
 -------------------
 

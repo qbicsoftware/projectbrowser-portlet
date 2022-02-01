@@ -357,7 +357,7 @@ public class LevelComponent extends CustomComponent {
             this.datasetTable.setCaption("Raw Data");
 
             numberOfDatasets = retrievedDatasets.size();
-            this.datasetTable.setPageLength(10);
+            datasetTable.setPageLength(Math.max(10, Math.min(numberOfDatasets, 15)));
           } else if (filterFor.equals("results")) {
             BeanItemContainer<TestSampleBean> samplesContainer =
                 new BeanItemContainer<TestSampleBean>(TestSampleBean.class);
@@ -441,8 +441,7 @@ public class LevelComponent extends CustomComponent {
             });
 
             numberOfDatasets = retrievedDatasets.size();
-            this.datasetTable.setPageLength(10);
-
+            datasetTable.setPageLength(Math.max(10, Math.min(numberOfDatasets, 15)));
           }
           break;
 
@@ -984,7 +983,8 @@ public class LevelComponent extends CustomComponent {
     }
   }
 
-  // if users don't click on a checkbox, but it needs to be selected or unselected due to parent items etc. we don't want to call the listeners
+  // if users don't click on a checkbox, but it needs to be selected or unselected due to parent
+  // items etc. we don't want to call the listeners
   private void changeCheckBoxValueSilently(CheckBox checkbox, boolean value) {
     Collection<ValueChangeListener> listeners =
         (Collection<ValueChangeListener>) checkbox.getListeners(ValueChangeEvent.class);
@@ -999,7 +999,7 @@ public class LevelComponent extends CustomComponent {
       checkbox.addValueChangeListener(l);
     }
   }
-  
+
   // deselects all checkboxes but the ones provided
   public void deselectAllUnrelated(Set<Object> blackList) {
     for (Object rowId : datasetTable.getItemIds()) {
@@ -1035,23 +1035,26 @@ public class LevelComponent extends CustomComponent {
 
       boolean itemSelected = (Boolean) event.getProperty().getValue();
 
-      // find all rows of the dataset we performed changes on - important because sibling files can stay selected!
+      // find all rows of the dataset we performed changes on - important because sibling files can
+      // stay selected!
       Set<Object> rowsForDataset = getAllDatasetRows(folderToDatasetCode(itemFolderName));
 
-      // propagates selection or deselection of subfolders and files and adds/removes their paths to/from download
+      // propagates selection or deselection of subfolders and files and adds/removes their paths
+      // to/from download
       valueChange(itemId, itemSelected, entries, itemFolderName);
 
       // now we deselect all unrelated data - that means rows belonging to other datasets
       deselectAllUnrelated(rowsForDataset);
 
       // now that selections have been fixed, we remove all files from the download list that
-      // do not start with this listener's folder name (ds code), since we only allow downloads of
+      // do not start with this listener's ds code, since we only allow downloads of
       // single datasets
 
       Set<String> toRemove = new HashSet<>();
 
       for (String fileName : entries.keySet()) {
-        if (!fileName.startsWith(itemFolderName)) {
+        String datasetCode = folderToDatasetCode(itemFolderName);
+        if (!fileName.startsWith(datasetCode)) {
           toRemove.add(fileName);
         }
       }
@@ -1072,7 +1075,7 @@ public class LevelComponent extends CustomComponent {
       }
 
     }
-    
+
     private String folderToDatasetCode(String folderName) {
       try {
         return folderName.split("/")[0];
@@ -1090,7 +1093,7 @@ public class LevelComponent extends CustomComponent {
       }
       return res;
     }
-    
+
     /**
      * updates entries (puts and removes) for selected table item and all its children. Means
      * Checkbox is updated. And in case download button is clicked all checked items will be
