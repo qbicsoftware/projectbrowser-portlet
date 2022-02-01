@@ -337,7 +337,7 @@ public class DatasetComponent extends CustomComponent {
   public void setContainerDataSource(HierarchicalContainer newDataSource) {
     datasets = (HierarchicalContainer) newDataSource;
     table.setContainerDataSource(this.datasets);
-    table.setPageLength(Math.max(3, Math.min(numberOfDatasets, 10)));
+    table.setPageLength(Math.max(10, Math.min(numberOfDatasets, 15)));
 
     table.setVisibleColumns((Object[]) FILTER_TABLE_COLUMNS);
 
@@ -698,7 +698,8 @@ public class DatasetComponent extends CustomComponent {
     }
   }
 
-  // if users don't click on a checkbox, but it needs to be selected or unselected due to parent items etc. we don't want to call the listeners
+  // if users don't click on a checkbox, but it needs to be selected or unselected due to parent
+  // items etc. we don't want to call the listeners
   private void changeCheckBoxValueSilently(CheckBox checkbox, boolean value) {
     Collection<ValueChangeListener> listeners =
         (Collection<ValueChangeListener>) checkbox.getListeners(ValueChangeEvent.class);
@@ -738,23 +739,26 @@ public class DatasetComponent extends CustomComponent {
 
       boolean itemSelected = (Boolean) event.getProperty().getValue();
 
-      // find all rows of the dataset we performed changes on - important because sibling files can stay selected!
+      // find all rows of the dataset we performed changes on - important because sibling files can
+      // stay selected!
       Set<Object> rowsForDataset = getAllDatasetRows(folderToDatasetCode(itemFolderName));
 
-      // propagates selection or deselection of subfolders and files and adds/removes their paths to/from download
+      // propagates selection or deselection of subfolders and files and adds/removes their paths
+      // to/from download
       valueChange(itemId, itemSelected, entries, itemFolderName);
 
       // now we deselect all unrelated data - that means rows belonging to other datasets
       deselectAllUnrelated(rowsForDataset);
 
       // now that selections have been fixed, we remove all files from the download list that
-      // do not start with this listener's folder name (ds code), since we only allow downloads of
+      // do not start with this listener's ds code, since we only allow downloads of
       // single datasets
 
       Set<String> toRemove = new HashSet<>();
 
       for (String fileName : entries.keySet()) {
-        if (!fileName.startsWith(itemFolderName)) {
+        String datasetCode = folderToDatasetCode(itemFolderName);
+        if (!fileName.startsWith(datasetCode)) {
           toRemove.add(fileName);
         }
       }
