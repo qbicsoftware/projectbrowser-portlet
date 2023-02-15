@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.portlet.PortletSession;
 import life.qbic.portal.portlet.ProjectBrowserPortlet;
 import org.tepi.filtertable.FilterTreeTable;
@@ -367,13 +369,9 @@ public class LevelComponent extends CustomComponent {
 
             for (Sample sample : allSamples) {
               checkedTestSamples.put(sample.getCode(), sample);
-              if (!sample.getSampleTypeCode().equals("Q_TEST_SAMPLE")
-                  && !sample.getSampleTypeCode().equals("Q_MICROARRAY_RUN")
-                  && !sample.getSampleTypeCode().equals("Q_MS_RUN")
-                  && !sample.getSampleTypeCode().equals("Q_BIOLOGICAL_SAMPLE")
-                  && !sample.getSampleTypeCode().equals("Q_BIOLOGICAL_ENTITY")
-                  && !sample.getSampleTypeCode().equals("Q_NGS_SINGLE_SAMPLE_RUN")) {
 
+              if (!Stream.of(BlackListedSampleTypes.values()).collect(Collectors.toList())
+                  .contains(sample.getSampleTypeCode())) {
                 Map<String, String> sampleProperties = sample.getProperties();
                 TestSampleBean newBean = new TestSampleBean();
                 newBean.setCode(sample.getCode());
@@ -1158,5 +1156,53 @@ public class LevelComponent extends CustomComponent {
       map.put(kv[0], kv[1]);
     }
     return map;
+  }
+
+
+  /**
+   * Blacklisted Sample Types
+   * <p>
+   * This enum describes all sample types which refer to raw files and should therefore not to be
+   * shown in the project browser result tab.
+   */
+  private enum BlackListedSampleTypes {
+
+    Q_TEST_SAMPLE("Q_TEST_SAMPLE"), Q_MICROARRAY_RUN("Q_MICROARRAY_RUN"), Q_BIOLOGICAL_SAMPLE(
+        "Q_BIOLOGICAL_SAMPLE"), Q_BIOLOGICAL_ENTITY("Q_BIOLOGICAL_ENTITY"), Q_NGS_SINGLE_SAMPLE_RUN(
+        "Q_NGS_SINGLE_SAMPLE_RUN"), Q_NGS_NANOPORE_SINGLE_SAMPLE_RUN(
+        "Q_NGS_NANOPORE_SINGLE_SAMPLE_RUN");
+
+    /**
+     * Holds the String value of the enum
+     */
+    private final String value;
+
+    /**
+     * Private constructor to create one of the BlacklistedSampleType enum items
+     *
+     * @param value
+     */
+    BlackListedSampleTypes(String value) {
+      this.value = value;
+    }
+
+    /**
+     * Returns to the enum item value
+     *
+     * @return
+     */
+    public String getValue() {
+      return value;
+    }
+
+    /**
+     * Returns a String representation of the enum item
+     *
+     * @return
+     */
+    @Override
+    public String toString() {
+      return this.getValue();
+    }
   }
 }
