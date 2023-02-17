@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -31,8 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.portlet.PortletSession;
 import life.qbic.portal.portlet.ProjectBrowserPortlet;
 import org.tepi.filtertable.FilterTreeTable;
@@ -370,8 +369,7 @@ public class LevelComponent extends CustomComponent {
             for (Sample sample : allSamples) {
               checkedTestSamples.put(sample.getCode(), sample);
 
-              if (!Stream.of(BlackListedSampleTypes.values()).collect(Collectors.toList())
-                  .contains(sample.getSampleTypeCode())) {
+              if (!isSampleTypeBlacklisted(sample.getSampleTypeCode())) {
                 Map<String, String> sampleProperties = sample.getProperties();
                 TestSampleBean newBean = new TestSampleBean();
                 newBean.setCode(sample.getCode());
@@ -1158,6 +1156,9 @@ public class LevelComponent extends CustomComponent {
     return map;
   }
 
+  public static boolean isSampleTypeBlacklisted(String sampleType){
+    return Arrays.stream(BlackListedSampleTypes.values()).anyMatch(blackListedSampleType -> blackListedSampleType.getValue().equals(sampleType));
+  }
 
   /**
    * Blacklisted Sample Types
@@ -1169,8 +1170,7 @@ public class LevelComponent extends CustomComponent {
 
     Q_TEST_SAMPLE("Q_TEST_SAMPLE"), Q_MICROARRAY_RUN("Q_MICROARRAY_RUN"), Q_BIOLOGICAL_SAMPLE(
         "Q_BIOLOGICAL_SAMPLE"), Q_BIOLOGICAL_ENTITY("Q_BIOLOGICAL_ENTITY"), Q_NGS_SINGLE_SAMPLE_RUN(
-        "Q_NGS_SINGLE_SAMPLE_RUN"), Q_NGS_NANOPORE_SINGLE_SAMPLE_RUN(
-        "Q_NGS_NANOPORE_SINGLE_SAMPLE_RUN");
+        "Q_NGS_SINGLE_SAMPLE_RUN"), Q_NGS_NANOPORE_SINGLE_SAMPLE_RUN("Q_NGS_NANOPORE_SINGLE_SAMPLE_RUN");
 
     /**
      * Holds the String value of the enum
