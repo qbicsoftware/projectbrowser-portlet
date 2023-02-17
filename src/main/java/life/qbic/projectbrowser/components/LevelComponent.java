@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -367,13 +368,9 @@ public class LevelComponent extends CustomComponent {
 
             for (Sample sample : allSamples) {
               checkedTestSamples.put(sample.getCode(), sample);
-              if (!sample.getSampleTypeCode().equals("Q_TEST_SAMPLE")
-                  && !sample.getSampleTypeCode().equals("Q_MICROARRAY_RUN")
-                  && !sample.getSampleTypeCode().equals("Q_MS_RUN")
-                  && !sample.getSampleTypeCode().equals("Q_BIOLOGICAL_SAMPLE")
-                  && !sample.getSampleTypeCode().equals("Q_BIOLOGICAL_ENTITY")
-                  && !sample.getSampleTypeCode().equals("Q_NGS_SINGLE_SAMPLE_RUN")) {
 
+              // We do not want to show raw data in the Result tab, so we blacklist several sample types
+              if (!isSampleTypeBlacklisted(sample.getSampleTypeCode())) {
                 Map<String, String> sampleProperties = sample.getProperties();
                 TestSampleBean newBean = new TestSampleBean();
                 newBean.setCode(sample.getCode());
@@ -1158,5 +1155,55 @@ public class LevelComponent extends CustomComponent {
       map.put(kv[0], kv[1]);
     }
     return map;
+  }
+
+  public static boolean isSampleTypeBlacklisted(String sampleType){
+    return Arrays.stream(BlackListedSampleTypes.values()).anyMatch(blackListedSampleType -> blackListedSampleType.getValue().equals(sampleType));
+  }
+
+  /**
+   * Blacklisted Sample Types
+   * <p>
+   * This enum describes all sample types which refer to raw files and should therefore not to be
+   * shown in the project browser result tab.
+   */
+  private enum BlackListedSampleTypes {
+
+    Q_TEST_SAMPLE("Q_TEST_SAMPLE"), Q_MICROARRAY_RUN("Q_MICROARRAY_RUN"), Q_BIOLOGICAL_SAMPLE(
+        "Q_BIOLOGICAL_SAMPLE"), Q_BIOLOGICAL_ENTITY("Q_BIOLOGICAL_ENTITY"), Q_NGS_SINGLE_SAMPLE_RUN(
+        "Q_NGS_SINGLE_SAMPLE_RUN"), Q_NGS_NANOPORE_SINGLE_SAMPLE_RUN("Q_NGS_NANOPORE_SINGLE_SAMPLE_RUN");
+
+    /**
+     * Holds the String value of the enum
+     */
+    private final String value;
+
+    /**
+     * Private constructor to create one of the BlacklistedSampleType enum items
+     *
+     * @param value
+     */
+    BlackListedSampleTypes(String value) {
+      this.value = value;
+    }
+
+    /**
+     * Returns to the enum item value
+     *
+     * @return
+     */
+    public String getValue() {
+      return value;
+    }
+
+    /**
+     * Returns a String representation of the enum item
+     *
+     * @return
+     */
+    @Override
+    public String toString() {
+      return this.getValue();
+    }
   }
 }

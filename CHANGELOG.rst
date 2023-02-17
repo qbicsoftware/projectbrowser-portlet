@@ -2,6 +2,15 @@
 Changelog
 ==========
 
+1.12.10 (2023-02-17)
+-------------------
+
+**Added**
+
+**Fixed**
+
+* Add Q_NGS_NANOPORE_SINGLE_SAMPLE_RUN to the list of sample_type excluded from the result tab in LevelComponent
+
 1.12.9 (2022-02-01)
 -------------------
 
