@@ -369,6 +369,7 @@ public class LevelComponent extends CustomComponent {
             for (Sample sample : allSamples) {
               checkedTestSamples.put(sample.getCode(), sample);
 
+              // We do not want to show raw data in the Result tab, so we blacklist several sample types
               if (!isSampleTypeBlacklisted(sample.getSampleTypeCode())) {
                 Map<String, String> sampleProperties = sample.getProperties();
                 TestSampleBean newBean = new TestSampleBean();
