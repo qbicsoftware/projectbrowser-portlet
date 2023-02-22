@@ -13,6 +13,7 @@ public class LevelComponentTest {
     @Test
     public void SampleTypeIsBlacklisted() {
         assertTrue(LevelComponent.isSampleTypeBlacklisted("Q_NGS_NANOPORE_SINGLE_SAMPLE_RUN"));
+        assertTrue(LevelComponent.isSampleTypeBlacklisted("Q_MS_RUN"));
     }
 
     @Test
