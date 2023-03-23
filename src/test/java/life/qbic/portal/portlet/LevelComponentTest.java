@@ -11,13 +11,25 @@ import static org.junit.Assert.assertTrue;
 public class LevelComponentTest {
 
     @Test
-    public void SampleTypeIsBlacklisted() {
-        assertTrue(LevelComponent.isSampleTypeBlacklisted("Q_NGS_NANOPORE_SINGLE_SAMPLE_RUN"));
-        assertTrue(LevelComponent.isSampleTypeBlacklisted("Q_MS_RUN"));
+    public void SampleTypeIsRaw() {
+        assertTrue(LevelComponent.isSampleTypeForRawData("Q_NGS_NANOPORE_SINGLE_SAMPLE_RUN"));
+        assertTrue(LevelComponent.isSampleTypeForRawData("Q_MS_RUN"));
     }
 
     @Test
-    public void SampleTypeIsNotBlacklisted() {
-        assertFalse(LevelComponent.isSampleTypeBlacklisted("Q_NOT_BLACKLISTED_TYPE"));
+    public void SampleTypeIsNotRaw() {
+        assertFalse(LevelComponent.isSampleTypeForRawData("Q_NOT_BLACKLISTED_TYPE"));
+    }
+
+
+    @Test
+    public void SampleTypeIsProcessed() {
+        assertTrue(LevelComponent.isSampleTypeForProcessedData("Q_WF_MS_MAXQUANT_RUN"));
+        assertTrue(LevelComponent.isSampleTypeForProcessedData("Q_WF_MS_LIGANDOMICS_ID_RUN"));
+    }
+
+    @Test
+    public void SampleTypeIsNotProcessed() {
+        assertFalse(LevelComponent.isSampleTypeForProcessedData("Q_MS_RUN"));
     }
 }

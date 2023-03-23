@@ -165,6 +165,7 @@ public class LevelComponent extends CustomComponent {
       datasetContainer.addContainerProperty("isDirectory", Boolean.class, null);
       datasetContainer.addContainerProperty("CODE", String.class, null);
 
+      //TODO make these sets? Would it change sorting dramatically?
       List<ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet> retrievedDatasetsAll = null;
       List<ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet> retrievedDatasets =
           new ArrayList<ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet>();
@@ -202,6 +203,7 @@ public class LevelComponent extends CustomComponent {
             values.add(ds);
           }
 
+          // Data for Raw Data Tab
           if (filterFor.equals("measured")) {
             BeanItemContainer<TestSampleBean> samplesContainer =
                 new BeanItemContainer<TestSampleBean>(TestSampleBean.class);
@@ -228,17 +230,21 @@ public class LevelComponent extends CustomComponent {
 
                 samplesContainer.addBean(newBean);
 
-                ArrayList<ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet> foundDataset =
-                    datasetFilter.get(sample.getIdentifier());
+                if(!isSampleTypeForProcessedData(sample.getSampleTypeCode())) {
+                  ArrayList<ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet> foundDataset =
+                      datasetFilter.get(sample.getIdentifier());
 
-                if (foundDataset != null) {
-                  retrievedDatasets.addAll(foundDataset);
+                  if (foundDataset != null) {
+                    retrievedDatasets.addAll(foundDataset);
+                  }
                 }
 
                 for (Sample child : sample.getChildren()) {
-                  foundDataset = datasetFilter.get(child.getIdentifier());
-                  if (foundDataset != null) {
-                    retrievedDatasets.addAll(foundDataset);
+                  if (!isSampleTypeForProcessedData(sample.getSampleTypeCode())) {
+                    ArrayList<ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet> foundDataset = datasetFilter.get(child.getIdentifier());
+                    if (foundDataset != null) {
+                      retrievedDatasets.addAll(foundDataset);
+                    }
                   }
                 }
               } else if (sample.getSampleTypeCode().equals("Q_MHC_LIGAND_EXTRACT")) {
@@ -370,7 +376,7 @@ public class LevelComponent extends CustomComponent {
               checkedTestSamples.put(sample.getCode(), sample);
 
               // We do not want to show raw data in the Result tab, so we blacklist several sample types
-              if (!isSampleTypeBlacklisted(sample.getSampleTypeCode())) {
+              if (!isSampleTypeForRawData(sample.getSampleTypeCode())) {
                 Map<String, String> sampleProperties = sample.getProperties();
                 TestSampleBean newBean = new TestSampleBean();
                 newBean.setCode(sample.getCode());
@@ -489,6 +495,7 @@ public class LevelComponent extends CustomComponent {
           samples.put(dataset.getCode(), dataset.getSampleIdentifierOrNull().split("/")[2]);
         }
 
+        // TODO we might want to make these datasets unique here or before, so they don't get listed multiple times
         List<DatasetBean> dsBeans = datahandler.queryDatasetsForFolderStructure(retrievedDatasets);
 
         for (DatasetBean d : dsBeans) {
@@ -1157,17 +1164,21 @@ public class LevelComponent extends CustomComponent {
     return map;
   }
 
-  public static boolean isSampleTypeBlacklisted(String sampleType){
-    return Arrays.stream(BlackListedSampleTypes.values()).anyMatch(blackListedSampleType -> blackListedSampleType.getValue().equals(sampleType));
+  public static boolean isSampleTypeForRawData(String sampleType){
+    return Arrays.stream(RawDataSampleTypes.values()).anyMatch(rawDataSampleType -> rawDataSampleType.getValue().equals(sampleType));
+  }
+
+  public static boolean isSampleTypeForProcessedData(String sampleType){
+    return Arrays.stream(ProcessedSampleTypes.values()).anyMatch(processedDataSampleType -> processedDataSampleType.getValue().equals(sampleType));
   }
 
   /**
-   * Blacklisted Sample Types
+   * Raw Data Sample Types
    * <p>
    * This enum describes all sample types which refer to raw files and should therefore not to be
    * shown in the project browser result tab.
    */
-  private enum BlackListedSampleTypes {
+  private enum RawDataSampleTypes {
 
     Q_TEST_SAMPLE("Q_TEST_SAMPLE"), Q_MICROARRAY_RUN("Q_MICROARRAY_RUN"), Q_MS_RUN(
         "Q_MS_RUN"), Q_BIOLOGICAL_SAMPLE("Q_BIOLOGICAL_SAMPLE"), Q_BIOLOGICAL_ENTITY(
@@ -1181,11 +1192,75 @@ public class LevelComponent extends CustomComponent {
     private final String value;
 
     /**
-     * Private constructor to create one of the BlacklistedSampleType enum items
+     * Private constructor to create one of the RawDataSampleType enum items
      *
      * @param value
      */
-    BlackListedSampleTypes(String value) {
+    RawDataSampleTypes(String value) {
+      this.value = value;
+    }
+
+    /**
+     * Returns to the enum item value
+     *
+     * @return
+     */
+    public String getValue() {
+      return value;
+    }
+
+    /**
+     * Returns a String representation of the enum item
+     *
+     * @return
+     */
+    @Override
+    public String toString() {
+      return this.getValue();
+    }
+  }
+
+  /**
+   * Result/Processed Data Sample Types
+   * <p>
+   * This enum describes all sample types which refer to processed files and should therefore not to be
+   * shown in the project browser raw data tab.
+   */
+  private enum ProcessedSampleTypes {
+
+    Q_ATTACHMENT_SAMPLE("Q_ATTACHMENT_SAMPLE"),
+    Q_EXT_MS_QUALITYCONTROL_RUN("Q_EXT_MS_QUALITYCONTROL_RUN"),
+    Q_EXT_NGS_QUALITYCONTROL_RUN("Q_EXT_NGS_QUALITYCONTROL_RUN"),
+    Q_WF_MA_QUALITYCONTROL_RUN("Q_WF_MA_QUALITYCONTROL_RUN"),
+    Q_WF_MS_MAXQUANT_RUN("Q_WF_MS_MAXQUANT_RUN"),
+    Q_WF_MS_PEPTIDEID_RUN("Q_WF_MS_PEPTIDEID_RUN"),
+    Q_WF_MS_QUALITYCONTROL_RUN("Q_WF_MS_QUALITYCONTROL_RUN"),
+    Q_WF_NGS_EPITOPE_PREDICTION_RUN("Q_WF_NGS_EPITOPE_PREDICTION_RUN"),
+    Q_WF_NGS_HLATYPING_RUN("Q_WF_NGS_HLATYPING_RUN"),
+    Q_WF_NGS_QUALITYCONTROL_RUN("Q_WF_NGS_QUALITYCONTROL_RUN"),
+    Q_WF_NGS_RNA_EXPRESSION_ANALYSIS_RUN("Q_WF_NGS_RNA_EXPRESSION_ANALYSIS_RUN"),
+    Q_WF_NGS_VARIANT_ANNOTATION_RUN("Q_WF_NGS_VARIANT_ANNOTATION_RUN"),
+    Q_WF_NGS_VARIANT_CALLING_RUN("Q_WF_NGS_VARIANT_CALLING_RUN"),
+    Q_WF_NGS_MAPPING_RUN("Q_WF_NGS_MAPPING_RUN"),
+    Q_WF_MS_INDIVIDUALIZED_PROTEOME_RUN("Q_WF_MS_INDIVIDUALIZED_PROTEOME_RUN"),
+    Q_WF_MS_LIGANDOMICS_ID_RUN("Q_WF_MS_LIGANDOMICS_ID_RUN"),
+    Q_WF_MS_LIGANDOMICS_QC_RUN("Q_WF_MS_LIGANDOMICS_QC_RUN"),
+    Q_WF_NGS_SHRNA_COUNTING_RUN("Q_WF_NGS_SHRNA_COUNTING_RUN"),
+    Q_WF_NGS_16S_TAXONOMIC_PROFILING_RUN("Q_WF_NGS_16S_TAXONOMIC_PROFILING_RUN"),
+    Q_HT_QPCR_RUN("Q_HT_QPCR_RUN"),
+    Q_NGS_READ_MATCH_ALIGNMENT_RUN("Q_NGS_READ_MATCH_ALIGNMENT_RUN");
+
+    /**
+     * Holds the String value of the enum
+     */
+    private final String value;
+
+    /**
+     * Private constructor to create one of the RawDataSampleType enum items
+     *
+     * @param value
+     */
+    ProcessedSampleTypes(String value) {
       this.value = value;
     }
 
