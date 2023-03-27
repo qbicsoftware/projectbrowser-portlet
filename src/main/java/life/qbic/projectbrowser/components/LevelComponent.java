@@ -242,7 +242,7 @@ public class LevelComponent extends CustomComponent {
                 }
 
                 for (Sample child : sample.getChildren()) {
-                  if (!isSampleTypeForProcessedData(sample.getSampleTypeCode())) {
+                  if (!isSampleTypeForProcessedData(child.getSampleTypeCode())) {
                     ArrayList<ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet> foundDataset = datasetFilter.get(child.getIdentifier());
                     if (foundDataset != null) {
                       retrievedDatasets.addAll(foundDataset);
