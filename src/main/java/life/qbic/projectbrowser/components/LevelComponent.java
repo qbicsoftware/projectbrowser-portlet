@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -165,10 +166,11 @@ public class LevelComponent extends CustomComponent {
       datasetContainer.addContainerProperty("isDirectory", Boolean.class, null);
       datasetContainer.addContainerProperty("CODE", String.class, null);
 
-      //TODO make these sets? Would it change sorting dramatically?
+      //directly retrieved datasets, they are always unique
       List<ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet> retrievedDatasetsAll = null;
-      List<ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet> retrievedDatasets =
-          new ArrayList<ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet>();
+      //datasets that are filled with the help of maps/other objects. using set to make them unique
+      Set<ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet> retrievedDatasets =
+          new LinkedHashSet<>();
       Map<String, ArrayList<ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet>> datasetFilter =
           new HashMap<String, ArrayList<ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet>>();
 
@@ -451,19 +453,20 @@ public class LevelComponent extends CustomComponent {
         case "experiment":
 
           String experimentIdentifier = id;
-          retrievedDatasets = datahandler.getOpenBisClient()
-              .getDataSetsOfExperimentByCodeWithSearchCriteria(experimentIdentifier);
+          retrievedDatasets = new LinkedHashSet<>();
+          retrievedDatasets.addAll(datahandler.getOpenBisClient()
+              .getDataSetsOfExperimentByCodeWithSearchCriteria(experimentIdentifier));
           break;
 
         case "sample":
           String sampleIdentifier = id;
           String sampleCode = sampleIdentifier.split("/")[2];
-          retrievedDatasets = datahandler.getOpenBisClient().getDataSetsOfSample(sampleCode);
+          retrievedDatasets = new LinkedHashSet<>();
+          retrievedDatasets.addAll(datahandler.getOpenBisClient().getDataSetsOfSample(sampleCode));
           break;
 
         default:
-          retrievedDatasets =
-              new ArrayList<ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet>();
+          retrievedDatasets = new LinkedHashSet<>();
           break;
       }
 
@@ -489,14 +492,16 @@ public class LevelComponent extends CustomComponent {
 
         Map<String, String> samples = new HashMap<String, String>();
 
+        List<ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet> retrievedDatasetList = new ArrayList<>();
+        retrievedDatasetList.addAll(retrievedDatasets);
+
         // project same for all datasets
-        String projectCode = retrievedDatasets.get(0).getExperimentIdentifier().split("/")[2];
-        for (ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet dataset : retrievedDatasets) {
+        String projectCode = retrievedDatasetList.get(0).getExperimentIdentifier().split("/")[2];
+        for (ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet dataset : retrievedDatasetList) {
           samples.put(dataset.getCode(), dataset.getSampleIdentifierOrNull().split("/")[2]);
         }
 
-        // TODO we might want to make these datasets unique here or before, so they don't get listed multiple times
-        List<DatasetBean> dsBeans = datahandler.queryDatasetsForFolderStructure(retrievedDatasets);
+        List<DatasetBean> dsBeans = datahandler.queryDatasetsForFolderStructure(retrievedDatasetList);
 
         for (DatasetBean d : dsBeans) {
           Date date = d.getRegistrationDate();
@@ -958,12 +963,8 @@ public class LevelComponent extends CustomComponent {
       Object new_file = dataset_container.addItem();
       dataset_container.setChildrenAllowed(new_file, false);
 
-      // TODO no hardcoding
-      // String secName = d.getProperties().get("Q_SECONDARY_NAME");
-      // TODO add User here too
-      // if (secName != null) {
       dataset_container.getContainerProperty(new_file, "Description").setValue(secName);
-      // }
+
       dataset_container.getContainerProperty(new_file, "Select").setValue(new CheckBox());
       dataset_container.getContainerProperty(new_file, "Project").setValue(project);
       dataset_container.getContainerProperty(new_file, "Sample").setValue(sample);
